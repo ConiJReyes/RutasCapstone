@@ -1,0 +1,119 @@
+<ion-content [fullscreen]="true">
+
+  <div class="page-container">
+
+    <div class="header-section">
+
+      <div>
+        <p>Mis hijos</p>
+        <h1>Agregar hijo</h1>
+      </div>
+
+      <ion-button fill="clear" routerLink="/apoderado/mis-hijos">
+        Volver
+      </ion-button>
+
+    </div>
+
+
+    <div class="form-section">
+
+      <p class="description">
+        Ingresa los datos del estudiante para asociarlo
+        a tu cuenta de Rutas Seguras.
+      </p>
+
+
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="floating" type="text" placeholder="Nombre del estudiante"
+          [(ngModel)]="nombre">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="Apellido" labelPlacement="floating" type="text" placeholder="Apellido del estudiante"
+          [(ngModel)]="apellido">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="RUT" labelPlacement="floating" type="text" placeholder="12.345.678-9" [(ngModel)]="rut">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="Fecha de nacimiento" labelPlacement="floating" type="date" [(ngModel)]="fechaNacimiento">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="Colegio" labelPlacement="floating" type="text" placeholder="Nombre del colegio"
+          [(ngModel)]="colegio">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="Curso" labelPlacement="floating" type="text" placeholder="Ej: 5° Básico" [(ngModel)]="curso">
+        </ion-input>
+      </ion-item>
+
+
+      <h2>Destino principal</h2>
+
+      <ion-item>
+        <ion-textarea label="Dirección" labelPlacement="floating"
+          placeholder="Dirección donde debe llegar el estudiante" [(ngModel)]="direccionPrincipal">
+        </ion-textarea>
+      </ion-item>
+
+
+      <h2>Destino alternativo</h2>
+
+      <p class="optional">
+        Opcional. Puedes agregar una segunda dirección para
+        situaciones especiales.
+      </p>
+
+      <ion-item>
+        <ion-textarea label="Dirección alternativa" labelPlacement="floating"
+          placeholder="Dirección de familiar u otro destino" [(ngModel)]="direccionAlternativa">
+        </ion-textarea>
+      </ion-item>
+
+
+      <h2>Persona autorizada</h2>
+
+      <p class="optional">
+        Persona que podrá recibir al estudiante en su destino.
+      </p>
+
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="floating" type="text" placeholder="Nombre de la persona"
+          [(ngModel)]="personaAutorizada">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-input label="RUT" labelPlacement="floating" type="text" placeholder="12.345.678-9"
+          [(ngModel)]="rutPersonaAutorizada">
+        </ion-input>
+      </ion-item>
+
+
+      <ion-button expand="block" class="save-button" (click)="guardarEstudiante()">
+
+        Guardar estudiante
+
+      </ion-button>
+
+    </div>
+
+  </div>
+
+</ion-content>

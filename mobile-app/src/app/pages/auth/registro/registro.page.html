@@ -10,41 +10,53 @@
       </p>
     </div>
 
-    <div class="form-section">
+    <form (ngSubmit)="onSubmit()" class="form-section">
 
       <ion-item>
         <ion-input
-          label="Nombre"
+          label="Nombre *"
           labelPlacement="floating"
           type="text"
-          placeholder="Ingresa tu nombre">
+          name="nombre"
+          [(ngModel)]="nombre"
+          placeholder="Ingresa tu nombre"
+          required>
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-input
-          label="Apellido"
+          label="Apellido *"
           labelPlacement="floating"
           type="text"
-          placeholder="Ingresa tu apellido">
+          name="apellido"
+          [(ngModel)]="apellido"
+          placeholder="Ingresa tu apellido"
+          required>
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-input
-          label="RUT"
+          label="RUT *"
           labelPlacement="floating"
           type="text"
-          placeholder="12.345.678-9">
+          name="rut"
+          [(ngModel)]="rut"
+          placeholder="12.345.678-9"
+          required>
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-input
-          label="Correo electrónico"
+          label="Correo electrónico *"
           labelPlacement="floating"
           type="email"
-          placeholder="correo@ejemplo.com">
+          name="email"
+          [(ngModel)]="email"
+          placeholder="correo@ejemplo.com"
+          required>
         </ion-input>
       </ion-item>
 
@@ -53,30 +65,48 @@
           label="Teléfono"
           labelPlacement="floating"
           type="tel"
+          name="telefono"
+          [(ngModel)]="telefono"
           placeholder="+56 9 1234 5678">
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-input
-          label="Contraseña"
+          label="Contraseña *"
           labelPlacement="floating"
           type="password"
-          placeholder="Ingresa una contraseña">
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Ingresa una contraseña"
+          required>
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-input
-          label="Confirmar contraseña"
+          label="Confirmar contraseña *"
           labelPlacement="floating"
           type="password"
-          placeholder="Repite tu contraseña">
+          name="confirmarPassword"
+          [(ngModel)]="confirmarPassword"
+          placeholder="Repite tu contraseña"
+          required>
         </ion-input>
       </ion-item>
 
-      <ion-button expand="block">
-        Crear cuenta
+      @if (errorMensaje) {
+        <div style="color: var(--ion-color-danger, red); margin-top: 10px; font-size: 0.9rem; text-align: center;">
+          {{ errorMensaje }}
+        </div>
+      }
+
+      <ion-button expand="block" type="submit" [disabled]="cargando" style="margin-top: 20px;">
+        @if (cargando) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          Crear cuenta
+        }
       </ion-button>
 
       <div class="login-section">
@@ -91,7 +121,7 @@
 
       </div>
 
-    </div>
+    </form>
 
   </div>
 

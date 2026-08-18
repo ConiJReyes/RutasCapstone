@@ -98,4 +98,8 @@ export const routes: Routes = [
       import('./pages/conductor/emergencia/emergencia.page')
         .then((m) => m.EmergenciaPage),
   },
+  {
+    path: 'agregar-hijo',
+    loadComponent: () => import('./pages/apoderado/agregar-hijo/agregar-hijo.page').then( m => m.AgregarHijoPage)
+  },
 ];

@@ -7,8 +7,12 @@ import {
   IonContent,
   IonInput,
   IonItem,
-  IonButton
+  IonButton,
+  IonSpinner,
+  ToastController
 } from '@ionic/angular/standalone';
+
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -22,22 +26,81 @@ import {
     IonContent,
     IonInput,
     IonItem,
-    IonButton
+    IonButton,
+    IonSpinner
   ]
 })
 export class LoginPage implements OnInit {
 
-  rol: string = '';
+  rol: string = 'apoderado';
+  email: string = '';
+  password: string = '';
+
+  cargando: boolean = false;
+  errorMensaje: string = '';
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private toastController: ToastController
   ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.rol = params['rol'];
+      if (params['rol']) {
+        this.rol = params['rol'];
+      }
     });
+  }
+
+  async onSubmit() {
+    this.errorMensaje = '';
+
+    if (!this.email.trim() || !this.password) {
+      this.errorMensaje = 'Por favor ingresa tu correo y contraseña.';
+      await this.mostrarToast(this.errorMensaje, 'warning');
+      return;
+    }
+
+    this.cargando = true;
+
+    this.authService.login(this.email, this.password).subscribe({
+      next: async (res) => {
+        this.cargando = false;
+        await this.mostrarToast(`¡Bienvenido/a ${res.usuario.first_name}!`, 'success');
+        if (res.usuario.rol === 'apoderado') {
+          this.router.navigate(['/apoderado/inicio']);
+        } else if (res.usuario.rol === 'conductor') {
+          this.router.navigate(['/conductor/inicio']);
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
+      error: async (err) => {
+        this.cargando = false;
+        let mensaje = 'Correo electrónico o contraseña incorrectos.';
+        if (err.error && err.error.errors) {
+          const keys = Object.keys(err.error.errors);
+          if (keys.length > 0) {
+            const primerError = err.error.errors[keys[0]];
+            mensaje = Array.isArray(primerError) ? primerError[0] : primerError;
+          }
+        }
+        this.errorMensaje = mensaje;
+        await this.mostrarToast(mensaje, 'danger');
+      }
+    });
+  }
+
+  private async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: color,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 
 }

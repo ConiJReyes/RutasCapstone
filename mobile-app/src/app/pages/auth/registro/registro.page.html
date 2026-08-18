@@ -1,0 +1,98 @@
+<ion-content [fullscreen]="true">
+
+  <div class="register-container">
+
+    <div class="header-section">
+      <h1>Crear cuenta</h1>
+
+      <p>
+        Regístrate como apoderado para utilizar Rutas Seguras.
+      </p>
+    </div>
+
+    <div class="form-section">
+
+      <ion-item>
+        <ion-input
+          label="Nombre"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Ingresa tu nombre">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Apellido"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Ingresa tu apellido">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="RUT"
+          labelPlacement="floating"
+          type="text"
+          placeholder="12.345.678-9">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Correo electrónico"
+          labelPlacement="floating"
+          type="email"
+          placeholder="correo@ejemplo.com">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Teléfono"
+          labelPlacement="floating"
+          type="tel"
+          placeholder="+56 9 1234 5678">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Contraseña"
+          labelPlacement="floating"
+          type="password"
+          placeholder="Ingresa una contraseña">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Confirmar contraseña"
+          labelPlacement="floating"
+          type="password"
+          placeholder="Repite tu contraseña">
+        </ion-input>
+      </ion-item>
+
+      <ion-button expand="block">
+        Crear cuenta
+      </ion-button>
+
+      <div class="login-section">
+
+        <p>¿Ya tienes una cuenta?</p>
+
+        <ion-button
+          fill="clear"
+          routerLink="/login">
+          Iniciar sesión
+        </ion-button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

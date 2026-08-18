@@ -1,0 +1,51 @@
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+
+    <div class="logo-section">
+      <h1>Rutas Seguras</h1>
+      <p>Transporte escolar seguro</p>
+    </div>
+
+    <div class="form-section">
+
+      <h2>
+        Iniciar sesión como
+        {{ rol === 'conductor' ? 'Conductor' : 'Apoderado' }}
+      </h2>
+
+      <ion-item>
+        <ion-input label="Correo electrónico" labelPlacement="floating" type="email" placeholder="correo@ejemplo.com">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Contraseña" labelPlacement="floating" type="password" placeholder="Ingresa tu contraseña">
+        </ion-input>
+      </ion-item>
+
+      <div class="forgot-password">
+        <a [routerLink]="['/recuperar-password']" [queryParams]="{ rol: rol }">
+
+          ¿Olvidaste tu contraseña?
+
+        </a>
+      </div>
+
+      <ion-button expand="block">
+        Iniciar sesión
+      </ion-button>
+
+      @if (rol === 'apoderado') {
+      <div class="register-section">
+        <p>¿No tienes una cuenta?</p>
+
+        <ion-button fill="clear" routerLink="/registro">
+          Crear cuenta
+        </ion-button>
+      </div>
+      }
+
+    </div>
+
+  </div>
+</ion-content>

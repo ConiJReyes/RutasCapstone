@@ -1,0 +1,93 @@
+<ion-content [fullscreen]="true">
+
+  <div class="page-container">
+
+    <div class="header-section">
+
+      <div>
+        <p>Mi cuenta</p>
+        <h1>Mis hijos</h1>
+      </div>
+
+      <ion-button
+        fill="clear"
+        routerLink="/apoderado/inicio">
+        Volver
+      </ion-button>
+
+    </div>
+
+
+    <!-- Lista de hijos -->
+
+    <div class="children-section">
+
+      <h2>Estudiantes asociados</h2>
+
+      <!-- Ejemplo visual -->
+
+      <ion-card>
+
+        <ion-card-content>
+
+          <div class="child-card">
+
+            <div class="child-avatar">
+              👧
+            </div>
+
+            <div class="child-info">
+
+              <h3>Estudiante</h3>
+
+              <p>
+                Información del estudiante
+              </p>
+
+              <span class="status">
+                Servicio contratado
+              </span>
+
+            </div>
+
+          </div>
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            routerLink="/apoderado/detalle-hijo">
+
+            Ver información
+
+          </ion-button>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    </div>
+
+
+    <!-- Agregar hijo -->
+
+    <div class="add-section">
+
+      <h2>¿Quieres agregar otro hijo?</h2>
+
+      <p>
+        Puedes registrar a otro estudiante asociado
+        a tu cuenta.
+      </p>
+
+      <ion-button
+        expand="block">
+
+        + Agregar hijo
+
+      </ion-button>
+
+    </div>
+
+  </div>
+
+</ion-content>

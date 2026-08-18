@@ -1,20 +1,40 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="home-container">
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+    <div class="logo-section">
+      <h1>Rutas Seguras</h1>
+      <p>Transporte escolar seguro y confiable</p>
+    </div>
+
+    <div class="welcome-section">
+      <h2>¡Bienvenido!</h2>
+      <p>Selecciona cómo deseas ingresar</p>
+    </div>
+
+    <div class="options-section">
+
+      <ion-button
+        expand="block"
+        class="role-button"
+        routerLink="/login"
+        [queryParams]="{ rol: 'apoderado' }">
+
+        Soy Apoderado
+
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="role-button"
+        routerLink="/login"
+        [queryParams]="{ rol: 'conductor' }">
+
+        Soy Conductor
+
+      </ion-button>
+
+    </div>
+
   </div>
 </ion-content>

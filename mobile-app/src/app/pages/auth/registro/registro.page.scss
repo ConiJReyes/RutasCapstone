@@ -1,0 +1,46 @@
+.register-container {
+  min-height: 100%;
+  padding: 32px 24px;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 32px;
+
+  h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.form-section {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+ion-item {
+  margin-bottom: 16px;
+  --border-radius: 12px;
+}
+
+ion-button {
+  height: 48px;
+  --border-radius: 12px;
+}
+
+.login-section {
+  text-align: center;
+  margin-top: 20px;
+
+  p {
+    margin-bottom: 4px;
+  }
+}

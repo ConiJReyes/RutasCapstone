@@ -1,0 +1,122 @@
+<ion-content [fullscreen]="true">
+
+  <div class="page-container">
+
+    <!-- Encabezado -->
+
+    <div class="welcome-section">
+
+      <div>
+        <p class="welcome-text">Bienvenido/a</p>
+        <h1>Rutas Seguras</h1>
+      </div>
+
+      <div class="profile-button">
+        <span>👤</span>
+      </div>
+
+    </div>
+
+
+    <!-- Resumen del transporte -->
+
+    <div class="section-header">
+      <h2>Mis hijos</h2>
+    </div>
+
+
+    <!-- Tarjeta de hijo -->
+
+    <div class="child-card">
+
+      <div class="child-info">
+
+        <div class="child-avatar">
+          👧
+        </div>
+
+        <div>
+          <h3>Mis hijos</h3>
+          <p>Información de transporte</p>
+        </div>
+
+      </div>
+
+      <div class="child-status">
+
+        <span class="status-dot"></span>
+
+        <span>Servicio activo</span>
+
+      </div>
+
+      <ion-button
+        expand="block"
+        routerLink="/apoderado/mis-hijos">
+
+        Ver mis hijos
+
+      </ion-button>
+
+    </div>
+
+
+    <!-- Seguimiento -->
+
+    <div class="section-header">
+      <h2>Seguimiento</h2>
+    </div>
+
+    <div class="tracking-card">
+
+      <div class="tracking-icon">
+        🚌
+      </div>
+
+      <div class="tracking-info">
+
+        <h3>Seguimiento de ruta</h3>
+
+        <p>
+          Consulta dónde se encuentra el transporte
+          de tus hijos.
+        </p>
+
+      </div>
+
+      <ion-button
+        fill="outline"
+        routerLink="/apoderado/seguimiento">
+
+        Ver ruta
+
+      </ion-button>
+
+    </div>
+
+
+    <!-- Acciones rápidas -->
+
+    <div class="section-header">
+      <h2>Accesos rápidos</h2>
+    </div>
+
+    <div class="quick-actions">
+
+      <ion-button fill="outline">
+        💳 Pagos
+      </ion-button>
+
+      <ion-button fill="outline">
+        📄 Contratos
+      </ion-button>
+
+      <ion-button fill="outline">
+        🔔 Notificaciones
+      </ion-button>
+
+    </div>
+
+  </div>
+
+</ion-content>

@@ -1,3 +1,81 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+
+  @if (estaAutenticado) {
+    <ion-menu contentId="main-content" menuId="main-menu" type="overlay">
+
+      <ion-content>
+
+        <div class="sidebar-container">
+
+          <!-- Cabecera del Sidebar -->
+          <div class="sidebar-header">
+
+            <div class="user-avatar">
+              <span>👤</span>
+            </div>
+
+            <div class="user-info">
+              <span class="user-role">{{ usuario?.rol === 'conductor' ? 'Conductor' : 'Apoderado' }}</span>
+
+              <h3>{{ usuario?.first_name || 'Usuario' }} {{ usuario?.last_name || '' }}</h3>
+
+              <p>{{ usuario?.email || '' }}</p>
+            </div>
+
+          </div>
+
+
+          <!-- Menú de Navegación -->
+          <div class="menu-items">
+
+            <ion-menu-toggle autoHide="false">
+              <a [routerLink]="['/apoderado/inicio']" class="menu-item" routerLinkActive="active">
+                <span class="item-icon">🏠</span>
+                <span class="item-text">Inicio</span>
+              </a>
+            </ion-menu-toggle>
+
+            <ion-menu-toggle autoHide="false">
+              <a [routerLink]="['/apoderado/mis-hijos']" class="menu-item" routerLinkActive="active">
+                <span class="item-icon">👧</span>
+                <span class="item-text">Mis Hijos</span>
+              </a>
+            </ion-menu-toggle>
+
+            <ion-menu-toggle autoHide="false">
+              <a [routerLink]="['/agregar-hijo']" class="menu-item" routerLinkActive="active">
+                <span class="item-icon">➕</span>
+                <span class="item-text">Agregar Hijo</span>
+              </a>
+            </ion-menu-toggle>
+
+            <ion-menu-toggle autoHide="false">
+              <a [routerLink]="['/apoderado/seguimiento']" class="menu-item" routerLinkActive="active">
+                <span class="item-icon">🚌</span>
+                <span class="item-text">Seguimiento</span>
+              </a>
+            </ion-menu-toggle>
+
+          </div>
+
+
+          <!-- Pie del Sidebar (Cerrar Sesión) -->
+          <div class="sidebar-footer">
+
+            <button class="logout-btn" (click)="cerrarSesion()">
+              <span class="item-icon">🚪</span>
+              <span class="item-text">Cerrar sesión</span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </ion-content>
+
+    </ion-menu>
+  }
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+
 </ion-app>

@@ -8,8 +8,13 @@ import {
   IonInput,
   IonItem,
   IonButton,
-  IonTextarea
+  IonTextarea,
+  IonSpinner,
+  ToastController,
+  IonMenuToggle
 } from '@ionic/angular/standalone';
+
+import { EstudianteService, Estudiante } from '../../../services/estudiante.service';
 
 @Component({
   selector: 'app-agregar-hijo',
@@ -24,7 +29,9 @@ import {
     IonInput,
     IonItem,
     IonButton,
-    IonTextarea
+    IonTextarea,
+    IonSpinner,
+    IonMenuToggle
   ]
 })
 export class AgregarHijoPage {
@@ -40,28 +47,82 @@ export class AgregarHijoPage {
   personaAutorizada = '';
   rutPersonaAutorizada = '';
 
+  cargando = false;
+  errorMensaje = '';
+
   constructor(
-    private router: Router
+    private router: Router,
+    private estudianteService: EstudianteService,
+    private toastController: ToastController
   ) {}
 
-  guardarEstudiante() {
+  async guardarEstudiante() {
+    this.errorMensaje = '';
 
     if (
-      !this.nombre ||
-      !this.apellido ||
-      !this.rut ||
+      !this.nombre.trim() ||
+      !this.apellido.trim() ||
+      !this.rut.trim() ||
       !this.fechaNacimiento ||
-      !this.colegio ||
-      !this.curso ||
-      !this.direccionPrincipal
+      !this.colegio.trim() ||
+      !this.curso.trim() ||
+      !this.direccionPrincipal.trim()
     ) {
-      alert('Completa todos los campos obligatorios.');
+      this.errorMensaje = 'Completa todos los campos obligatorios.';
+      await this.mostrarToast(this.errorMensaje, 'warning');
       return;
     }
 
-    alert('Estudiante registrado correctamente.');
+    this.cargando = true;
 
-    this.router.navigate(['/apoderado/mis-hijos']);
+    const estudianteData: Estudiante = {
+      nombre: this.nombre.trim(),
+      apellido: this.apellido.trim(),
+      rut: this.rut.trim(),
+      fecha_nacimiento: this.fechaNacimiento,
+      colegio: this.colegio.trim(),
+      curso: this.curso.trim(),
+      direccion_principal: this.direccionPrincipal.trim(),
+      direccion_alternativa: this.direccionAlternativa.trim() || undefined,
+      persona_autorizada: this.personaAutorizada.trim() || undefined,
+      rut_persona_autorizada: this.rutPersonaAutorizada.trim() || undefined
+    };
+
+    this.estudianteService.crearEstudiante(estudianteData).subscribe({
+      next: async (res) => {
+        this.cargando = false;
+        await this.mostrarToast(res.message || 'Estudiante registrado correctamente.', 'success');
+        this.router.navigate(['/apoderado/mis-hijos']);
+      },
+      error: async (err) => {
+        this.cargando = false;
+        let mensaje = 'Error al registrar el estudiante.';
+        if (err.error) {
+          if (err.error.message) {
+            mensaje = err.error.message;
+          }
+          if (err.error.errors) {
+            const keys = Object.keys(err.error.errors);
+            if (keys.length > 0) {
+              const primerError = err.error.errors[keys[0]];
+              mensaje = Array.isArray(primerError) ? primerError[0] : primerError;
+            }
+          }
+        }
+        this.errorMensaje = mensaje;
+        await this.mostrarToast(mensaje, 'danger');
+      }
+    });
+  }
+
+  private async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: color,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 
 }

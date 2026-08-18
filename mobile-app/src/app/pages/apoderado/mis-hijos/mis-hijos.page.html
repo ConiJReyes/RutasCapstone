@@ -9,9 +9,17 @@
         <h1>Mis hijos</h1>
       </div>
 
-      <ion-button fill="clear" routerLink="/apoderado/inicio">
-        Volver
-      </ion-button>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <ion-menu-toggle menu="main-menu" style="cursor: pointer;">
+          <ion-button fill="clear">
+            ☰ Menú
+          </ion-button>
+        </ion-menu-toggle>
+
+        <ion-button fill="clear" routerLink="/apoderado/inicio">
+          Volver
+        </ion-button>
+      </div>
 
     </div>
 
@@ -22,43 +30,56 @@
 
       <h2>Estudiantes asociados</h2>
 
-      <!-- Ejemplo visual -->
+      @if (cargando) {
+        <div style="text-align: center; margin: 20px 0;">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Cargando estudiantes...</p>
+        </div>
+      } @else if (errorMensaje) {
+        <p style="color: var(--ion-color-danger, red); text-align: center;">{{ errorMensaje }}</p>
+      } @else if (estudiantes.length === 0) {
+        <div style="text-align: center; padding: 20px; color: #666;">
+          <p>Aún no tienes estudiantes registrados.</p>
+        </div>
+      } @else {
+        @for (estudiante of estudiantes; track estudiante.id) {
+          <ion-card>
 
-      <ion-card>
+            <ion-card-content>
 
-        <ion-card-content>
+              <div class="child-card">
 
-          <div class="child-card">
+                <div class="child-avatar">
+                  🎓
+                </div>
 
-            <div class="child-avatar">
-              👧
-            </div>
+                <div class="child-info">
 
-            <div class="child-info">
+                  <h3>{{ estudiante.nombre }} {{ estudiante.apellido }}</h3>
 
-              <h3>Estudiante</h3>
+                  <p>
+                    {{ estudiante.colegio }} - {{ estudiante.curso }}
+                  </p>
 
-              <p>
-                Información del estudiante
-              </p>
+                  <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">
+                    RUT: {{ estudiante.rut }}
+                  </p>
 
-              <span class="status">
-                Servicio contratado
-              </span>
+                </div>
 
-            </div>
+              </div>
 
-          </div>
+              <ion-button expand="block" fill="outline" [routerLink]="['/apoderado/detalle-hijo']" [queryParams]="{ id: estudiante.id }">
 
-          <ion-button expand="block" fill="outline" routerLink="/apoderado/detalle-hijo">
+                Ver información
 
-            Ver información
+              </ion-button>
 
-          </ion-button>
+            </ion-card-content>
 
-        </ion-card-content>
-
-      </ion-card>
+          </ion-card>
+        }
+      }
 
     </div>
 

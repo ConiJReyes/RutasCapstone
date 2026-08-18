@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Usuario, PerfilApoderado
+from .models import Usuario, PerfilApoderado, Estudiante
 
 
 class RegistroApoderadoSerializer(serializers.Serializer):
@@ -98,3 +98,30 @@ class UsuarioResponseSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'perfil_apoderado'):
             return obj.perfil_apoderado.telefono
         return None
+
+
+class EstudianteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Estudiante
+        fields = [
+            'id',
+            'nombre',
+            'apellido',
+            'rut',
+            'fecha_nacimiento',
+            'colegio',
+            'curso',
+            'direccion_principal',
+            'direccion_alternativa',
+            'persona_autorizada',
+            'rut_persona_autorizada',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_rut(self, value):
+        cleaned_rut = value.strip()
+        if Estudiante.objects.filter(rut=cleaned_rut).exists():
+            raise serializers.ValidationError("Este RUT de estudiante ya está registrado.")
+        return cleaned_rut

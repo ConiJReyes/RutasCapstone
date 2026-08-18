@@ -1,68 +1,361 @@
-.login-container {
+:host {
+  display: block;
+
+  --verde-rutas: #0f766e;
+  --verde-rutas-oscuro: #0b5f59;
+  --verde-suave: #e8f5f3;
+  --texto-principal: #173330;
+  --texto-secundario: #6b7c79;
+  --borde: #dce7e5;
+  --fondo: #f7faf9;
+}
+
+
+.login-page {
   min-height: 100%;
+  background: var(--fondo);
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 32px 24px;
+
+  padding: 0 22px 24px;
 }
 
-.logo-section {
+
+/* =========================================
+   HERO
+   ========================================= */
+
+.hero-section {
+  background: var(--verde-rutas);
+
+  margin: 0 -22px;
+  padding: 52px 24px 72px;
+
   text-align: center;
-  margin-bottom: 40px;
 
-  h1 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
+  color: white;
 
-  p {
-    margin: 0;
-    font-size: 15px;
-  }
+  border-radius: 0 0 38px 38px;
+
+  box-shadow: 0 8px 25px rgba(15, 118, 110, 0.16);
 }
 
-.form-section {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
 
-  h2 {
+.logo-circle {
+  width: 82px;
+  height: 82px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: white;
+
+  border-radius: 50%;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+
+
+  span {
+    color: var(--verde-rutas);
+
     font-size: 24px;
-    margin-bottom: 24px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
   }
 }
 
-ion-item {
-  margin-bottom: 16px;
-  --border-radius: 12px;
+
+.hero-section h1 {
+  margin: 0;
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
 }
+
+
+.hero-section p {
+  margin: 8px 0 0;
+
+  font-size: 15px;
+
+  opacity: 0.9;
+}
+
+
+/* =========================================
+   TARJETA DEL LOGIN
+   ========================================= */
+
+.login-card {
+  position: relative;
+
+  width: 100%;
+  max-width: 440px;
+
+  margin: -38px auto 0;
+
+  padding: 28px 22px 26px;
+
+  background: white;
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 12px 35px rgba(23, 51, 48, 0.10);
+
+  z-index: 2;
+}
+
+
+.form-header {
+  margin-bottom: 26px;
+}
+
+
+.welcome-label {
+  display: inline-block;
+
+  margin-bottom: 6px;
+
+  color: var(--verde-rutas);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+
+.form-header h2 {
+  margin: 0;
+
+  color: var(--texto-principal);
+
+  font-size: 27px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+
+.form-header p {
+  margin: 8px 0 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+.form-header strong {
+  color: var(--texto-principal);
+}
+
+
+/* =========================================
+   CAMPOS
+   ========================================= */
+
+.field {
+  margin-bottom: 14px;
+}
+
+
+.input-item {
+  --background: #f7faf9;
+  --border-radius: 16px;
+
+  --padding-start: 16px;
+  --padding-end: 12px;
+
+  --inner-padding-end: 0;
+
+  border: 1px solid var(--borde);
+
+  border-radius: 16px;
+
+  min-height: 62px;
+
+  transition: 0.2s ease;
+}
+
+
+.input-item:focus-within {
+  border-color: var(--verde-rutas);
+
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.10);
+}
+
+
+ion-input {
+  --color: var(--texto-principal);
+  --placeholder-color: #8b9a97;
+
+  --highlight-color-focused: var(--verde-rutas);
+
+  font-size: 15px;
+}
+
+
+/* =========================================
+   RECUPERAR CONTRASEÑA
+   ========================================= */
 
 .forgot-password {
-  text-align: right;
-  margin: 4px 0 24px;
+  display: flex;
+  justify-content: flex-end;
 
-  a {
-    font-size: 14px;
-    text-decoration: none;
-  }
+  margin: 2px 4px 22px;
 }
 
-ion-button {
-  margin-top: 8px;
-  --border-radius: 12px;
-  height: 48px;
+
+.forgot-password a {
+  color: var(--verde-rutas);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-decoration: none;
 }
+
+
+/* =========================================
+   ERROR
+   ========================================= */
+
+.error-message {
+  margin: 0 0 16px;
+
+  padding: 12px 14px;
+
+  background: #fff1f1;
+
+  border: 1px solid #ffd6d6;
+
+  border-radius: 12px;
+
+  color: #c0392b;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   BOTÓN LOGIN
+   ========================================= */
+
+.login-button {
+  --background: var(--verde-rutas);
+  --background-hover: var(--verde-rutas-oscuro);
+  --background-activated: var(--verde-rutas-oscuro);
+
+  --border-radius: 18px;
+
+  --box-shadow: 0 7px 18px rgba(15, 118, 110, 0.22);
+
+  height: 54px;
+
+  margin: 4px 0 0;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+.login-button ion-spinner {
+  width: 22px;
+  height: 22px;
+}
+
+
+/* =========================================
+   REGISTRO
+   ========================================= */
 
 .register-section {
-  text-align: center;
   margin-top: 24px;
 
-  p {
-    margin-bottom: 4px;
+  padding-top: 22px;
+
+  border-top: 1px solid #edf1f0;
+
+  text-align: center;
+}
+
+
+.register-section p {
+  margin: 0 0 2px;
+
+  color: var(--texto-secundario);
+
+  font-size: 13px;
+}
+
+
+.register-button {
+  --color: var(--verde-rutas);
+
+  height: 38px;
+
+  margin: 0;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.footer-text {
+  margin: 22px auto 0;
+
+  color: #8a9895;
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (min-width: 600px) {
+
+  .login-page {
+    padding-left: 32px;
+    padding-right: 32px;
   }
 
-  ion-button {
-    margin-top: 0;
+
+  .hero-section {
+    margin-left: -32px;
+    margin-right: -32px;
   }
+
+
+  .login-card {
+    padding: 32px 30px;
+  }
+
 }

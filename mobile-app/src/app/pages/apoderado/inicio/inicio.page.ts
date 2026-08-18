@@ -9,7 +9,8 @@ import {
   IonToolbar,
   IonTitle,
   IonButton,
-  IonIcon
+  IonIcon,
+  IonMenuToggle
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -26,7 +27,8 @@ import {
     IonToolbar,
     IonTitle,
     IonButton,
-    IonIcon
+    IonIcon,
+    IonMenuToggle
   ]
 })
 export class InicioPage {

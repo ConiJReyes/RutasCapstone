@@ -1,0 +1,66 @@
+<!-- Vista Principal del Dashboard -->
+<div class="dashboard-page fade-in">
+  <!-- Título y subtítulo del panel -->
+  <div class="dashboard-header">
+    <h2>Panel Principal</h2>
+    <p>Resumen general del sistema de transporte escolar</p>
+  </div>
+
+  <!-- Rejilla de tarjetas de resumen (Métricas) -->
+  <div class="stats-grid">
+    @for (stat of stats; track stat.title) {
+      <div class="stat-card glass-panel">
+        <!-- Icono representativo con color de acento -->
+        <div class="stat-icon-box" [class]="'icon-' + stat.colorClass">
+          @switch (stat.icon) {
+            @case ('graduation-cap') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+            }
+            @case ('bus') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="15" rx="3"></rect>
+                <path d="M7 19v2"></path>
+                <path d="M17 19v2"></path>
+                <path d="M3 11h18"></path>
+                <circle cx="7.5" cy="15.5" r="1.5"></circle>
+                <circle cx="16.5" cy="15.5" r="1.5"></circle>
+              </svg>
+            }
+            @case ('map-pin') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="10" r="3"></circle>
+                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+              </svg>
+            }
+            @case ('steering-wheel') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <path d="M12 2v8"></path>
+                <path d="m4.93 18.07 5.66-5.66"></path>
+                <path d="m19.07 18.07-5.66-5.66"></path>
+              </svg>
+            }
+            @case ('users') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            }
+          }
+        </div>
+
+        <!-- Información de la métrica (Título y Conteo) -->
+        <div class="stat-info">
+          <span class="stat-title">{{ stat.title }}</span>
+          <span class="stat-count">{{ stat.count }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,40 +1,110 @@
 <ion-content [fullscreen]="true">
-  <div class="home-container">
 
-    <div class="logo-section">
+  <div class="home-page">
+
+    <!-- FLECHA REVERSA -->
+<button class="back-button" type="button" (click)="volver()">
+  <ion-icon name="arrow-back-outline"></ion-icon>
+</button>
+
+
+    <!-- HERO -->
+    <section class="hero-section">
+
+      <img
+        src="assets/images/bus-escolar.png"
+        alt="Bus escolar Rutas Seguras"
+        class="bus-image"
+      />
+
       <h1>Rutas Seguras</h1>
-      <p>Transporte escolar seguro y confiable</p>
-    </div>
 
-    <div class="welcome-section">
-      <h2>¡Bienvenido!</h2>
-      <p>Selecciona cómo deseas ingresar</p>
-    </div>
+      <p>
+        TU RUTA ESCOLAR, MÁS SEGURA
+      </p>
 
-    <div class="options-section">
+    </section>
 
+
+    <!-- OPCIONES -->
+    <section class="options-card">
+
+      <div class="welcome-section">
+
+        <span>BIENVENIDO/A</span>
+
+        <h2>¿Cómo deseas ingresar?</h2>
+
+        <p>
+          Selecciona tu tipo de usuario
+        </p>
+
+      </div>
+
+
+      <!-- APODERADO -->
       <ion-button
         expand="block"
         class="role-button"
         routerLink="/login"
         [queryParams]="{ rol: 'apoderado' }">
 
-        Soy Apoderado
+        <div class="button-content">
+
+          <div class="button-icon">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+
+          <div class="button-text">
+            <strong>Soy Apoderado</strong>
+            <span>Gestiona y acompaña a tus hijos</span>
+          </div>
+
+          <ion-icon
+            class="arrow-icon"
+            name="chevron-forward-outline">
+          </ion-icon>
+
+        </div>
 
       </ion-button>
 
+
+      <!-- CONDUCTOR -->
       <ion-button
         expand="block"
-        fill="outline"
-        class="role-button"
+        class="role-button driver-button"
         routerLink="/login"
         [queryParams]="{ rol: 'conductor' }">
 
-        Soy Conductor
+        <div class="button-content">
+
+          <div class="button-icon">
+            <ion-icon name="bus-outline"></ion-icon>
+          </div>
+
+          <div class="button-text">
+            <strong>Soy Conductor</strong>
+            <span>Gestiona tus rutas y recorridos</span>
+          </div>
+
+          <ion-icon
+            class="arrow-icon"
+            name="chevron-forward-outline">
+          </ion-icon>
+
+        </div>
 
       </ion-button>
 
-    </div>
+
+    </section>
+
+
+    <p class="footer-text">
+      Viaja seguro. Viaja acompañado.
+    </p>
 
   </div>
+
 </ion-content>

@@ -1,128 +1,591 @@
-.page-container {
-  padding: 28px 20px 40px;
-  max-width: 700px;
-  margin: 0 auto;
+:host {
+
+  --verde-rutas: #3f7d73;
+  --verde-rutas-oscuro: #2f675f;
+
+  --verde-suave: #e8f3f1;
+
+  --amarillo-escolar: #f4b52b;
+  --amarillo-suave: #fff4d6;
+
+  --fondo: #f7faf9;
+
+  --blanco: #ffffff;
+
+  --texto-principal: #244642;
+  --texto-secundario: #71827e;
+
+  --borde: #dce8e5;
 }
+
+
+/* =================================
+   PÁGINA
+================================= */
+
+.page-container {
+
+  min-height: 100%;
+
+  padding: 28px 20px 36px;
+
+  max-width: 700px;
+
+  margin: 0 auto;
+
+  background: var(--fondo);
+
+  box-sizing: border-box;
+}
+
+
+/* =================================
+   ENCABEZADO
+================================= */
 
 .welcome-section {
+
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 32px;
+
+  justify-content: space-between;
+
+  margin-bottom: 34px;
 }
+
+
+.welcome-info {
+  min-width: 0;
+}
+
 
 .welcome-text {
+
   margin: 0 0 4px;
-  font-size: 14px;
+
+  color: var(--verde-rutas);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.7px;
 }
+
 
 .welcome-section h1 {
+
   margin: 0;
+
+  color: var(--texto-principal);
+
   font-size: 28px;
-  font-weight: 700;
+
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
 }
+
+
+/* =================================
+   BOTÓN MENÚ
+================================= */
 
 .profile-button {
+
   width: 46px;
+
   height: 46px;
-  border-radius: 50%;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
-  font-size: 22px;
-  background: #f1f1f1;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 15px;
+
+  background: var(--verde-rutas);
+
+  color: white;
+
+  box-shadow:
+    0 7px 18px rgba(63, 125, 115, 0.22);
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
 }
+
+
+.profile-button span {
+
+  font-size: 21px;
+
+  line-height: 1;
+}
+
+
+.profile-button:active {
+
+  transform: scale(0.94);
+
+  background: var(--verde-rutas-oscuro);
+}
+
+
+/* =================================
+   ENCABEZADOS
+================================= */
 
 .section-header {
-  margin: 26px 0 12px;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  margin: 0 0 12px;
 }
 
+
+.section-label {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--verde-rutas);
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
+}
+
+
 .section-header h2 {
+
   margin: 0;
-  font-size: 20px;
+
+  color: var(--texto-principal);
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+
+.tracking-header {
+
+  margin-top: 28px;
+}
+
+
+.quick-header {
+
+  margin-top: 30px;
+}
+
+
+/* =================================
+   TARJETA HIJOS
+================================= */
+
+.child-card {
+
+  padding: 20px;
+
+  background: var(--blanco);
+
+  border: 1px solid var(--borde);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 8px 24px rgba(36, 70, 66, 0.07);
+}
+
+
+/* =================================
+   INFORMACIÓN HIJO
+================================= */
+
+.child-info {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-bottom: 17px;
+}
+
+
+.child-avatar {
+
+  width: 56px;
+
+  height: 56px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background: var(--amarillo-suave);
+
+  font-size: 28px;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 181, 43, 0.18);
+}
+
+
+.child-text {
+
+  min-width: 0;
+}
+
+
+.child-info h3 {
+
+  margin: 0 0 4px;
+
+  color: var(--texto-principal);
+
+  font-size: 17px;
+
+  font-weight: 750;
+}
+
+
+.child-info p {
+
+  margin: 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+
+/* =================================
+   ESTADO
+================================= */
+
+.child-status {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 16px;
+
+  padding: 9px 12px;
+
+  border-radius: 12px;
+
+  background: var(--verde-suave);
+
+  color: var(--verde-rutas);
+
+  font-size: 12px;
+
   font-weight: 600;
 }
 
-.child-card,
-.tracking-card {
-  padding: 18px;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.child-info {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-.child-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f1f1;
-  font-size: 25px;
-}
-
-.child-info h3,
-.tracking-info h3 {
-  margin: 0 0 4px;
-  font-size: 17px;
-}
-
-.child-info p,
-.tracking-info p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.child-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  font-size: 14px;
-}
 
 .status-dot {
-  width: 10px;
-  height: 10px;
+
+  width: 9px;
+
+  height: 9px;
+
+  flex-shrink: 0;
+
   border-radius: 50%;
-  background: #2ecc71;
+
+  background: #49a878;
+
+  box-shadow:
+    0 0 0 3px rgba(73, 168, 120, 0.12);
 }
+
+
+/* =================================
+   BOTÓN PRINCIPAL
+================================= */
+
+.primary-button {
+
+  --background: var(--verde-rutas);
+
+  --background-hover: var(--verde-rutas-oscuro);
+
+  --background-activated: var(--verde-rutas-oscuro);
+
+  --color: #ffffff;
+
+  --border-radius: 15px;
+
+  --box-shadow:
+    0 6px 16px rgba(63, 125, 115, 0.20);
+
+  height: 48px;
+
+  margin: 0;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+/* =================================
+   SEGUIMIENTO
+================================= */
 
 .tracking-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+
+  display: grid;
+
+  grid-template-columns: auto 1fr;
+
+  column-gap: 15px;
+
+  row-gap: 14px;
+
+  padding: 20px;
+
+  background: var(--blanco);
+
+  border: 1px solid var(--borde);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 8px 24px rgba(36, 70, 66, 0.07);
 }
+
 
 .tracking-icon {
-  font-size: 32px;
+
+  width: 54px;
+
+  height: 54px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background: var(--verde-suave);
+
+  font-size: 28px;
 }
 
+
+.tracking-info {
+
+  min-width: 0;
+}
+
+
+.tracking-info h3 {
+
+  margin: 2px 0 5px;
+
+  color: var(--texto-principal);
+
+  font-size: 17px;
+
+  font-weight: 750;
+}
+
+
 .tracking-info p {
+
+  margin: 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 13px;
+
   line-height: 1.5;
 }
 
+
+/* =================================
+   BOTÓN SECUNDARIO
+================================= */
+
+.secondary-button {
+
+  grid-column: 1 / -1;
+
+  --color: var(--verde-rutas);
+
+  --border-color: var(--verde-rutas);
+
+  --border-radius: 15px;
+
+  height: 46px;
+
+  margin: 0;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+/* =================================
+   ACCIONES RÁPIDAS
+================================= */
+
 .quick-actions {
+
   display: grid;
-  grid-template-columns: 1fr;
+
+  grid-template-columns: repeat(3, 1fr);
+
   gap: 10px;
 }
 
-ion-button {
-  --border-radius: 12px;
-  min-height: 46px;
+
+.quick-button {
+
+  --color: var(--texto-principal);
+
+  --border-color: var(--borde);
+
+  --background: var(--blanco);
+
+  --border-radius: 17px;
+
+  --box-shadow:
+    0 5px 15px rgba(36, 70, 66, 0.05);
+
+  min-height: 78px;
+
+  margin: 0;
+
+  font-size: 12px;
+
+  font-weight: 650;
+
+  text-transform: none;
 }
 
-@media (min-width: 600px) {
-  .quick-actions {
-    grid-template-columns: repeat(3, 1fr);
+
+.quick-icon {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  font-size: 21px;
+}
+
+
+/* =================================
+   FOOTER
+================================= */
+
+.footer-message {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 28px;
+
+  color: var(--texto-secundario);
+
+  text-align: center;
+}
+
+
+.footer-message span {
+
+  font-size: 15px;
+}
+
+
+.footer-message p {
+
+  margin: 0;
+
+  font-size: 11px;
+
+  letter-spacing: 0.2px;
+}
+
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 430px) {
+
+  .page-container {
+
+    padding-left: 17px;
+
+    padding-right: 17px;
   }
+
+  .quick-actions {
+
+    grid-template-columns: 1fr;
+  }
+
+  .quick-button {
+
+    min-height: 52px;
+
+    flex-direction: row;
+  }
+
+}
+
+
+@media (min-width: 600px) {
+
+  .page-container {
+
+    padding-left: 28px;
+
+    padding-right: 28px;
+  }
+
 }

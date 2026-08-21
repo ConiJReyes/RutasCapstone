@@ -2,50 +2,43 @@
 
   <div class="login-page">
 
-    <!-- Cabecera visual -->
+    <!-- Decoración superior -->
+    <button class="back-button" type="button" (click)="volver()">
+
+      <ion-icon name="arrow-back-outline"></ion-icon>
+
+    </button>
+
+
+    <!-- HERO -->
     <section class="hero-section">
 
-      <div class="logo-circle">
-        <span>RS</span>
-      </div>
+      <img src="assets/images/bus-escolar.png" alt="Bus escolar Rutas Seguras" class="bus-image" />
 
       <h1>Rutas Seguras</h1>
 
       <p>
-        Transporte escolar seguro
+        TU RUTA ESCOLAR, MÁS SEGURA
       </p>
 
     </section>
 
 
-    <!-- Formulario -->
+    <!-- TARJETA INFERIOR -->
     <section class="login-card">
-
-      <div class="form-header">
-        <span class="welcome-label">Bienvenido/a</span>
-
-        <h2>
-          Iniciar sesión
-        </h2>
-
-        <p>
-          Ingresa a tu cuenta como
-          <strong>
-            {{ rol === 'conductor' ? 'conductor' : 'apoderado' }}
-          </strong>
-        </p>
-      </div>
-
 
       <form (ngSubmit)="onSubmit()">
 
         <!-- Correo -->
-        <div class="field">
+        <div class="input-wrapper">
 
-          <ion-item lines="none" class="input-item">
+          <ion-item lines="none">
 
-            <ion-input label="Correo electrónico" labelPlacement="floating" type="email" name="email"
-              [(ngModel)]="email" placeholder="correo@ejemplo.com" required>
+            <ion-icon slot="start" name="person-outline">
+            </ion-icon>
+
+            <ion-input label="Correo o Teléfono" labelPlacement="floating" type="email" name="email" [(ngModel)]="email"
+              placeholder="Correo o Teléfono" required>
             </ion-input>
 
           </ion-item>
@@ -54,12 +47,15 @@
 
 
         <!-- Contraseña -->
-        <div class="field">
+        <div class="input-wrapper">
 
-          <ion-item lines="none" class="input-item">
+          <ion-item lines="none">
+
+            <ion-icon slot="start" name="lock-closed-outline">
+            </ion-icon>
 
             <ion-input label="Contraseña" labelPlacement="floating" type="password" name="password"
-              [(ngModel)]="password" placeholder="Ingresa tu contraseña" required>
+              [(ngModel)]="password" placeholder="Contraseña" required>
             </ion-input>
 
           </ion-item>
@@ -72,7 +68,8 @@
 
           <a [routerLink]="['/recuperar-password']" [queryParams]="{ rol: rol }">
 
-            ¿Olvidaste tu contraseña?
+            ¿Olvidaste la<br>
+            contraseña?
 
           </a>
 
@@ -83,15 +80,13 @@
         @if (errorMensaje) {
 
         <div class="error-message">
-
-          <span>{{ errorMensaje }}</span>
-
+          {{ errorMensaje }}
         </div>
 
         }
 
 
-        <!-- Botón -->
+        <!-- Iniciar sesión -->
         <ion-button expand="block" type="submit" class="login-button" [disabled]="cargando">
 
           @if (cargando) {
@@ -100,29 +95,27 @@
 
           } @else {
 
-          Iniciar sesión
+          Iniciar Sesión
 
           }
 
         </ion-button>
 
 
-        <!-- Registro -->
+        <!-- Separador -->
         @if (rol === 'apoderado' || !rol) {
 
-        <div class="register-section">
-
-          <p>
-            ¿Aún no tienes una cuenta?
-          </p>
-
-          <ion-button fill="clear" routerLink="/registro" class="register-button">
-
-            Crear cuenta
-
-          </ion-button>
-
+        <div class="separator">
+          o
         </div>
+
+
+        <!-- Crear cuenta -->
+        <ion-button expand="block" fill="clear" routerLink="/registro" class="register-button">
+
+          Crear Cuenta
+
+        </ion-button>
 
         }
 
@@ -131,10 +124,14 @@
     </section>
 
 
-    <!-- Pie -->
-    <p class="footer-text">
-      Viaja seguro. Viaja acompañado.
-    </p>
+    <!-- Identificador del rol -->
+    @if (rol === 'conductor') {
+
+    <div class="role-label">
+      Acceso exclusivo para conductores
+    </div>
+
+    }
 
   </div>
 

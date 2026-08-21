@@ -2,104 +2,210 @@
 
   <div class="page-container">
 
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
+
     <div class="header-section">
 
-      <div>
-        <p>Mi cuenta</p>
+      <div class="header-info">
+
+        <span class="section-label">
+          MI CUENTA
+        </span>
+
         <h1>Mis hijos</h1>
+
       </div>
 
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <ion-menu-toggle menu="main-menu" style="cursor: pointer;">
-          <ion-button fill="clear">
-            ☰ Menú
-          </ion-button>
+      <div class="header-actions">
+
+        <ion-menu-toggle menu="main-menu">
+
+          <button class="menu-button" type="button" title="Abrir menú">
+
+            <ion-icon name="menu-outline"></ion-icon>
+
+          </button>
+
         </ion-menu-toggle>
 
-        <ion-button fill="clear" routerLink="/apoderado/inicio">
-          Volver
-        </ion-button>
       </div>
 
     </div>
 
 
-    <!-- Lista de hijos -->
+    <!-- =========================
+         LISTA DE HIJOS
+    ========================== -->
 
     <div class="children-section">
 
-      <h2>Estudiantes asociados</h2>
+      <div class="section-header">
+
+        <span class="section-label">
+          ESTUDIANTES
+        </span>
+
+        <h2>
+          Estudiantes asociados
+        </h2>
+
+      </div>
+
 
       @if (cargando) {
-        <div style="text-align: center; margin: 20px 0;">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Cargando estudiantes...</p>
-        </div>
+
+      <div class="loading-state">
+
+        <ion-spinner name="crescent"></ion-spinner>
+
+        <p>
+          Cargando estudiantes...
+        </p>
+
+      </div>
+
       } @else if (errorMensaje) {
-        <p style="color: var(--ion-color-danger, red); text-align: center;">{{ errorMensaje }}</p>
+
+      <div class="error-state">
+
+        <ion-icon name="alert-circle-outline"></ion-icon>
+
+        <p>
+          {{ errorMensaje }}
+        </p>
+
+      </div>
+
       } @else if (estudiantes.length === 0) {
-        <div style="text-align: center; padding: 20px; color: #666;">
-          <p>Aún no tienes estudiantes registrados.</p>
+
+      <div class="empty-state">
+
+        <div class="empty-icon">
+          🎓
         </div>
+
+        <h3>
+          Aún no tienes estudiantes
+        </h3>
+
+        <p>
+          Registra a tu primer estudiante
+          para comenzar.
+        </p>
+
+      </div>
+
       } @else {
-        @for (estudiante of estudiantes; track estudiante.id) {
-          <ion-card>
 
-            <ion-card-content>
+      @for (estudiante of estudiantes; track estudiante.id) {
 
-              <div class="child-card">
+      <ion-card class="student-card">
 
-                <div class="child-avatar">
-                  🎓
-                </div>
+        <ion-card-content>
 
-                <div class="child-info">
+          <div class="child-card">
 
-                  <h3>{{ estudiante.nombre }} {{ estudiante.apellido }}</h3>
+            <div class="child-avatar">
+              🎓
+            </div>
 
-                  <p>
-                    {{ estudiante.colegio }} - {{ estudiante.curso }}
-                  </p>
+            <div class="child-info">
 
-                  <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">
-                    RUT: {{ estudiante.rut }}
-                  </p>
+              <h3>
+                {{ estudiante.nombre }}
+                {{ estudiante.apellido }}
+              </h3>
 
-                </div>
+              <p class="school">
+                {{ estudiante.colegio }}
+              </p>
 
-              </div>
+              <span class="course">
+                {{ estudiante.curso }}
+              </span>
 
-              <ion-button expand="block" fill="outline" [routerLink]="['/apoderado/detalle-hijo']" [queryParams]="{ id: estudiante.id }">
+            </div>
 
-                Ver información
+          </div>
 
-              </ion-button>
 
-            </ion-card-content>
+          <div class="student-rut">
 
-          </ion-card>
-        }
+            <span>RUT</span>
+
+            <strong>
+              {{ estudiante.rut }}
+            </strong>
+
+          </div>
+
+
+          <ion-button expand="block" fill="outline" class="details-button" [routerLink]="['/apoderado/detalle-hijo']"
+            [queryParams]="{ id: estudiante.id }">
+
+            Ver información
+
+            <ion-icon slot="end" name="chevron-forward-outline">
+            </ion-icon>
+
+          </ion-button>
+
+        </ion-card-content>
+
+      </ion-card>
+
+      }
+
       }
 
     </div>
 
 
-    <!-- Agregar hijo -->
+    <!-- =========================
+         AGREGAR HIJO
+    ========================== -->
 
     <div class="add-section">
 
-      <h2>¿Quieres agregar otro hijo?</h2>
+      <div class="add-icon">
+        +
+      </div>
 
-      <p>
-        Puedes registrar a otro estudiante asociado
-        a tu cuenta.
-      </p>
+      <div class="add-content">
 
-      <ion-button expand="block" routerLink="/agregar-hijo">
+        <h2>
+          ¿Quieres agregar otro hijo?
+        </h2>
 
-        + Agregar hijo
+        <p>
+          Puedes registrar a otro estudiante
+          asociado a tu cuenta.
+        </p>
+
+      </div>
+
+      <ion-button expand="block" class="add-button" routerLink="/agregar-hijo">
+
+        Agregar hijo
 
       </ion-button>
+
+    </div>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <div class="footer-message">
+
+      <span>🚌</span>
+
+      <p>
+        Tu ruta escolar, más segura.
+      </p>
 
     </div>
 

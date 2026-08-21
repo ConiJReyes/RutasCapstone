@@ -1,51 +1,619 @@
-.page-container {
-  padding: 28px 20px 40px;
-  max-width: 700px;
-  margin: 0 auto;
+:host {
+
+  --verde-rutas: #3f7d73;
+  --verde-rutas-oscuro: #2f675f;
+
+  --verde-suave: #e8f3f1;
+
+  --amarillo-escolar: #f4b52b;
+  --amarillo-suave: #fff4d6;
+
+  --fondo: #f7faf9;
+
+  --blanco: #ffffff;
+
+  --texto-principal: #244642;
+  --texto-secundario: #71827e;
+
+  --borde: #dce8e5;
 }
+
+
+/* =================================
+   PÁGINA
+================================= */
+
+.page-container {
+
+  min-height: 100%;
+
+  padding: 28px 20px 36px;
+
+  max-width: 700px;
+
+  margin: 0 auto;
+
+  background: var(--fondo);
+
+  box-sizing: border-box;
+}
+
+
+/* =================================
+   HEADER
+================================= */
 
 .header-section {
+
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 28px;
 
-  p {
-    margin: 0 0 4px;
-    font-size: 14px;
-  }
+  justify-content: space-between;
 
-  h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-  }
+  margin-bottom: 26px;
 }
 
-.description {
+
+.header-info {
+
+  min-width: 0;
+}
+
+
+.section-label {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--verde-rutas);
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
+}
+
+
+.header-section h1 {
+
+  margin: 0;
+
+  color: var(--texto-principal);
+
+  font-size: 28px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+
+/* =================================
+   MENÚ
+================================= */
+
+.menu-button {
+
+  width: 42px;
+
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: var(--verde-rutas);
+
+  color: white;
+
+  box-shadow:
+    0 6px 16px rgba(63, 125, 115, 0.20);
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.menu-button ion-icon {
+
+  font-size: 21px;
+}
+
+
+.menu-button:active {
+
+  transform: scale(0.94);
+
+  background: var(--verde-rutas-oscuro);
+}
+
+
+/* =================================
+   INTRO
+================================= */
+
+.intro-card {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-bottom: 30px;
+
+  padding: 18px;
+
+  border-radius: 20px;
+
+  background: var(--verde-suave);
+
+  border: 1px solid rgba(63, 125, 115, 0.10);
+}
+
+
+.intro-icon {
+
+  width: 52px;
+
+  height: 52px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background: var(--amarillo-suave);
+
+  font-size: 26px;
+}
+
+
+.intro-card h2 {
+
+  margin: 0 0 5px;
+
+  color: var(--texto-principal);
+
+  font-size: 16px;
+
+  font-weight: 750;
+}
+
+
+.intro-card p {
+
+  margin: 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 12px;
+
   line-height: 1.5;
+}
+
+
+/* =================================
+   SECCIONES
+================================= */
+
+.form-section {
+
+  margin-bottom: 30px;
+
+  padding: 20px;
+
+  background: var(--blanco);
+
+  border: 1px solid var(--borde);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 7px 20px rgba(36, 70, 66, 0.05);
+}
+
+
+/* =================================
+   TÍTULO SECCIÓN
+================================= */
+
+.section-title {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+
+.section-number {
+
+  width: 38px;
+
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: var(--verde-suave);
+
+  color: var(--verde-rutas);
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
+}
+
+
+.optional-number {
+
+  background: var(--amarillo-suave);
+
+  color: #b77a00;
+}
+
+
+.section-title .section-label {
+
+  margin-bottom: 3px;
+}
+
+
+.section-title h2 {
+
+  margin: 0;
+
+  color: var(--texto-principal);
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+
+.section-description {
+
+  margin: -5px 0 17px;
+
+  color: var(--texto-secundario);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+/* =================================
+   INPUTS
+================================= */
+
+.input-item {
+
+  --background: #f7faf9;
+
+  --border-radius: 15px;
+
+  --padding-start: 15px;
+
+  --padding-end: 12px;
+
+  --inner-padding-end: 0;
+
+  min-height: 60px;
+
+  margin-bottom: 13px;
+
+  border: 1px solid var(--borde);
+
+  border-radius: 15px;
+
+  transition: 0.2s ease;
+}
+
+
+.input-item:last-child {
+
+  margin-bottom: 0;
+}
+
+
+.input-item:focus-within {
+
+  border-color: var(--verde-rutas);
+
+  box-shadow:
+    0 0 0 3px rgba(63, 125, 115, 0.10);
+}
+
+
+ion-input,
+ion-textarea {
+
+  --color: var(--texto-principal);
+
+  --placeholder-color: #8b9a97;
+
+  --highlight-color-focused: var(--verde-rutas);
+
   font-size: 14px;
-  margin-bottom: 24px;
 }
 
-ion-item {
-  margin-bottom: 16px;
-  --border-radius: 12px;
+
+/* =================================
+   TEXTAREA
+================================= */
+
+.textarea-item {
+
+  min-height: 100px;
+
+  align-items: flex-start;
 }
 
-h2 {
-  font-size: 19px;
-  margin: 28px 0 10px;
+
+.textarea-item ion-textarea {
+
+  min-height: 80px;
 }
 
-.optional {
-  font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: 14px;
+
+/* =================================
+   ERROR
+================================= */
+
+.error-message {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin: -10px 0 18px;
+
+  padding: 12px 14px;
+
+  border-radius: 13px;
+
+  background: #fff1f0;
+
+  border: 1px solid #f3d5d2;
+
+  color: #b64b43;
+
+  font-size: 12px;
+
+  line-height: 1.4;
 }
+
+
+.error-message ion-icon {
+
+  flex-shrink: 0;
+
+  font-size: 20px;
+}
+
+
+/* =================================
+   BOTÓN GUARDAR
+================================= */
 
 .save-button {
-  margin-top: 30px;
-  --border-radius: 12px;
-  min-height: 48px;
+
+  --background: var(--verde-rutas);
+
+  --background-hover: var(--verde-rutas-oscuro);
+
+  --background-activated: var(--verde-rutas-oscuro);
+
+  --color: #ffffff;
+
+  --border-radius: 17px;
+
+  --box-shadow:
+    0 7px 18px rgba(63, 125, 115, 0.22);
+
+  height: 54px;
+
+  margin: 4px 0 0;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+.save-button ion-spinner {
+
+  width: 22px;
+
+  height: 22px;
+}
+
+
+/* =================================
+   FOOTER
+================================= */
+
+.footer-message {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 26px;
+
+  color: var(--texto-secundario);
+
+  text-align: center;
+}
+
+
+.footer-message span {
+
+  font-size: 15px;
+}
+
+
+.footer-message p {
+
+  margin: 0;
+
+  font-size: 11px;
+}
+
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 430px) {
+
+  .page-container {
+
+    padding-left: 17px;
+
+    padding-right: 17px;
+  }
+
+  .form-section {
+
+    padding: 17px;
+  }
+
+  .header-section h1 {
+
+    font-size: 26px;
+  }
+
+}
+
+
+@media (min-width: 600px) {
+
+  .page-container {
+
+    padding-left: 28px;
+
+    padding-right: 28px;
+  }
+
+}
+
+/* =================================
+   FOTO PRIVADA DEL ESTUDIANTE
+================================= */
+
+.photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -5px 0 20px;
+  padding: 14px;
+  border: 1px dashed var(--borde);
+  border-radius: 15px;
+  background: var(--fondo);
+}
+
+.photo-upload > ion-icon,
+.photo-upload img {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 50%;
+}
+
+.photo-upload > ion-icon {
+  padding: 16px;
+  box-sizing: border-box;
+  color: var(--verde-rutas);
+  background: var(--verde-suave);
+  font-size: 32px;
+}
+
+.photo-upload img {
+  object-fit: cover;
+}
+
+.photo-upload > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.photo-upload strong {
+  display: block;
+  color: var(--texto-principal);
+  font-size: 13px;
+}
+
+.photo-upload strong span,
+.photo-upload p {
+  color: var(--texto-secundario);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.photo-upload p {
+  margin: 4px 0 9px;
+}
+
+.photo-button {
+  display: inline-block;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: var(--verde-rutas);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.photo-upload ion-button {
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 0;
 }

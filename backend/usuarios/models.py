@@ -1,5 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from uuid import uuid4
+
+
+def foto_estudiante_upload_to(instance, filename):
+    """Genera un nombre no predecible para el archivo privado."""
+    return f"fotos_estudiantes/{uuid4().hex}.jpg"
 
 class Usuario(AbstractUser):
     ROLES = (
@@ -54,6 +60,12 @@ class Estudiante(models.Model):
     direccion_alternativa = models.CharField(max_length=255, null=True, blank=True)
     persona_autorizada = models.CharField(max_length=200, null=True, blank=True)
     rut_persona_autorizada = models.CharField(max_length=12, null=True, blank=True)
+    foto = models.ImageField(
+        upload_to=foto_estudiante_upload_to,
+        null=True,
+        blank=True,
+        help_text='Foto privada del estudiante; nunca se publica como archivo estático.'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

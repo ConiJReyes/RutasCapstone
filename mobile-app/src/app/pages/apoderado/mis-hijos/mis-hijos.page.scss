@@ -1,86 +1,680 @@
-.page-container {
-  padding: 28px 20px 40px;
-  max-width: 700px;
-  margin: 0 auto;
+:host {
+
+  --verde-rutas: #3f7d73;
+  --verde-rutas-oscuro: #2f675f;
+
+  --verde-suave: #e8f3f1;
+
+  --amarillo-escolar: #f4b52b;
+  --amarillo-suave: #fff4d6;
+
+  --fondo: #f7faf9;
+
+  --blanco: #ffffff;
+
+  --texto-principal: #244642;
+  --texto-secundario: #71827e;
+
+  --borde: #dce8e5;
 }
+
+
+/* =================================
+   PÁGINA
+================================= */
+
+.page-container {
+
+  min-height: 100%;
+
+  padding: 28px 20px 36px;
+
+  max-width: 700px;
+
+  margin: 0 auto;
+
+  background: var(--fondo);
+
+  box-sizing: border-box;
+}
+
+
+/* =================================
+   ENCABEZADO
+================================= */
 
 .header-section {
+
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 30px;
 
-  p {
-    margin: 0 0 4px;
-    font-size: 14px;
-  }
+  justify-content: space-between;
 
-  h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-  }
+  margin-bottom: 32px;
 }
 
-.children-section h2,
-.add-section h2 {
-  font-size: 20px;
-  margin-bottom: 12px;
+
+.header-info {
+  min-width: 0;
 }
 
-ion-card {
-  margin: 0 0 20px;
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+.section-label {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--verde-rutas);
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
 }
+
+
+.header-section h1 {
+
+  margin: 0;
+
+  color: var(--texto-principal);
+
+  font-size: 28px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+
+/* =================================
+   ACCIONES HEADER
+================================= */
+
+.header-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.menu-button,
+.back-button {
+
+  width: 42px;
+
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.menu-button {
+
+  background: var(--verde-rutas);
+
+  color: white;
+
+  box-shadow:
+    0 6px 16px rgba(63, 125, 115, 0.20);
+}
+
+
+/* =================================
+   SECCIÓN
+================================= */
+
+.section-header {
+
+  margin-bottom: 13px;
+}
+
+
+.section-header h2 {
+
+  margin: 0;
+
+  color: var(--texto-principal);
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+
+/* =================================
+   TARJETA ESTUDIANTE
+================================= */
+
+.student-card {
+
+  margin: 0 0 16px;
+
+  padding: 0;
+
+  background: var(--blanco);
+
+  border: 1px solid var(--borde);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 8px 24px rgba(36, 70, 66, 0.07);
+
+  overflow: hidden;
+}
+
+
+.student-card ion-card-content {
+
+  padding: 20px;
+}
+
+
+/* =================================
+   INFORMACIÓN HIJO
+================================= */
 
 .child-card {
+
   display: flex;
+
   align-items: center;
+
   gap: 14px;
-  margin-bottom: 18px;
+
+  margin-bottom: 16px;
 }
+
 
 .child-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f1f1;
-  font-size: 26px;
+
+  width: 58px;
+
+  height: 58px;
+
   flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background: var(--amarillo-suave);
+
+  font-size: 29px;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 181, 43, 0.18);
 }
+
 
 .child-info {
-  h3 {
-    margin: 0 0 4px;
-    font-size: 17px;
-  }
 
-  p {
-    margin: 0 0 8px;
-    font-size: 14px;
-  }
+  min-width: 0;
+
+  flex: 1;
 }
 
-.status {
+
+.child-info h3 {
+
+  margin: 0 0 5px;
+
+  color: var(--texto-principal);
+
+  font-size: 17px;
+
+  font-weight: 750;
+}
+
+
+.child-info .school {
+
+  margin: 0 0 5px;
+
+  color: var(--texto-secundario);
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+
+.course {
+
+  display: inline-block;
+
+  padding: 4px 9px;
+
+  border-radius: 8px;
+
+  background: var(--verde-suave);
+
+  color: var(--verde-rutas);
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+/* =================================
+   RUT
+================================= */
+
+.student-rut {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+
+  padding: 10px 12px;
+
+  border-radius: 11px;
+
+  background: #f8faf9;
+}
+
+
+.student-rut span {
+
+  color: var(--texto-secundario);
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+
+.student-rut strong {
+
+  color: var(--texto-principal);
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+/* =================================
+   BOTÓN DETALLE
+================================= */
+
+.details-button {
+
+  --color: var(--verde-rutas);
+
+  --border-color: var(--verde-rutas);
+
+  --border-radius: 15px;
+
+  height: 46px;
+
+  margin: 0;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+.details-button ion-icon {
+
+  font-size: 18px;
+}
+
+
+/* =================================
+   CARGANDO
+================================= */
+
+.loading-state {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  color: var(--texto-secundario);
+
+  text-align: center;
+}
+
+
+.loading-state ion-spinner {
+
+  width: 32px;
+
+  height: 32px;
+
+  margin-bottom: 12px;
+
+  color: var(--verde-rutas);
+}
+
+
+.loading-state p {
+
+  margin: 0;
+
   font-size: 13px;
 }
 
-.add-section {
-  margin-top: 32px;
-  padding: 20px;
-  border-radius: 18px;
-  background: #f7f7f7;
 
-  p {
-    line-height: 1.5;
-    font-size: 14px;
-  }
+/* =================================
+   ERROR
+================================= */
+
+.error-state {
+
+  padding: 25px 20px;
+
+  border-radius: 18px;
+
+  background: #fff3f2;
+
+  border: 1px solid #f5d7d4;
+
+  color: #b64b43;
+
+  text-align: center;
 }
 
-ion-button {
-  --border-radius: 12px;
+
+.error-state ion-icon {
+
+  font-size: 30px;
+
+  margin-bottom: 8px;
+}
+
+
+.error-state p {
+
+  margin: 0;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =================================
+   SIN ESTUDIANTES
+================================= */
+
+.empty-state {
+
+  padding: 30px 20px;
+
+  border-radius: 20px;
+
+  background: var(--blanco);
+
+  border: 1px dashed var(--borde);
+
+  text-align: center;
+}
+
+
+.empty-icon {
+
+  width: 60px;
+
+  height: 60px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin: 0 auto 12px;
+
+  border-radius: 18px;
+
+  background: var(--amarillo-suave);
+
+  font-size: 28px;
+}
+
+
+.empty-state h3 {
+
+  margin: 0 0 6px;
+
+  color: var(--texto-principal);
+
+  font-size: 16px;
+
+  font-weight: 750;
+}
+
+
+.empty-state p {
+
+  margin: 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =================================
+   AGREGAR HIJO
+================================= */
+
+.add-section {
+
+  display: grid;
+
+  grid-template-columns: auto 1fr;
+
+  column-gap: 14px;
+
+  margin-top: 28px;
+
+  padding: 20px;
+
+  border-radius: 22px;
+
+  background: var(--verde-suave);
+
+  border: 1px solid rgba(63, 125, 115, 0.12);
+}
+
+
+.add-icon {
+
+  width: 48px;
+
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: var(--amarillo-escolar);
+
+  color: #ffffff;
+
+  font-size: 27px;
+
+  font-weight: 400;
+
+  box-shadow:
+    0 5px 12px rgba(244, 181, 43, 0.20);
+}
+
+
+.add-content {
+
+  min-width: 0;
+}
+
+
+.add-section h2 {
+
+  margin: 2px 0 5px;
+
+  color: var(--texto-principal);
+
+  font-size: 16px;
+
+  font-weight: 750;
+}
+
+
+.add-section p {
+
+  margin: 0;
+
+  color: var(--texto-secundario);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+/* =================================
+   BOTÓN AGREGAR
+================================= */
+
+.add-button {
+
+  grid-column: 1 / -1;
+
+  --background: var(--verde-rutas);
+
+  --background-hover: var(--verde-rutas-oscuro);
+
+  --background-activated: var(--verde-rutas-oscuro);
+
+  --color: #ffffff;
+
+  --border-radius: 15px;
+
+  height: 46px;
+
+  margin: 16px 0 0;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-transform: none;
+}
+
+
+/* =================================
+   FOOTER
+================================= */
+
+.footer-message {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 28px;
+
+  color: var(--texto-secundario);
+
+  text-align: center;
+}
+
+
+.footer-message span {
+
+  font-size: 15px;
+}
+
+
+.footer-message p {
+
+  margin: 0;
+
+  font-size: 11px;
+}
+
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 430px) {
+
+  .page-container {
+
+    padding-left: 17px;
+
+    padding-right: 17px;
+  }
+
+  .header-section h1 {
+
+    font-size: 26px;
+  }
+
+}
+
+
+@media (min-width: 600px) {
+
+  .page-container {
+
+    padding-left: 28px;
+
+    padding-right: 28px;
+  }
+
 }

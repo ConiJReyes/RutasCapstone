@@ -1,13 +1,455 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>detalle-hijo</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">detalle-hijo</ion-title>
-    </ion-toolbar>
-  </ion-header>
+
+  <div class="detail-page">
+
+    @if (cargando) {
+
+      <div class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando información...</p>
+      </div>
+
+    } @else if (errorMensaje) {
+
+      <div class="error-state">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+
+        <h2>No pudimos cargar la información</h2>
+
+        <p>{{ errorMensaje }}</p>
+      </div>
+
+    } @else if (estudiante) {
+
+      <!-- HERO -->
+
+      <section class="hero-section">
+
+        <!-- Menú -->
+
+        <div class="menu-button-container">
+          <ion-menu-toggle menu="main-menu">
+            <button class="menu-button" type="button">
+              <ion-icon name="menu-outline"></ion-icon>
+            </button>
+          </ion-menu-toggle>
+        </div>
+
+
+        <!-- Foto -->
+
+        <div class="student-avatar">
+
+          @if (estudiante.tiene_foto) {
+
+            <div class="avatar-photo">
+              <ion-icon name="person-outline"></ion-icon>
+            </div>
+
+          } @else {
+
+            <ion-icon name="school-outline"></ion-icon>
+
+          }
+
+        </div>
+
+
+        <span class="section-label">
+          MIS HIJOS
+        </span>
+
+        <h1>
+          {{ estudiante.nombre }}
+          {{ estudiante.apellido }}
+        </h1>
+
+        <p>
+          Información del estudiante
+        </p>
+
+      </section>
+
+
+      <!-- CONTENIDO -->
+
+      <div class="content-container">
+
+
+        <!-- INFORMACIÓN PERSONAL -->
+
+        <section class="info-section">
+
+          <div class="section-title">
+
+            <div class="title-icon">
+              <ion-icon name="person-outline"></ion-icon>
+            </div>
+
+            <div>
+              <span>01</span>
+              <h2>Información personal</h2>
+            </div>
+
+          </div>
+
+
+          <div class="info-card">
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="person-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>Nombre completo</span>
+
+                @if (modoEdicion && datosEdicion) {
+                  <ion-input aria-label="Nombre" [(ngModel)]="datosEdicion.nombre"></ion-input>
+                  <ion-input aria-label="Apellido" [(ngModel)]="datosEdicion.apellido"></ion-input>
+                } @else {
+                  <strong>
+                  {{ estudiante.nombre }}
+                  {{ estudiante.apellido }}
+                  </strong>
+                }
+              </div>
+
+            </div>
+
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="card-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>RUT</span>
+
+                <strong>
+                  {{ estudiante.rut }}
+                </strong>
+              </div>
+
+              <ion-icon
+                class="locked-icon"
+                name="lock-closed-outline">
+              </ion-icon>
+
+            </div>
+
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="calendar-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>Fecha de nacimiento</span>
+
+                @if (modoEdicion && datosEdicion) {
+                  <ion-input aria-label="Fecha de nacimiento" type="date" [(ngModel)]="datosEdicion.fecha_nacimiento"></ion-input>
+                } @else {
+                  <strong>
+                  {{ formatearFecha(estudiante.fecha_nacimiento) }}
+                  </strong>
+                }
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- INFORMACIÓN ESCOLAR -->
+
+        <section class="info-section">
+
+          <div class="section-title">
+
+            <div class="title-icon">
+              <ion-icon name="school-outline"></ion-icon>
+            </div>
+
+            <div>
+              <span>02</span>
+              <h2>Información escolar</h2>
+            </div>
+
+          </div>
+
+
+          <div class="info-card">
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="school-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>Colegio</span>
+
+                @if (modoEdicion && datosEdicion) {
+                  <ion-input aria-label="Colegio" [(ngModel)]="datosEdicion.colegio"></ion-input>
+                } @else {
+                  <strong>
+                  {{ estudiante.colegio }}
+                  </strong>
+                }
+              </div>
+
+            </div>
+
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="book-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>Curso</span>
+
+                @if (modoEdicion && datosEdicion) {
+                  <ion-input aria-label="Curso" [(ngModel)]="datosEdicion.curso"></ion-input>
+                } @else {
+                  <strong>
+                  {{ estudiante.curso }}
+                  </strong>
+                }
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- TRANSPORTE -->
+
+        <section class="info-section">
+
+          <div class="section-title">
+
+            <div class="title-icon">
+              <ion-icon name="bus-outline"></ion-icon>
+            </div>
+
+            <div>
+              <span>03</span>
+              <h2>Transporte</h2>
+            </div>
+
+          </div>
+
+
+          <div class="info-card">
+
+            <div class="info-row">
+
+              <div class="info-icon">
+                <ion-icon name="location-outline"></ion-icon>
+              </div>
+
+              <div class="info-content">
+                <span>Destino principal</span>
+
+                @if (modoEdicion && datosEdicion) {
+                  <ion-textarea aria-label="Destino principal" [(ngModel)]="datosEdicion.direccion_principal"></ion-textarea>
+                } @else {
+                  <strong>
+                  {{ estudiante.direccion_principal }}
+                  </strong>
+                }
+              </div>
+
+            </div>
+
+
+            @if (estudiante.direccion_alternativa || modoEdicion) {
+
+              <div class="info-row">
+
+                <div class="info-icon">
+                  <ion-icon name="home-outline"></ion-icon>
+                </div>
+
+                <div class="info-content">
+                  <span>Destino alternativo</span>
+
+                  @if (modoEdicion && datosEdicion) {
+                    <ion-textarea aria-label="Destino alternativo" [(ngModel)]="datosEdicion.direccion_alternativa"></ion-textarea>
+                  } @else {
+                    <strong>
+                    {{ estudiante.direccion_alternativa }}
+                    </strong>
+                  }
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        </section>
+
+
+        <!-- PERSONA AUTORIZADA -->
+
+        @if (
+          estudiante.persona_autorizada ||
+          estudiante.rut_persona_autorizada ||
+          modoEdicion
+        ) {
+
+          <section class="info-section">
+
+            <div class="section-title">
+
+              <div class="title-icon">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+              </div>
+
+              <div>
+                <span>04</span>
+                <h2>Persona autorizada</h2>
+              </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+              @if (estudiante.persona_autorizada || modoEdicion) {
+
+                <div class="info-row">
+
+                  <div class="info-icon">
+                    <ion-icon name="person-outline"></ion-icon>
+                  </div>
+
+                  <div class="info-content">
+                    <span>Nombre</span>
+
+                    @if (modoEdicion && datosEdicion) {
+                      <ion-input aria-label="Persona autorizada" [(ngModel)]="datosEdicion.persona_autorizada"></ion-input>
+                    } @else {
+                      <strong>
+                      {{ estudiante.persona_autorizada }}
+                      </strong>
+                    }
+                  </div>
+
+                </div>
+
+              }
+
+
+              @if (estudiante.rut_persona_autorizada || modoEdicion) {
+
+                <div class="info-row">
+
+                  <div class="info-icon">
+                    <ion-icon name="card-outline"></ion-icon>
+                  </div>
+
+                  <div class="info-content">
+                    <span>RUT</span>
+
+                    @if (modoEdicion && datosEdicion) {
+                      <ion-input aria-label="RUT persona autorizada" [(ngModel)]="datosEdicion.rut_persona_autorizada"></ion-input>
+                    } @else {
+                      <strong>
+                      {{ estudiante.rut_persona_autorizada }}
+                      </strong>
+                    }
+                  </div>
+
+                </div>
+
+              }
+
+            </div>
+
+          </section>
+
+        }
+
+
+        <!-- EDITAR -->
+
+        <section class="edit-section">
+
+          <ion-button
+            expand="block"
+            class="edit-button"
+            (click)="iniciarEdicion()"
+            [disabled]="modoEdicion">
+
+            <ion-icon
+              slot="start"
+              name="create-outline">
+            </ion-icon>
+
+            Editar información
+
+          </ion-button>
+
+          @if (modoEdicion) {
+            <div class="edit-actions">
+              <ion-button fill="clear" (click)="cancelarEdicion()" [disabled]="guardando">Cancelar</ion-button>
+              <ion-button class="save-edit-button" (click)="guardarCambios()" [disabled]="guardando">
+                {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+              </ion-button>
+            </div>
+          }
+
+          <p>
+            Puedes actualizar los datos del estudiante
+            cuando sea necesario.
+          </p>
+
+        </section>
+
+
+        <!-- SEGURIDAD -->
+
+        <div class="security-note">
+
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+
+          <div>
+
+            <strong>
+              Información protegida
+            </strong>
+
+            <p>
+              Los datos de este estudiante son privados
+              y solo están disponibles para su apoderado.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <p class="footer-text">
+          Tu ruta escolar, más segura.
+        </p>
+
+      </div>
+
+    }
+
+  </div>
+
 </ion-content>

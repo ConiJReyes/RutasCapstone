@@ -2,32 +2,41 @@
 
   <div class="page-container">
 
-    <!-- Encabezado -->
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
 
     <div class="welcome-section">
 
-      <div>
+      <div class="welcome-info">
         <p class="welcome-text">Bienvenido/a</p>
         <h1>Rutas Seguras</h1>
       </div>
 
-      <ion-menu-toggle menu="main-menu" style="cursor: pointer;">
-        <div class="profile-button" title="Abrir menú">
+      <ion-menu-toggle menu="main-menu">
+        <button class="profile-button" type="button">
           <span>☰</span>
-        </div>
+        </button>
       </ion-menu-toggle>
 
     </div>
 
 
-    <!-- Resumen del transporte -->
+    <!-- =========================
+         RESUMEN
+    ========================== -->
 
     <div class="section-header">
-      <h2>Mis hijos</h2>
+      <div>
+        <span class="section-label">TRANSPORTE</span>
+        <h2>Mis hijos</h2>
+      </div>
     </div>
 
 
-    <!-- Tarjeta de hijo -->
+    <!-- =========================
+         TARJETA HIJOS
+    ========================== -->
 
     <div class="child-card">
 
@@ -37,23 +46,28 @@
           👧
         </div>
 
-        <div>
+        <div class="child-text">
           <h3>Mis hijos</h3>
-          <p>Información de transporte</p>
+          <p>Información de transporte escolar</p>
         </div>
 
       </div>
+
 
       <div class="child-status">
 
         <span class="status-dot"></span>
 
-        <span>Servicio activo</span>
+        <span>
+          Servicio activo
+        </span>
 
       </div>
 
+
       <ion-button
         expand="block"
+        class="primary-button"
         routerLink="/apoderado/mis-hijos">
 
         Ver mis hijos
@@ -63,11 +77,19 @@
     </div>
 
 
-    <!-- Seguimiento -->
+    <!-- =========================
+         SEGUIMIENTO
+    ========================== -->
 
-    <div class="section-header">
-      <h2>Seguimiento</h2>
+    <div class="section-header tracking-header">
+
+      <div>
+        <span class="section-label">EN TIEMPO REAL</span>
+        <h2>Seguimiento</h2>
+      </div>
+
     </div>
+
 
     <div class="tracking-card">
 
@@ -88,6 +110,7 @@
 
       <ion-button
         fill="outline"
+        class="secondary-button"
         routerLink="/apoderado/seguimiento">
 
         Ver ruta
@@ -97,25 +120,65 @@
     </div>
 
 
-    <!-- Acciones rápidas -->
+    <!-- =========================
+         ACCIONES RÁPIDAS
+    ========================== -->
 
-    <div class="section-header">
-      <h2>Accesos rápidos</h2>
+    <div class="section-header quick-header">
+
+      <div>
+        <span class="section-label">GESTIÓN</span>
+        <h2>Accesos rápidos</h2>
+      </div>
+
     </div>
+
 
     <div class="quick-actions">
 
-      <ion-button fill="outline">
-        💳 Pagos
+      <ion-button
+        fill="outline"
+        class="quick-button">
+
+        <span class="quick-icon">💳</span>
+        <span>Pagos</span>
+
       </ion-button>
 
-      <ion-button fill="outline">
-        📄 Contratos
+
+      <ion-button
+        fill="outline"
+        class="quick-button">
+
+        <span class="quick-icon">📄</span>
+        <span>Contratos</span>
+
       </ion-button>
 
-      <ion-button fill="outline">
-        🔔 Notificaciones
+
+      <ion-button
+        fill="outline"
+        class="quick-button">
+
+        <span class="quick-icon">🔔</span>
+        <span>Notificaciones</span>
+
       </ion-button>
+
+    </div>
+
+
+    <!-- =========================
+         FRASE
+    ========================== -->
+
+    <div class="footer-message">
+
+      <span>🚌</span>
+
+      <p>
+        Tu ruta escolar, más segura.
+      </p>
 
     </div>
 

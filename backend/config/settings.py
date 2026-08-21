@@ -123,6 +123,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Las fotos de menores no son archivos públicos ni se agregan a MEDIA_URL.
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
+MEDIA_ROOT = PRIVATE_MEDIA_ROOT
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

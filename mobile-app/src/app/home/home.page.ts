@@ -1,10 +1,27 @@
 import { Component } from '@angular/core';
+import { Location } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import {
   IonContent,
-  IonButton
+  IonButton,
+  IonIcon
 } from '@ionic/angular/standalone';
+
+import { addIcons } from 'ionicons';
+import {
+  peopleOutline,
+  busOutline,
+  chevronForwardOutline,
+  arrowBackOutline
+} from 'ionicons/icons';
+
+addIcons({
+  peopleOutline,
+  busOutline,
+  chevronForwardOutline,
+  arrowBackOutline
+});
 
 @Component({
   selector: 'app-home',
@@ -14,11 +31,18 @@ import {
   imports: [
     RouterLink,
     IonContent,
-    IonButton
+    IonButton,
+    IonIcon
   ],
 })
 export class HomePage {
 
-  constructor() {}
+  constructor(
+    private location: Location
+  ) {}
+
+  volver() {
+    this.location.back();
+  }
 
 }

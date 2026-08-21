@@ -5,17 +5,32 @@ import { RouterLink } from '@angular/router';
 
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
   IonCard,
   IonCardContent,
   IonSpinner,
-  IonMenuToggle
+  IonMenuToggle,
+  IonIcon
 } from '@ionic/angular/standalone';
 
-import { EstudianteService, Estudiante } from '../../../services/estudiante.service';
+import { addIcons } from 'ionicons';
+
+import {
+  menuOutline,
+  alertCircleOutline,
+  chevronForwardOutline
+} from 'ionicons/icons';
+
+import {
+  EstudianteService,
+  Estudiante
+} from '../../../services/estudiante.service';
+
+addIcons({
+  menuOutline,
+  alertCircleOutline,
+  chevronForwardOutline
+});
 
 @Component({
   selector: 'app-mis-hijos',
@@ -27,45 +42,63 @@ import { EstudianteService, Estudiante } from '../../../services/estudiante.serv
     FormsModule,
     RouterLink,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
     IonCard,
     IonCardContent,
     IonSpinner,
-    IonMenuToggle
+    IonMenuToggle,
+    IonIcon
   ]
 })
 export class MisHijosPage {
 
   estudiantes: Estudiante[] = [];
+
   cargando: boolean = true;
+
   errorMensaje: string = '';
 
   constructor(
     private estudianteService: EstudianteService
-  ) {}
+  ) {
+      addIcons({menuOutline,alertCircleOutline,chevronForwardOutline});}
 
   ionViewWillEnter() {
     this.cargarEstudiantes();
   }
 
   cargarEstudiantes() {
+
     this.cargando = true;
+
     this.errorMensaje = '';
 
     this.estudianteService.obtenerEstudiantes().subscribe({
+
       next: (data) => {
+
         this.estudiantes = data;
+
         this.cargando = false;
+
       },
+
       error: (err) => {
+
         this.cargando = false;
-        this.errorMensaje = 'No se pudieron cargar los estudiantes.';
-        console.error('Error cargando estudiantes:', err);
+
+        this.errorMensaje =
+          'No se pudieron cargar los estudiantes.';
+
+        console.error(
+          'Error cargando estudiantes:',
+          err
+        );
+
       }
+
     });
+
   }
 
 }

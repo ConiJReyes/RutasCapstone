@@ -2,131 +2,411 @@
 
   <div class="page-container">
 
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
+
     <div class="header-section">
 
-      <div>
-        <p>Mis hijos</p>
+      <div class="header-info">
+
+        <span class="section-label">
+          MIS HIJOS
+        </span>
+
         <h1>Agregar hijo</h1>
+
       </div>
 
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <ion-menu-toggle menu="main-menu" style="cursor: pointer;">
-          <ion-button fill="clear">
-            ☰ Menú
-          </ion-button>
-        </ion-menu-toggle>
+      <ion-menu-toggle menu="main-menu">
 
-        <ion-button fill="clear" routerLink="/apoderado/mis-hijos">
-          Volver
-        </ion-button>
+        <button
+          class="menu-button"
+          type="button"
+          title="Abrir menú">
+
+          <ion-icon name="menu-outline"></ion-icon>
+
+        </button>
+
+      </ion-menu-toggle>
+
+    </div>
+
+
+    <!-- =========================
+         DESCRIPCIÓN
+    ========================== -->
+
+    <div class="intro-card">
+
+      <div class="intro-icon">
+        🎓
+      </div>
+
+      <div>
+
+        <h2>Nuevo estudiante</h2>
+
+        <p>
+          Ingresa los datos del estudiante para asociarlo
+          a tu cuenta de Rutas Seguras.
+        </p>
+
       </div>
 
     </div>
 
 
-    <div class="form-section">
+    <!-- =========================
+         DATOS DEL ESTUDIANTE
+    ========================== -->
 
-      <p class="description">
-        Ingresa los datos del estudiante para asociarlo
-        a tu cuenta de Rutas Seguras.
+    <section class="form-section">
+
+      <div class="section-title">
+
+        <span class="section-number">
+          01
+        </span>
+
+        <div>
+          <span class="section-label">
+            INFORMACIÓN
+          </span>
+
+          <h2>Datos del estudiante</h2>
+        </div>
+
+      </div>
+
+      <p class="section-description">
+        Agrega una foto opcional para identificar al estudiante durante el servicio.
+        Se guarda de forma privada.
       </p>
 
+      <div class="photo-upload">
+        @if (vistaPreviaFoto) {
+          <img [src]="vistaPreviaFoto" alt="Vista previa de la foto seleccionada">
+          <ion-button fill="clear" color="danger" type="button" aria-label="Quitar foto" (click)="quitarFoto(fotoInput)">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        } @else {
+          <ion-icon name="camera-outline"></ion-icon>
+        }
 
-      <ion-item>
-        <ion-input label="Nombre" labelPlacement="floating" type="text" placeholder="Nombre del estudiante"
+        <div>
+          <strong>Foto del estudiante <span>(opcional)</span></strong>
+          <p>JPEG, PNG o WebP. Máximo 5 MB.</p>
+          <label class="photo-button" for="foto-estudiante">Seleccionar foto</label>
+          <input #fotoInput id="foto-estudiante" class="photo-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="seleccionarFoto($event)">
+        </div>
+      </div>
+
+
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Nombre"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Nombre del estudiante"
           [(ngModel)]="nombre">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="Apellido" labelPlacement="floating" type="text" placeholder="Apellido del estudiante"
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Apellido"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Apellido del estudiante"
           [(ngModel)]="apellido">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="RUT" labelPlacement="floating" type="text" placeholder="12.345.678-9" [(ngModel)]="rut">
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="RUT"
+          labelPlacement="floating"
+          type="text"
+          placeholder="12.345.678-9"
+          [(ngModel)]="rut">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="Fecha de nacimiento" labelPlacement="floating" type="date" [(ngModel)]="fechaNacimiento">
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Fecha de nacimiento"
+          labelPlacement="floating"
+          type="date"
+          [(ngModel)]="fechaNacimiento">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="Colegio" labelPlacement="floating" type="text" placeholder="Nombre del colegio"
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Colegio"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Nombre del colegio"
           [(ngModel)]="colegio">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="Curso" labelPlacement="floating" type="text" placeholder="Ej: 5° Básico" [(ngModel)]="curso">
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Curso"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Ej: 5° Básico"
+          [(ngModel)]="curso">
         </ion-input>
+
       </ion-item>
 
+    </section>
 
-      <h2>Destino principal</h2>
 
-      <ion-item>
-        <ion-textarea label="Dirección" labelPlacement="floating"
-          placeholder="Dirección donde debe llegar el estudiante" [(ngModel)]="direccionPrincipal">
+    <!-- =========================
+         DESTINO PRINCIPAL
+    ========================== -->
+
+    <section class="form-section">
+
+      <div class="section-title">
+
+        <span class="section-number">
+          02
+        </span>
+
+        <div>
+
+          <span class="section-label">
+            TRANSPORTE
+          </span>
+
+          <h2>Destino principal</h2>
+
+        </div>
+
+      </div>
+
+
+      <p class="section-description">
+
+        Dirección donde debe llegar normalmente
+        el estudiante.
+
+      </p>
+
+
+      <ion-item
+        lines="none"
+        class="input-item textarea-item">
+
+        <ion-textarea
+          label="Dirección"
+          labelPlacement="floating"
+          placeholder="Dirección donde debe llegar el estudiante"
+          [(ngModel)]="direccionPrincipal">
         </ion-textarea>
+
       </ion-item>
 
+    </section>
 
-      <h2>Destino alternativo</h2>
 
-      <p class="optional">
-        Opcional. Puedes agregar una segunda dirección para
+    <!-- =========================
+         DESTINO ALTERNATIVO
+    ========================== -->
+
+    <section class="form-section">
+
+      <div class="section-title">
+
+        <span class="section-number optional-number">
+          03
+        </span>
+
+        <div>
+
+          <span class="section-label">
+            OPCIONAL
+          </span>
+
+          <h2>Destino alternativo</h2>
+
+        </div>
+
+      </div>
+
+
+      <p class="section-description">
+
+        Puedes agregar una segunda dirección para
         situaciones especiales.
+
       </p>
 
-      <ion-item>
-        <ion-textarea label="Dirección alternativa" labelPlacement="floating"
-          placeholder="Dirección de familiar u otro destino" [(ngModel)]="direccionAlternativa">
+
+      <ion-item
+        lines="none"
+        class="input-item textarea-item">
+
+        <ion-textarea
+          label="Dirección alternativa"
+          labelPlacement="floating"
+          placeholder="Dirección de familiar u otro destino"
+          [(ngModel)]="direccionAlternativa">
         </ion-textarea>
+
       </ion-item>
 
+    </section>
 
-      <h2>Persona autorizada</h2>
 
-      <p class="optional">
-        Persona que podrá recibir al estudiante en su destino.
+    <!-- =========================
+         PERSONA AUTORIZADA
+    ========================== -->
+
+    <section class="form-section">
+
+      <div class="section-title">
+
+        <span class="section-number optional-number">
+          04
+        </span>
+
+        <div>
+
+          <span class="section-label">
+            SEGURIDAD
+          </span>
+
+          <h2>Persona autorizada</h2>
+
+        </div>
+
+      </div>
+
+
+      <p class="section-description">
+
+        Persona que podrá recibir al estudiante
+        en su destino.
+
       </p>
 
-      <ion-item>
-        <ion-input label="Nombre" labelPlacement="floating" type="text" placeholder="Nombre de la persona"
+
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="Nombre"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Nombre de la persona"
           [(ngModel)]="personaAutorizada">
         </ion-input>
+
       </ion-item>
 
 
-      <ion-item>
-        <ion-input label="RUT" labelPlacement="floating" type="text" placeholder="12.345.678-9"
+      <ion-item
+        lines="none"
+        class="input-item">
+
+        <ion-input
+          label="RUT"
+          labelPlacement="floating"
+          type="text"
+          placeholder="12.345.678-9"
           [(ngModel)]="rutPersonaAutorizada">
         </ion-input>
+
       </ion-item>
 
+    </section>
 
-      @if (errorMensaje) {
-        <div style="color: var(--ion-color-danger, red); margin-top: 10px; font-size: 0.9rem; text-align: center;">
+
+    <!-- =========================
+         ERROR
+    ========================== -->
+
+    @if (errorMensaje) {
+
+      <div class="error-message">
+
+        <ion-icon name="alert-circle-outline"></ion-icon>
+
+        <span>
           {{ errorMensaje }}
-        </div>
+        </span>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         GUARDAR
+    ========================== -->
+
+    <ion-button
+      expand="block"
+      class="save-button"
+      [disabled]="cargando"
+      (click)="guardarEstudiante()">
+
+      @if (cargando) {
+
+        <ion-spinner name="crescent"></ion-spinner>
+
+      } @else {
+
+        Guardar estudiante
+
       }
 
-      <ion-button expand="block" class="save-button" [disabled]="cargando" (click)="guardarEstudiante()">
-        @if (cargando) {
-          <ion-spinner name="crescent"></ion-spinner>
-        } @else {
-          Guardar estudiante
-        }
-      </ion-button>
+    </ion-button>
+
+
+    <div class="footer-message">
+
+      <span>🚌</span>
+
+      <p>
+        Tu ruta escolar, más segura.
+      </p>
 
     </div>
 

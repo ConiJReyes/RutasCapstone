@@ -28,6 +28,10 @@ export interface RegistroApoderadoData {
   password: string;
 }
 
+export interface RecuperacionResponse {
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,6 +58,28 @@ export class AuthService {
           this.guardarSesion(response.token, response.usuario);
         }
       })
+    );
+  }
+
+  solicitarRecuperacion(email: string): Observable<RecuperacionResponse> {
+    return this.http.post<RecuperacionResponse>(
+      `${this.apiUrl}/auth/password-reset/`,
+      { email }
+    );
+  }
+
+  confirmarRecuperacion(
+    email: string,
+    codigo: string,
+    nuevaPassword: string
+  ): Observable<RecuperacionResponse> {
+    return this.http.post<RecuperacionResponse>(
+      `${this.apiUrl}/auth/password-reset/confirm/`,
+      {
+        email,
+        codigo,
+        nueva_password: nuevaPassword
+      }
     );
   }
 

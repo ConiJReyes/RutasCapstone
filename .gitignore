@@ -23,6 +23,8 @@ staticfiles/
 # =========================
 .env
 .env.*
+!.env.example
+!backend/.env.example
 
 # =========================
 # Node / Angular / Ionic

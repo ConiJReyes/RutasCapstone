@@ -71,3 +71,34 @@ class Estudiante(models.Model):
 
     def __str__(self):
         return f"Estudiante: {self.nombre} {self.apellido} ({self.rut})"
+
+
+
+
+
+from django.utils import timezone
+from datetime import timedelta
+
+
+class CodigoRecuperacion(models.Model):
+
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='codigos_recuperacion'
+    )
+
+    codigo = models.CharField(max_length=6)
+
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    usado = models.BooleanField(default=False)
+
+    def esta_vigente(self):
+        return (
+            not self.usado
+            and timezone.now() <= self.creado_en + timedelta(minutes=10)
+        )
+
+    def __str__(self):
+        return f'{self.usuario.email} - {self.codigo}'

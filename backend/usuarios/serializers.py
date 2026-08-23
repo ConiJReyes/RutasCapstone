@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import Usuario, PerfilApoderado, Estudiante
+from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante
 
 
 class RegistroApoderadoSerializer(serializers.Serializer):
@@ -38,6 +38,45 @@ class RegistroApoderadoSerializer(serializers.Serializer):
         return usuario
 
 
+class RegistroConductorSerializer(serializers.Serializer):
+    nombre = serializers.CharField(max_length=150)
+    apellido = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    rut = serializers.CharField(max_length=12)
+    email = serializers.EmailField()
+    telefono = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
+    licencia_conducir = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
+    password = serializers.CharField(write_only=True, min_length=6)
+
+    def validate_email(self, value):
+        normalized_email = value.lower().strip()
+        if Usuario.objects.filter(email=normalized_email).exists():
+            raise serializers.ValidationError('Este correo electrónico ya está registrado.')
+        return normalized_email
+
+    def validate_rut(self, value):
+        cleaned_rut = value.strip()
+        if PerfilConductor.objects.filter(rut=cleaned_rut).exists():
+            raise serializers.ValidationError('Este RUT ya está registrado como conductor.')
+        return cleaned_rut
+
+    def create(self, validated_data):
+        usuario = Usuario.objects.create_user(
+            username=validated_data['email'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data['nombre'],
+            last_name=validated_data.get('apellido', ''),
+            rol='conductor'
+        )
+        PerfilConductor.objects.create(
+            usuario=usuario,
+            rut=validated_data['rut'],
+            telefono=validated_data.get('telefono', ''),
+            licencia_conducir=validated_data.get('licencia_conducir', '')
+        )
+        return usuario
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
@@ -66,16 +105,58 @@ class LoginSerializer(serializers.Serializer):
 class UsuarioResponseSerializer(serializers.ModelSerializer):
     rut = serializers.SerializerMethodField()
     telefono = serializers.SerializerMethodField()
+    licencia_conducir = serializers.SerializerMethodField()
 
     class Meta:
         model = Usuario
-        fields = ['id', 'email', 'first_name', 'last_name', 'rol', 'rut', 'telefono']
+        fields = ['id', 'email', 'first_name', 'last_name', 'rol', 'rut', 'telefono', 'licencia_conducir']
 
     def get_rut(self, obj):
-        return obj.perfil_apoderado.rut if hasattr(obj, 'perfil_apoderado') else None
+        if hasattr(obj, 'perfil_apoderado'):
+            return obj.perfil_apoderado.rut
+        if hasattr(obj, 'perfil_conductor'):
+            return obj.perfil_conductor.rut
+        return None
 
     def get_telefono(self, obj):
-        return obj.perfil_apoderado.telefono if hasattr(obj, 'perfil_apoderado') else None
+        if hasattr(obj, 'perfil_apoderado'):
+            return obj.perfil_apoderado.telefono
+        if hasattr(obj, 'perfil_conductor'):
+            return obj.perfil_conductor.telefono
+        return None
+
+    def get_licencia_conducir(self, obj):
+        if hasattr(obj, 'perfil_conductor'):
+            return obj.perfil_conductor.licencia_conducir
+        return None
+
+
+class ConductorSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    rut = serializers.SerializerMethodField()
+    telefono = serializers.SerializerMethodField()
+    licencia_conducir = serializers.SerializerMethodField()
+    usuario = serializers.CharField(source='email', read_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'id', 'usuario', 'email', 'first_name', 'last_name',
+            'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol'
+        ]
+
+    def get_nombre_completo(self, obj):
+        full_name = f"{obj.first_name} {obj.last_name}".strip()
+        return full_name if full_name else obj.email
+
+    def get_rut(self, obj):
+        return obj.perfil_conductor.rut if hasattr(obj, 'perfil_conductor') else ''
+
+    def get_telefono(self, obj):
+        return obj.perfil_conductor.telefono if hasattr(obj, 'perfil_conductor') else ''
+
+    def get_licencia_conducir(self, obj):
+        return obj.perfil_conductor.licencia_conducir if hasattr(obj, 'perfil_conductor') else ''
 
 
 class EstudianteSerializer(serializers.ModelSerializer):

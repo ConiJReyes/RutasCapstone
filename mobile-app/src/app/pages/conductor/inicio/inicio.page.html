@@ -1,13 +1,291 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>inicio</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">inicio</ion-title>
-    </ion-toolbar>
-  </ion-header>
+
+  <div class="driver-page">
+
+    <!-- =================================
+         ENCABEZADO
+    ================================== -->
+    <section class="welcome-section">
+
+      <div class="welcome-content">
+        <span class="welcome-label">CONDUCTOR</span>
+
+        <h1>Buenos días, Tomás 👋</h1>
+
+        <p>
+          Aquí tienes el resumen de tu jornada.
+        </p>
+      </div>
+
+      <!-- MENÚ -->
+      <ion-menu-toggle menu="main-menu">
+        <button class="menu-button" type="button">
+          <ion-icon name="menu-outline"></ion-icon>
+        </button>
+      </ion-menu-toggle>
+
+    </section>
+
+
+    <!-- =================================
+         ESTADO DE LA RUTA
+    ================================== -->
+    <section class="route-status-card">
+
+      <div class="route-status-top">
+
+        <div class="route-icon">
+          <ion-icon name="bus-outline"></ion-icon>
+        </div>
+
+        <div class="route-status-info">
+          <span>ESTADO DEL SERVICIO</span>
+
+          <h2>Ruta no iniciada</h2>
+
+          <p>
+            Ruta escolar #01
+          </p>
+        </div>
+
+        <span class="status-badge">
+          <span class="status-dot"></span>
+          Lista
+        </span>
+
+      </div>
+
+      <ion-button
+        expand="block"
+        class="start-route-button"
+        routerLink="/conductor/ruta-activa">
+
+        <ion-icon
+          slot="start"
+          name="play-circle-outline">
+        </ion-icon>
+
+        Iniciar ruta
+
+      </ion-button>
+
+    </section>
+
+
+    <!-- =================================
+         NIÑOS A CARGO
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">01</span>
+          <h2>Niños a cargo</h2>
+        </div>
+
+        <span class="student-count">
+          3 estudiantes
+        </span>
+
+      </div>
+
+
+      <div class="students-list">
+
+        <!-- ESTUDIANTE 1 -->
+        <article class="student-card">
+
+          <div class="student-avatar">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="student-info">
+
+            <h3>Andrés Pérez</h3>
+
+            <p>
+              5° Básico · Colegio San José
+            </p>
+
+          </div>
+
+          <span class="student-status status-route">
+            <span></span>
+            En ruta
+          </span>
+
+        </article>
+
+
+        <!-- ESTUDIANTE 2 -->
+        <article class="student-card">
+
+          <div class="student-avatar">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="student-info">
+
+            <h3>Lucía Pérez</h3>
+
+            <p>
+              3° Básico · Colegio San José
+            </p>
+
+          </div>
+
+          <span class="student-status status-waiting">
+            <span></span>
+            Esperando
+          </span>
+
+        </article>
+
+
+        <!-- ESTUDIANTE 3 -->
+        <article class="student-card">
+
+          <div class="student-avatar">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="student-info">
+
+            <h3>Tomás Martínez</h3>
+
+            <p>
+              6° Básico · Colegio Central
+            </p>
+
+          </div>
+
+          <span class="student-status status-pending">
+            <span></span>
+            Pendiente
+          </span>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         PRÓXIMA PARADA
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">02</span>
+          <h2>Próxima parada</h2>
+        </div>
+
+      </div>
+
+
+      <div class="next-stop-card">
+
+        <div class="next-stop-icon">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+
+        <div class="next-stop-info">
+
+          <span>ESTUDIANTE</span>
+
+          <h3>Lucía Pérez</h3>
+
+          <p>
+            <ion-icon name="location-outline"></ion-icon>
+            Av. Los Carrera 1234
+          </p>
+
+          <div class="receiver">
+
+            <ion-icon name="person-outline"></ion-icon>
+
+            <div>
+              <span>RECIBE</span>
+              <strong>María González · Nana</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         AVISOS
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">03</span>
+          <h2>Avisos administrativos</h2>
+        </div>
+
+      </div>
+
+
+      <div class="notice-card">
+
+        <div class="notice-icon">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+
+        <div class="notice-content">
+
+          <h3>Recuerda revisar el tráfico</h3>
+
+          <p>
+            Verifica las condiciones de tránsito antes
+            de iniciar tu recorrido.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="notice-card">
+
+        <div class="notice-icon">
+          <ion-icon name="information-circle-outline"></ion-icon>
+        </div>
+
+        <div class="notice-content">
+
+          <h3>Horarios de la ruta</h3>
+
+          <p>
+            Recuerda respetar los horarios establecidos
+            para cada parada.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         FOOTER
+    ================================== -->
+    <p class="footer-text">
+      Tu ruta escolar, más segura.
+    </p>
+
+  </div>
+
 </ion-content>

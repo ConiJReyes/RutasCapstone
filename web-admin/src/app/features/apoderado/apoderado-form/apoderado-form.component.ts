@@ -1,0 +1,136 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { ApoderadoService, Estudiante } from '../../../core/services/apoderado.service';
+
+@Component({
+  selector: 'app-apoderado-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './apoderado-form.component.html',
+  styleUrl: './apoderado-form.component.scss'
+})
+export class ApoderadoFormComponent implements OnInit {
+  apoderadoForm!: FormGroup;
+  estudianteForm!: FormGroup;
+  
+  isSubmitting = false;
+  isEditMode = false;
+  apoderadoId: number | null = null;
+
+  // Lista temporal de estudiantes asociados al apoderado
+  estudiantesList: Estudiante[] = [];
+  showEstudianteModal = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private apoderadoService: ApoderadoService
+  ) {}
+
+  ngOnInit(): void {
+    this.initApoderadoForm();
+    this.initEstudianteForm();
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.apoderadoId = Number(idParam);
+      this.isEditMode = true;
+      const apoderado = this.apoderadoService.getApoderadoById(this.apoderadoId);
+      if (apoderado) {
+        this.apoderadoForm.patchValue(apoderado);
+        this.estudiantesList = apoderado.estudiantes ? [...apoderado.estudiantes] : [];
+      }
+    }
+  }
+
+  initApoderadoForm(): void {
+    this.apoderadoForm = this.fb.group({
+      usuario: ['', [Validators.required]],
+      rut: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}-[0-9kK]{1}$')]],
+      nombre_completo: ['', [Validators.required, Validators.minLength(3)]],
+      telefono: ['', [Validators.required, Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]]
+    });
+  }
+
+  initEstudianteForm(): void {
+    this.estudianteForm = this.fb.group({
+      rut: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}-[0-9kK]{1}$')]],
+      nombre_completo: ['', [Validators.required, Validators.minLength(3)]],
+      fecha_nacimiento: ['', [Validators.required]],
+      curso: ['', [Validators.required]],
+      colegio: ['', [Validators.required]],
+      direccion_retiro: ['', [Validators.required]],
+      latitud: [null],
+      longitud: [null],
+      estado_matricula: ['pendiente', [Validators.required]],
+      activo: [true]
+    });
+  }
+
+  isFieldInvalid(form: FormGroup, fieldName: string): boolean {
+    const field = form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  // Métodos del Modal de Estudiantes
+  openEstudianteModal(): void {
+    this.estudianteForm.reset({
+      estado_matricula: 'pendiente',
+      activo: true
+    });
+    this.showEstudianteModal = true;
+  }
+
+  closeEstudianteModal(): void {
+    this.showEstudianteModal = false;
+  }
+
+  addEstudiante(): void {
+    if (this.estudianteForm.invalid) {
+      this.estudianteForm.markAllAsTouched();
+      return;
+    }
+
+    const newEstudiante: Estudiante = {
+      ...this.estudianteForm.value,
+      id: Date.now()
+    };
+
+    this.estudiantesList.push(newEstudiante);
+    this.closeEstudianteModal();
+  }
+
+  removeEstudiante(index: number): void {
+    this.estudiantesList.splice(index, 1);
+  }
+
+  // Guardar Apoderado + Estudiantes
+  onSubmit(): void {
+    if (this.apoderadoForm.invalid) {
+      this.apoderadoForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    const formData = {
+      ...this.apoderadoForm.value,
+      id: this.apoderadoId ?? undefined,
+      estudiantes: this.estudiantesList
+    };
+
+    this.apoderadoService.saveApoderado(formData);
+
+    setTimeout(() => {
+      this.isSubmitting = false;
+      this.router.navigate(['/apoderados']);
+    }, 300);
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/apoderados']);
+  }
+}

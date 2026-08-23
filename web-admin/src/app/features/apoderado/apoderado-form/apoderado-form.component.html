@@ -1,0 +1,157 @@
+<div class="form-page fade-in">
+  <div class="form-header">
+    <div class="header-title-container">
+      <h2>{{ isEditMode ? 'Editar Apoderado' : 'Registrar Nuevo Apoderado' }}</h2>
+      <p>Ingresa la información requerida del apoderado y sus estudiantes a cargo.</p>
+    </div>
+    <a routerLink="/apoderados" class="btn-back">
+      <span>Volver</span>
+    </a>
+  </div>
+
+  <div class="form-card glass-panel">
+    <form [formGroup]="apoderadoForm" (ngSubmit)="onSubmit()">
+      <h3 class="section-title">Datos del Apoderado</h3>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="nombre_completo">Nombre Completo <span class="required">*</span></label>
+          <input id="nombre_completo" type="text" formControlName="nombre_completo" placeholder="Ej: Juan Pérez Gómez" [class.invalid]="isFieldInvalid(apoderadoForm, 'nombre_completo')" />
+          @if (isFieldInvalid(apoderadoForm, 'nombre_completo')) {
+            <span class="error-message">Mínimo 3 caracteres obligatorios.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="rut">RUT <span class="required">*</span></label>
+          <input id="rut" type="text" formControlName="rut" placeholder="Ej: 12345678-K" [class.invalid]="isFieldInvalid(apoderadoForm, 'rut')" />
+          @if (isFieldInvalid(apoderadoForm, 'rut')) {
+            <span class="error-message">Formato RUT inválido (ej: 12345678-K).</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono <span class="required">*</span></label>
+          <input id="telefono" type="tel" formControlName="telefono" placeholder="Ej: +56912345678" [class.invalid]="isFieldInvalid(apoderadoForm, 'telefono')" />
+        </div>
+
+        <div class="form-group">
+          <label for="usuario">Cuenta de Usuario <span class="required">*</span></label>
+          <input id="usuario" type="text" formControlName="usuario" placeholder="Ej: jperez" [class.invalid]="isFieldInvalid(apoderadoForm, 'usuario')" />
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="estudiantes-section">
+        <div class="estudiantes-header">
+          <div>
+            <h3 class="section-title">Estudiantes a Cargo</h3>
+            <p class="section-subtitle">Registra a los niños/estudiantes vinculados a este apoderado.</p>
+          </div>
+          <button type="button" class="btn-secondary-btn" (click)="openEstudianteModal()">
+            + Añadir Estudiante
+          </button>
+        </div>
+
+        @if (estudiantesList.length === 0) {
+          <div class="empty-subtable">
+            <p>No se han agregado estudiantes a este apoderado aún.</p>
+          </div>
+        } @else {
+          <table class="sub-table">
+            <thead>
+              <tr>
+                <th>RUT</th>
+                <th>Nombre</th>
+                <th>Curso</th>
+                <th>Colegio</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (est of estudiantesList; track $index) {
+                <tr>
+                  <td><strong>{{ est.rut }}</strong></td>
+                  <td>{{ est.nombre_completo }}</td>
+                  <td>{{ est.curso }}</td>
+                  <td>{{ est.colegio }}</td>
+                  <td><span class="badge-status">{{ est.estado_matricula }}</span></td>
+                  <td>
+                    <button type="button" class="btn-delete-small" (click)="removeEstudiante($index)">Quitar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="apoderadoForm.invalid || isSubmitting">
+          <span>{{ isSubmitting ? 'Guardando...' : 'Guardar Apoderado y Estudiantes' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@if (showEstudianteModal) {
+  <div class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Agregar Nuevo Estudiante</h3>
+        <button type="button" class="btn-close" (click)="closeEstudianteModal()">✕</button>
+      </div>
+
+      <form [formGroup]="estudianteForm" (ngSubmit)="addEstudiante()">
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>RUT Estudiante *</label>
+            <input type="text" formControlName="rut" placeholder="Ej: 23456789-1" [class.invalid]="isFieldInvalid(estudianteForm, 'rut')" />
+          </div>
+
+          <div class="form-group">
+            <label>Nombre Completo *</label>
+            <input type="text" formControlName="nombre_completo" placeholder="Ej: Lucas Pérez" [class.invalid]="isFieldInvalid(estudianteForm, 'nombre_completo')" />
+          </div>
+
+          <div class="form-group">
+            <label>Fecha Nacimiento *</label>
+            <input type="date" formControlName="fecha_nacimiento" [class.invalid]="isFieldInvalid(estudianteForm, 'fecha_nacimiento')" />
+          </div>
+
+          <div class="form-group">
+            <label>Curso *</label>
+            <input type="text" formControlName="curso" placeholder="Ej: 4to Básico A" [class.invalid]="isFieldInvalid(estudianteForm, 'curso')" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Colegio *</label>
+            <input type="text" formControlName="colegio" placeholder="Ej: Colegio San Agustín" [class.invalid]="isFieldInvalid(estudianteForm, 'colegio')" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Dirección de Retiro *</label>
+            <input type="text" formControlName="direccion_retiro" placeholder="Ej: Av. Providencia 1234" [class.invalid]="isFieldInvalid(estudianteForm, 'direccion_retiro')" />
+          </div>
+
+          <div class="form-group">
+            <label>Estado Matrícula *</label>
+            <select formControlName="estado_matricula">
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeEstudianteModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="estudianteForm.invalid">Agregar Estudiante</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,162 @@
+<!-- Layout Principal de la Aplicación con Barra Lateral y Cabecera -->
+<div class="app-layout">
+  <!-- Fondo oscuro para cierre de menú lateral en dispositivos móviles -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+  }
+
+  <!-- BARRA LATERAL (Side Menu) -->
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <!-- Cabecera del Sidebar con Nombre de la Plataforma -->
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <!-- Icono de Rutas Seguras -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"></path>
+            <circle cx="7" cy="17" r="2"></circle>
+            <path d="M9 17h6"></path>
+            <circle cx="17" cy="17" r="2"></circle>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h2>Rutas Seguras</h2>
+        </div>
+      </div>
+      <!-- Botón para cerrar en pantallas móviles -->
+      <button class="close-sidebar-btn" (click)="closeSidebar()" title="Cerrar menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navegación: Botones del Side Menu -->
+    <div class="sidebar-nav-container">
+      <nav class="sidebar-nav">
+        @for (item of navItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+            class="nav-link"
+            (click)="closeSidebar()"
+          >
+            <div class="nav-link-content">
+              <span class="nav-icon">
+                @switch (item.icon) {
+                  @case ('dashboard') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="7" height="9"></rect>
+                      <rect x="14" y="3" width="7" height="5"></rect>
+                      <rect x="14" y="12" width="7" height="9"></rect>
+                      <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                  }
+                  @case ('users') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  }
+                  @case ('steering-wheel') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <circle cx="12" cy="12" r="2"></circle>
+                      <path d="M12 2v8"></path>
+                      <path d="m4.93 18.07 5.66-5.66"></path>
+                      <path d="m19.07 18.07-5.66-5.66"></path>
+                    </svg>
+                  }
+                  @case ('bus') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="15" rx="3"></rect>
+                      <path d="M7 19v2"></path>
+                      <path d="M17 19v2"></path>
+                      <path d="M3 11h18"></path>
+                      <circle cx="7.5" cy="15.5" r="1.5"></circle>
+                      <circle cx="16.5" cy="15.5" r="1.5"></circle>
+                    </svg>
+                  }
+                  @case ('map-pin') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="10" r="3"></circle>
+                      <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+                    </svg>
+                  }
+                }
+              </span>
+              <span class="nav-label">{{ item.label }}</span>
+            </div>
+          </a>
+        }
+      </nav>
+    </div>
+
+    <!-- Pie del Sidebar: Perfil Default del Administrador y Cierre de Sesión -->
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <!-- Avatar default genérico con icono SVG -->
+        <div class="user-avatar-default">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="user-details">
+          <span class="user-name">Administrador</span>
+          <span class="user-role">admin&#64;rutas-seguras.cl</span>
+        </div>
+      </div>
+
+      <!-- Botón para cerrar sesión -->
+      <button class="logout-btn" (click)="logout()" title="Cerrar Sesión">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Salir</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL DE CONTENIDO -->
+  <div class="main-wrapper">
+    <!-- Cabecera Superior Simple -->
+    <header class="top-header">
+      <div class="header-left">
+        <!-- Botón toggle de menú para móviles -->
+        <button class="mobile-menu-btn" (click)="toggleSidebar()" title="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <span class="header-title">Sistema de Transporte Escolar</span>
+      </div>
+
+      <!-- Perfil default en la esquina derecha -->
+      <div class="header-right">
+        <div class="header-user">
+          <div class="header-user-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <span>Administrador</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Renderizado dinámico de la ruta activa -->
+    <main class="content-container">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

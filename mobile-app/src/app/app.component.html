@@ -28,33 +28,74 @@
           <!-- Menú de Navegación -->
           <div class="menu-items">
 
-            <ion-menu-toggle autoHide="false">
-              <a [routerLink]="['/apoderado/inicio']" class="menu-item" routerLinkActive="active">
-                <span class="item-icon">🏠</span>
-                <span class="item-text">Inicio</span>
-              </a>
-            </ion-menu-toggle>
+            @if (usuario?.rol === 'conductor') {
 
-            <ion-menu-toggle autoHide="false">
-              <a [routerLink]="['/apoderado/mis-hijos']" class="menu-item" routerLinkActive="active">
-                <span class="item-icon">👧</span>
-                <span class="item-text">Mis Hijos</span>
-              </a>
-            </ion-menu-toggle>
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/inicio']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🏠</span>
+                  <span class="item-text">Inicio Conductor</span>
+                </a>
+              </ion-menu-toggle>
 
-            <ion-menu-toggle autoHide="false">
-              <a [routerLink]="['/agregar-hijo']" class="menu-item" routerLinkActive="active">
-                <span class="item-icon">➕</span>
-                <span class="item-text">Agregar Hijo</span>
-              </a>
-            </ion-menu-toggle>
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/ruta-activa']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🚌</span>
+                  <span class="item-text">Ruta Activa</span>
+                </a>
+              </ion-menu-toggle>
 
-            <ion-menu-toggle autoHide="false">
-              <a [routerLink]="['/apoderado/seguimiento']" class="menu-item" routerLinkActive="active">
-                <span class="item-icon">🚌</span>
-                <span class="item-text">Seguimiento</span>
-              </a>
-            </ion-menu-toggle>
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/escanear-qr']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">📷</span>
+                  <span class="item-text">Escanear QR</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/emergencia']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">⚠️</span>
+                  <span class="item-text">Emergencia</span>
+                </a>
+              </ion-menu-toggle>
+
+            } @else {
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/inicio']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🏠</span>
+                  <span class="item-text">Inicio</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/mis-hijos']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👧</span>
+                  <span class="item-text">Mis Hijos</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/agregar-hijo']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">➕</span>
+                  <span class="item-text">Agregar Hijo</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/mi-qr']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">📱</span>
+                  <span class="item-text">Mi QR</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/seguimiento']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🚌</span>
+                  <span class="item-text">Seguimiento</span>
+                </a>
+              </ion-menu-toggle>
+
+            }
 
           </div>
 

@@ -1,20 +1,58 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+
+import { RouterLink } from '@angular/router';
+
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonMenuToggle
+} from '@ionic/angular/standalone';
+
+import { addIcons } from 'ionicons';
+
+import {
+  menuOutline,
+  busOutline,
+  playCircleOutline,
+  personOutline,
+  locationOutline,
+  notificationsOutline,
+  informationCircleOutline
+} from 'ionicons/icons';
+
+addIcons({
+  menuOutline,
+  busOutline,
+  playCircleOutline,
+  personOutline,
+  locationOutline,
+  notificationsOutline,
+  informationCircleOutline
+});
 
 @Component({
-  selector: 'app-inicio',
+  selector: 'app-inicio-conductor',
+
   templateUrl: './inicio.page.html',
+
   styleUrls: ['./inicio.page.scss'],
+
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+
+  imports: [
+    CommonModule,
+    RouterLink,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonMenuToggle
+  ]
 })
-export class InicioPage implements OnInit {
+export class InicioPage {
 
-  constructor() { }
-
-  ngOnInit() {
-  }
+  constructor() {}
 
 }

@@ -1,13 +1,161 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>emergencia</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">emergencia</ion-title>
-    </ion-toolbar>
-  </ion-header>
+
+  <div class="incident-page">
+
+    <!-- ENCABEZADO -->
+    <section class="header">
+
+      <div>
+        <span class="eyebrow">CONDUCTOR</span>
+
+        <h1>Emergencia</h1>
+
+        <p>
+          Reporta una situación ocurrida durante el recorrido.
+        </p>
+      </div>
+
+      <ion-menu-toggle menu="main-menu">
+        <button class="menu-btn">
+          <ion-icon name="menu-outline"></ion-icon>
+        </button>
+      </ion-menu-toggle>
+
+    </section>
+
+
+    <!-- FORMULARIO -->
+    <section class="card">
+
+      <label>
+        Tipo de emergencia
+      </label>
+
+      <div class="chips">
+
+        <button
+          type="button"
+          class="chip"
+          [class.active]="tipo === 'ruta'"
+          (click)="tipo = 'ruta'">
+
+          Emergencia en ruta
+
+        </button>
+
+        <button
+          type="button"
+          class="chip"
+          [class.active]="tipo === 'estudiante'"
+          (click)="tipo = 'estudiante'">
+
+          Estudiante
+
+        </button>
+
+      </div>
+
+
+      <!-- EMERGENCIA INDIVIDUAL -->
+      @if (tipo === 'estudiante') {
+
+        <div class="field">
+
+          <label>
+            Estudiante
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="estudiante"
+            placeholder="Nombre y RUT">
+
+        </div>
+
+      }
+
+
+      <!-- CATEGORÍA -->
+      <div class="field">
+
+        <label>
+          Tipo de emergencia
+        </label>
+
+        <select [(ngModel)]="categoria">
+
+          <option value="">
+            Selecciona una opción
+          </option>
+
+          <option>
+            Emergencia médica
+          </option>
+
+          <option>
+            Accidente
+          </option>
+
+          <option>
+            Problema mecánico
+          </option>
+
+          <option>
+            Retraso importante
+          </option>
+
+          <option>
+            Otro
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DESCRIPCIÓN -->
+      <div class="field">
+
+        <label>
+          ¿Qué ocurrió?
+        </label>
+
+        <textarea
+          rows="4"
+          [(ngModel)]="descripcion"
+          placeholder="Describe brevemente la situación...">
+        </textarea>
+
+      </div>
+
+
+      <!-- AVISO -->
+      <div class="notice">
+
+        <ion-icon name="warning-outline"></ion-icon>
+
+        <p>
+          La emergencia será informada a los
+          apoderados correspondientes.
+        </p>
+
+      </div>
+
+
+      <!-- BOTÓN -->
+      <button
+        type="button"
+        class="send-btn"
+        (click)="enviar()">
+
+        <ion-icon name="send-outline"></ion-icon>
+
+        Enviar emergencia
+
+      </button>
+
+    </section>
+
+  </div>
+
 </ion-content>

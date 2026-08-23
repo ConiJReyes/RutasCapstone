@@ -44,6 +44,22 @@ class PerfilApoderado(models.Model):
         return f"Apoderado: {self.usuario.get_full_name()} ({self.rut})"
 
 
+class PerfilConductor(models.Model):
+    usuario = models.OneToOneField(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='perfil_conductor'
+    )
+    rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    licencia_conducir = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Conductor: {self.usuario.get_full_name()} ({self.rut})"
+
+
 class Estudiante(models.Model):
     apoderado = models.ForeignKey(
         PerfilApoderado,

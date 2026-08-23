@@ -1,13 +1,285 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>ruta-activa</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">ruta-activa</ion-title>
-    </ion-toolbar>
-  </ion-header>
+
+  <div class="route-page">
+
+    <!-- =================================
+         ENCABEZADO
+    ================================== -->
+    <section class="route-header">
+
+      <div>
+        <span class="section-label">RUTA ACTIVA</span>
+        <h1>Recorrido</h1>
+        <p>Ruta escolar #01 &bull; {{ paradas.length }} estudiantes</p>
+      </div>
+
+      <ion-menu-toggle menu="main-menu">
+        <button class="menu-button" type="button" title="Abrir menú">
+          <ion-icon name="menu-outline"></ion-icon>
+        </button>
+      </ion-menu-toggle>
+
+    </section>
+
+
+    <!-- =================================
+         ESTADO
+    ================================== -->
+    <div class="active-status">
+
+      <div class="status-left">
+        <span class="status-dot" [class.completed-dot]="todasCompletadas"></span>
+
+        <div>
+          <strong>{{ todasCompletadas ? 'Recorrido finalizado' : 'Ruta en curso' }}</strong>
+          <span>{{ todasCompletadas ? 'Paradas 3 de 3 completadas' : 'Parada ' + (paradaActualIndex + 1) + ' de ' + paradas.length }}</span>
+        </div>
+      </div>
+
+      <span class="elapsed-time">
+        {{ tiempoFormateado }}
+      </span>
+
+    </div>
+
+
+    <!-- =================================
+         MAPA VISUAL
+    ================================== -->
+    <section class="map-card">
+
+      <div class="map-placeholder">
+
+        <div class="map-road road-one"></div>
+        <div class="map-road road-two"></div>
+        <div class="map-road road-three"></div>
+
+        <div class="map-marker marker-start">
+          <ion-icon name="bus-outline"></ion-icon>
+        </div>
+
+        <div class="map-marker marker-stop">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+
+        <div class="map-route-line"></div>
+
+        <div class="map-label">
+          Ruta actual
+        </div>
+
+      </div>
+
+      <button class="map-button" type="button" (click)="centrarUbicacion()">
+
+        <ion-icon name="locate-outline"></ion-icon>
+
+        Mi ubicación
+
+      </button>
+
+    </section>
+
+
+    <!-- =================================
+         PRÓXIMA PARADA
+    ================================== -->
+    @if (paradaActual) {
+
+      <section class="next-stop-section">
+
+        <div class="section-heading">
+
+          <div>
+            <span>PRÓXIMA PARADA</span>
+            <h2>{{ paradaActual.estudiante }}</h2>
+          </div>
+
+          <span class="stop-number">
+            0{{ paradaActual.numero }} / 0{{ paradas.length }}
+          </span>
+
+        </div>
+
+
+        <div class="next-stop-card">
+
+          <div class="stop-icon">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+
+          <div class="stop-info">
+
+            <strong>
+              {{ paradaActual.direccion }}
+            </strong>
+
+            <p>
+              {{ paradaActual.tiempoEstimadoMin }} min aproximadamente
+            </p>
+
+            <div class="receiver-info">
+
+              <ion-icon name="person-outline"></ion-icon>
+
+              <div>
+                <span>PERSONA AUTORIZADA</span>
+                <strong>
+                  {{ paradaActual.personaAutorizada }} &bull; {{ paradaActual.relacion }}
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    } @else {
+
+      <section class="next-stop-section finished-banner">
+
+        <div class="finished-card">
+
+          <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+
+          <h3>¡Todas las paradas han sido completadas!</h3>
+
+          <p>Puedes presionar "Finalizar ruta" para dar por concluido el recorrido de hoy.</p>
+
+        </div>
+
+      </section>
+
+    }
+
+
+    <!-- =================================
+         ACCIONES
+    ================================== -->
+    <section class="actions-section">
+
+      <button
+        class="primary-action"
+        type="button"
+        [disabled]="todasCompletadas"
+        (click)="confirmarLlegada()">
+
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+
+        {{ todasCompletadas ? 'Paradas completadas' : 'Confirmar llegada' }}
+
+      </button>
+
+
+      <div class="secondary-actions">
+
+        <button class="secondary-action" type="button" (click)="irAEscanearQR()">
+          <ion-icon name="qr-code-outline"></ion-icon>
+          Escanear QR
+        </button>
+
+        <button class="secondary-action danger-action" type="button" (click)="irAEmergencia()">
+          <ion-icon name="warning-outline"></ion-icon>
+          Emergencia
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         LISTA DE PARADAS
+    ================================== -->
+    <section class="stops-section">
+
+      <div class="section-heading">
+
+        <div>
+          <span>RECORRIDO</span>
+          <h2>Paradas</h2>
+        </div>
+
+        <span class="completed-count">
+          {{ completadasCount }} completadas
+        </span>
+
+      </div>
+
+
+      <div class="stops-list">
+
+        @for (parada of paradas; track parada.id) {
+
+          <article class="stop-card" [class.active-stop]="parada.estado === 'actual'" [class.completed-stop]="parada.estado === 'completada'">
+
+            <div class="stop-indicator">
+              <span>{{ parada.numero }}</span>
+            </div>
+
+            <div class="stop-content">
+
+              <div class="stop-top">
+
+                <h3>{{ parada.estudiante }}</h3>
+
+                <span
+                  class="stop-status"
+                  [class.current]="parada.estado === 'actual'"
+                  [class.pending]="parada.estado === 'pendiente'"
+                  [class.completed]="parada.estado === 'completada'">
+
+                  {{ parada.estado === 'actual' ? 'Actual' : (parada.estado === 'completada' ? 'Completada ✓' : 'Pendiente') }}
+
+                </span>
+
+              </div>
+
+              <p>{{ parada.direccion }} &bull; {{ parada.colegioOCurso }}</p>
+
+              <span class="receiver-small">
+                Recibe: {{ parada.personaAutorizada }} ({{ parada.relacion }})
+              </span>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         FINALIZAR
+    ================================== -->
+    <button class="finish-route-button" type="button" (click)="finalizarRuta()">
+
+      <ion-icon name="flag-outline"></ion-icon>
+
+      Finalizar ruta
+
+    </button>
+
+
+    <p class="footer-text">
+      Tu ruta escolar, más segura.
+    </p>
+
+  </div>
+
+  <ion-toast
+    [isOpen]="mostrarToast"
+    [message]="mensajeToast"
+    [duration]="2500"
+    [color]="colorToast"
+    (didDismiss)="mostrarToast = false">
+
+  </ion-toast>
+
 </ion-content>

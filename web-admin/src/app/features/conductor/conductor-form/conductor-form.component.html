@@ -1,0 +1,151 @@
+<div class="form-page fade-in">
+  <!-- Cabecera del Formulario -->
+  <div class="form-header">
+    <div class="header-title-container">
+      <h2>Registrar Nuevo Conductor</h2>
+      <p>Ingresa la información requerida para dar de alta a un conductor en la plataforma.</p>
+    </div>
+    <a routerLink="/" class="btn-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+<span>Volver</span>
+
+
+    </a>
+  </div>
+
+  <!-- Formulario Principal -->
+  <div class="form-card glass-panel">
+    @if (errorMessage) {
+      <div class="error-alert" style="color: #c94b4b; background: #fceeee; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; border: 1px solid #f2d3d3;">
+        {{ errorMessage }}
+      </div>
+    }
+    <form [formGroup]="conductorForm" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+
+        <!-- Campo: Nombre Completo -->
+        <div class="form-group full-width">
+          <label for="nombre_completo">Nombre Completo <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input 
+              id="nombre_completo" 
+              type="text" 
+              formControlName="nombre_completo" 
+              placeholder="Nombre Completo"
+              [class.invalid]="isFieldInvalid('nombre_completo')"
+            />
+          </div>
+          @if (isFieldInvalid('nombre_completo')) {
+            <span class="error-message">El nombre completo es obligatorio (mínimo 3 caracteres).</span>
+          }
+        </div>
+
+        <!-- Campo: RUT -->
+        <div class="form-group">
+          <label for="rut">RUT <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input 
+              id="rut" 
+              type="text" 
+              formControlName="rut" 
+              placeholder="RUT"
+              [class.invalid]="isFieldInvalid('rut')"
+            />
+          </div>
+          @if (isFieldInvalid('rut')) {
+            <span class="error-message">Ingresa un RUT válido (ej: 12345678-K).</span>
+          }
+        </div>
+
+        <!-- Campo: Teléfono -->
+        <div class="form-group">
+          <label for="telefono">Teléfono de Contacto <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input 
+              id="telefono" 
+              type="tel" 
+              formControlName="telefono" 
+              placeholder="Teléfono de Contacto"
+              [class.invalid]="isFieldInvalid('telefono')"
+            />
+          </div>
+          @if (isFieldInvalid('telefono')) {
+            <span class="error-message">Ingresa un número telefónico válido.</span>
+          }
+        </div>
+
+        <!-- Campo: Licencia de Conducir -->
+        <div class="form-group">
+          <label for="licencia_conducir">Licencia de Conducir <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <select 
+              id="licencia_conducir" 
+              formControlName="licencia_conducir"
+              [class.invalid]="isFieldInvalid('licencia_conducir')"
+            >
+              <option value="" disabled selected>Selecciona una clase</option>
+              @for (licencia of licenciasDisponibles; track licencia) {
+                <option [value]="licencia">{{ licencia }}</option>
+              }
+            </select>
+          </div>
+          @if (isFieldInvalid('licencia_conducir')) {
+            <span class="error-message">Selecciona la clase de licencia del conductor.</span>
+          }
+        </div>
+
+        <!-- Campo: Correo Electrónico (Login) -->
+        <div class="form-group">
+          <label for="email">Correo Electrónico (Acceso) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input 
+              id="email" 
+              type="email" 
+              formControlName="email" 
+              placeholder="ejemplo@rutas-seguras.cl"
+              [class.invalid]="isFieldInvalid('email')"
+            />
+          </div>
+          @if (isFieldInvalid('email')) {
+            <span class="error-message">Ingresa un correo electrónico válido.</span>
+          }
+        </div>
+
+        <!-- Campo: Contraseña de Acceso -->
+        <div class="form-group">
+          <label for="password">Contraseña de Acceso @if(!isEditMode){<span class="required">*</span>}</label>
+          <div class="input-wrapper">
+            <input 
+              id="password" 
+              type="password" 
+              formControlName="password" 
+              placeholder="Contraseña (mínimo 6 caracteres)"
+              [class.invalid]="isFieldInvalid('password')"
+            />
+          </div>
+          @if (isFieldInvalid('password')) {
+            <span class="error-message">La contraseña debe tener al menos 6 caracteres.</span>
+          }
+        </div>
+
+      </div>
+
+      <!-- Acciones / Botones -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="conductorForm.invalid || isSubmitting">
+          @if (isSubmitting) {
+            <span>Guardando...</span>
+          } @else {
+            <span>Guardar Conductor</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

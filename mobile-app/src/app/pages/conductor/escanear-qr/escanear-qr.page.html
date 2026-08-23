@@ -1,0 +1,511 @@
+<ion-content [fullscreen]="true">
+
+  <div class="scanner-page-container">
+
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
+    <header class="header-section">
+
+      <div class="header-info">
+
+        <span class="section-label">CONDUCTOR</span>
+
+        <h1>Escanear QR</h1>
+
+      </div>
+
+      <div class="header-actions">
+
+        <ion-menu-toggle menu="main-menu">
+
+          <button class="menu-button" type="button" title="Abrir menú">
+
+            <ion-icon name="menu-outline"></ion-icon>
+
+          </button>
+
+        </ion-menu-toggle>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         MODO ESCÁNER CÁMARA
+    ========================== -->
+    @if (!qrEscaneado) {
+
+      <div class="viewfinder-card">
+
+        <div class="viewfinder-header">
+
+          <div class="badge-live">
+
+            <span class="dot-blinking"></span>
+
+            <span>ESCANER ACTIVO</span>
+
+          </div>
+
+          <button type="button" class="flash-btn" (click)="toggleFlash()">
+
+            <ion-icon [name]="flashEncendido ? 'flash-outline' : 'flash-off-outline'"></ion-icon>
+
+          </button>
+
+        </div>
+
+
+        <!-- Marco de la cámara -->
+        <div class="camera-frame">
+
+          @if (cargandoCamara) {
+
+            <div class="camera-loading">
+
+              <ion-spinner name="crescent"></ion-spinner>
+
+              <p>Abriendo cámara...</p>
+
+            </div>
+
+          }
+
+          <!-- Video Stream HTML5 -->
+          <video #videoElement playsinline class="video-preview"></video>
+
+          <!-- Laser Scan Beam Animation -->
+          <div class="scan-beam"></div>
+
+          <!-- Scanning Target Grid -->
+          <div class="scan-corners">
+
+            <span class="corner top-left"></span>
+            <span class="corner top-right"></span>
+            <span class="corner bottom-left"></span>
+            <span class="corner bottom-right"></span>
+
+          </div>
+
+          <div class="scan-hint">
+
+            <ion-icon name="qr-code-outline"></ion-icon>
+
+            <span>Apunta la cámara al código QR del Apoderado</span>
+
+          </div>
+
+        </div>
+
+
+        @if (errorCamara) {
+
+          <div class="camera-fallback-msg">
+
+            <ion-icon name="alert-circle-outline"></ion-icon>
+
+            <p>{{ errorCamara }}</p>
+
+          </div>
+
+        }
+
+      </div>
+
+
+      <!-- =========================
+           BOTONES DE PRUEBA RÁPIDA (SIMULADOR)
+      ========================== -->
+      <div class="simulation-section">
+
+        <div class="sim-header">
+
+          <span class="sim-label">PRUEBAS Y SIMULACIÓN</span>
+
+          <h3>Probador Rápido de QR</h3>
+
+        </div>
+
+        <div class="sim-buttons">
+
+          <button type="button" class="sim-btn apoderado" (click)="simularEscaneoApoderado()">
+
+            <span class="sim-icon">👤</span>
+
+            <div class="sim-text">
+
+              <strong>Escanear Apoderado</strong>
+
+              <span>Carlos Pérez · RUT 15.432.890-K</span>
+
+            </div>
+
+          </button>
+
+          <button type="button" class="sim-btn estudiante" (click)="simularEscaneoEstudiante()">
+
+            <span class="sim-icon">🎓</span>
+
+            <div class="sim-text">
+
+              <strong>Escanear Estudiante</strong>
+
+              <span>Lucía Pérez · Colegio San José</span>
+
+            </div>
+
+          </button>
+
+          <button type="button" class="sim-btn expirado" (click)="simularEscaneoExpirado()">
+
+            <span class="sim-icon">⚠️</span>
+
+            <div class="sim-text">
+
+              <strong>Probar QR Expirado</strong>
+
+              <span>Simula un QR vencido (+15 min)</span>
+
+            </div>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- INGRESO MANUAL -->
+      <div class="manual-input-card">
+
+        <span class="manual-title">¿Tienes el código de texto?</span>
+
+        <div class="manual-row">
+
+          <input
+            type="text"
+            placeholder="Pegar código o JSON..."
+            [(ngModel)]="codigoManual"
+            (keyup.enter)="procesarManual()"
+            class="manual-input" />
+
+          <button type="button" class="manual-btn" (click)="procesarManual()">
+
+            Validar
+
+          </button>
+
+        </div>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         RESULTADO DEL ESCANEO / CONFIRMACIÓN
+    ========================== -->
+    @if (qrEscaneado && !confirmacionExitosa) {
+
+      <div class="result-card" [class.result-error]="!qrEsValido">
+
+        <!-- Banner de Validación -->
+        <div class="result-banner" [class.banner-error]="!qrEsValido">
+
+          <ion-icon [name]="qrEsValido ? 'checkmark-circle-outline' : 'alert-circle-outline'"></ion-icon>
+
+          <div>
+
+            <h2>{{ qrEsValido ? 'QR VÁLIDO Y VERIFICADO' : 'CÓDIGO QR NO VÁLIDO' }}</h2>
+
+            <p>{{ qrEsValido ? 'Detalles de la persona / estudiante recibida' : errorValidacion }}</p>
+
+          </div>
+
+        </div>
+
+
+        @if (qrEsValido) {
+
+          <!-- Tarjeta de Detalles Escaneados -->
+          <div class="scanned-details">
+
+            <div class="details-type-badge">
+
+              <ion-icon [name]="qrEscaneado.tipo === 'APODERADO' ? 'person-outline' : 'school-outline'"></ion-icon>
+
+              <span>{{ qrEscaneado.tipo === 'APODERADO' ? 'APODERADO TITULAR' : 'ESTUDIANTE' }}</span>
+
+            </div>
+
+
+            <div class="detail-row main-subject">
+
+              <div class="subject-avatar">
+
+                {{ qrEscaneado.tipo === 'APODERADO' ? '👤' : '🎓' }}
+
+              </div>
+
+              <div class="subject-text">
+
+                <h3>{{ qrEscaneado.tipo === 'APODERADO' ? qrEscaneado.nombre : qrEscaneado.nombre_estudiante }}</h3>
+
+                <p>RUT: <strong>{{ qrEscaneado.tipo === 'APODERADO' ? qrEscaneado.rut : qrEscaneado.rut_estudiante }}</strong></p>
+
+              </div>
+
+            </div>
+
+
+            @if (qrEscaneado.tipo === 'ESTUDIANTE') {
+
+              <div class="detail-grid">
+
+                <div class="grid-item">
+
+                  <span class="item-lbl">Colegio:</span>
+
+                  <strong>{{ qrEscaneado.colegio }}</strong>
+
+                </div>
+
+                <div class="grid-item">
+
+                  <span class="item-lbl">Curso:</span>
+
+                  <strong>{{ qrEscaneado.curso }}</strong>
+
+                </div>
+
+                <div class="grid-item full">
+
+                  <span class="item-lbl">Apoderado Responsable:</span>
+
+                  <strong>{{ qrEscaneado.apoderado_nombre }}</strong>
+
+                </div>
+
+              </div>
+
+            } @else {
+
+              <div class="detail-grid">
+
+                <div class="grid-item full">
+
+                  <span class="item-lbl">Email Apoderado:</span>
+
+                  <strong>{{ qrEscaneado.email }}</strong>
+
+                </div>
+
+              </div>
+
+            }
+
+
+            <!-- Opciones de Registro -->
+            <div class="action-type-selector">
+
+              <span class="selector-lbl">TIPO DE REGISTRO EN RUTA:</span>
+
+              <div class="action-buttons-group">
+
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.selected]="tipoAccion === 'RECEPCION'"
+                  (click)="tipoAccion = 'RECEPCION'">
+
+                  <ion-icon name="bus-outline"></ion-icon>
+
+                  <span>Abordaje (Subida)</span>
+
+                </button>
+
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.selected]="tipoAccion === 'ENTREGA'"
+                  (click)="tipoAccion = 'ENTREGA'">
+
+                  <ion-icon name="person-outline"></ion-icon>
+
+                  <span>Entrega (Bajada)</span>
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- Nota Opcional -->
+            <div class="note-input-container">
+
+              <label for="nota">Observaciones o notas (Opcional):</label>
+
+              <input
+                id="nota"
+                type="text"
+                placeholder="Ej: Recibido sin novedades..."
+                [(ngModel)]="notaAdicional"
+                class="note-field" />
+
+            </div>
+
+
+            <!-- Botón Confirmar -->
+            <ion-button
+              expand="block"
+              class="confirm-button"
+              (click)="confirmarRecepcion()">
+
+              <ion-icon slot="start" name="checkmark-done-circle-outline"></ion-icon>
+
+              Confirmar Registro de {{ tipoAccion === 'RECEPCION' ? 'Abordaje' : 'Entrega' }}
+
+            </ion-button>
+
+          </div>
+
+        }
+
+
+        <!-- Botón Reintentar o Escanear Otro -->
+        <ion-button
+          fill="outline"
+          class="reset-button"
+          (click)="resetearEscaneo()">
+
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+
+          Volver a Escanear
+
+        </ion-button>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         CONFIRMACIÓN EXITOSA
+    ========================== -->
+    @if (confirmacionExitosa) {
+
+      <div class="success-screen">
+
+        <div class="success-icon-wrapper">
+
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+
+        </div>
+
+        <h2>¡Registro Confirmado!</h2>
+
+        <p class="success-subtitle">
+
+          El estado del estudiante ha sido actualizado en la ruta activa.
+
+        </p>
+
+
+        <div class="success-summary-card">
+
+          <div class="summary-line">
+
+            <span>Acción:</span>
+
+            <strong>{{ tipoAccion === 'RECEPCION' ? 'Abordaje al Furgón' : 'Entregado a Apoderado' }}</strong>
+
+          </div>
+
+          <div class="summary-line">
+
+            <span>Nombre:</span>
+
+            <strong>{{ qrEscaneado?.tipo === 'APODERADO' ? qrEscaneado?.nombre : qrEscaneado?.nombre_estudiante }}</strong>
+
+          </div>
+
+          <div class="summary-line">
+
+            <span>Fecha y Hora:</span>
+
+            <strong>{{ fechaActual | date:'dd/MM/yyyy HH:mm' }}</strong>
+
+          </div>
+
+          @if (notaAdicional) {
+
+            <div class="summary-line">
+
+              <span>Nota:</span>
+
+              <em>"{{ notaAdicional }}"</em>
+
+            </div>
+
+          }
+
+        </div>
+
+
+        <div class="success-actions">
+
+          <ion-button
+            expand="block"
+            class="action-btn primary"
+            (click)="resetearEscaneo()">
+
+            <ion-icon slot="start" name="qr-code-outline"></ion-icon>
+
+            Escanear Otro Estudiante
+
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            class="action-btn secondary"
+            (click)="volverARuta()">
+
+            <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+
+            Volver a la Ruta Activa
+
+          </ion-button>
+
+        </div>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+    <footer class="footer-message">
+
+      <span>🚌</span>
+
+      <p>Tu ruta escolar, más segura.</p>
+
+    </footer>
+
+  </div>
+
+  <ion-toast
+    [isOpen]="mostrarToast"
+    [message]="mensajeToast"
+    [duration]="2500"
+    [color]="colorToast"
+    (didDismiss)="mostrarToast = false">
+
+  </ion-toast>
+
+</ion-content>

@@ -1,0 +1,100 @@
+<div class="list-page fade-in">
+  <div class="list-header">
+    <div>
+      <h2>Gestión de Apoderados y Estudiantes</h2>
+      <p>Haz clic en cualquier apoderado para desplegar los estudiantes a su cargo.</p>
+    </div>
+    <a routerLink="/apoderados/nuevo" class="btn-primary">
+      <span>+ Nuevo Apoderado</span>
+    </a>
+  </div>
+
+  <div class="table-card glass-panel">
+    @if (apoderados.length === 0) {
+      <div class="empty-state">
+        <p>No hay apoderados registrados.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th class="expand-col"></th>
+              <th>RUT</th>
+              <th>Nombre Completo</th>
+              <th>Teléfono</th>
+              <th>Usuario</th>
+              <th>Estudiantes</th>
+              <th class="actions-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (apoderado of apoderados; track apoderado.id) {
+              <tr class="clickable-row" (click)="toggleExpand(apoderado.id)">
+                <td class="expand-col">
+                  <span class="chevron" [class.open]="isExpanded(apoderado.id)">▶</span>
+                </td>
+                <td class="font-bold">{{ apoderado.rut }}</td>
+                <td>{{ apoderado.nombre_completo }}</td>
+                <td>{{ apoderado.telefono }}</td>
+                <td><code>{{ apoderado.usuario }}</code></td>
+                <td>
+                  <span class="badge-count">
+                    {{ apoderado.estudiantes?.length || 0 }} {{ (apoderado.estudiantes?.length === 1) ? 'estudiante' : 'estudiantes' }}
+                  </span>
+                </td>
+                <td class="actions-col" (click)="$event.stopPropagation()">
+                  <button type="button" class="btn-action edit" (click)="onEdit(apoderado.id)" title="Editar">
+                    ✏️
+                  </button>
+                  <button type="button" class="btn-action delete" (click)="onDelete(apoderado.id)" title="Eliminar">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+
+              @if (isExpanded(apoderado.id)) {
+                <tr class="expanded-row">
+                  <td colspan="7">
+                    <div class="estudiantes-container">
+                      <h4>Estudiantes a cargo de {{ apoderado.nombre_completo }}:</h4>
+                      
+                      @if (!apoderado.estudiantes || apoderado.estudiantes.length === 0) {
+                        <p class="no-children">Este apoderado no tiene estudiantes asociados aún.</p>
+                      } @else {
+                        <table class="sub-table">
+                          <thead>
+                            <tr>
+                              <th>RUT</th>
+                              <th>Nombre Completo</th>
+                              <th>Curso</th>
+                              <th>Colegio</th>
+                              <th>Dirección Retiro</th>
+                              <th>Estado Matrícula</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (est of apoderado.estudiantes; track est.id) {
+                              <tr>
+                                <td><strong>{{ est.rut }}</strong></td>
+                                <td>{{ est.nombre_completo }}</td>
+                                <td>{{ est.curso }}</td>
+                                <td>{{ est.colegio }}</td>
+                                <td>{{ est.direccion_retiro }}</td>
+                                <td><span class="badge-status">{{ est.estado_matricula }}</span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

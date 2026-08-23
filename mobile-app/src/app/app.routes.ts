@@ -74,6 +74,13 @@ export const routes: Routes = [
       import('./pages/apoderado/seguimiento/seguimiento.page')
         .then((m) => m.SeguimientoPage),
   },
+  {
+    path: 'apoderado/mi-qr',
+    loadComponent: () =>
+      import('./pages/apoderado/mi-qr/mi-qr.page')
+        .then(m => m.MiQrPage)
+  },
+
 
   // =========================
   // CONDUCTOR
@@ -98,8 +105,15 @@ export const routes: Routes = [
       import('./pages/conductor/emergencia/emergencia.page')
         .then((m) => m.EmergenciaPage),
   },
+
+  {
+    path: 'conductor/escanear-qr',
+    loadComponent: () =>
+      import('./pages/conductor/escanear-qr/escanear-qr.page')
+        .then((m) => m.EscanearQrPage),
+  },
   {
     path: 'agregar-hijo',
-    loadComponent: () => import('./pages/apoderado/agregar-hijo/agregar-hijo.page').then( m => m.AgregarHijoPage)
+    loadComponent: () => import('./pages/apoderado/agregar-hijo/agregar-hijo.page').then(m => m.AgregarHijoPage)
   },
 ];

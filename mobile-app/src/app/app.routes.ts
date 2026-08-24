@@ -80,6 +80,12 @@ export const routes: Routes = [
       import('./pages/apoderado/mi-qr/mi-qr.page')
         .then(m => m.MiQrPage)
   },
+  {
+    path: 'apoderado/contrato',
+    loadComponent: () =>
+      import('./pages/apoderado/contrato/contrato.page')
+        .then((m) => m.ContratoPage),
+  },
 
 
   // =========================
@@ -111,6 +117,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/conductor/escanear-qr/escanear-qr.page')
         .then((m) => m.EscanearQrPage),
+  },
+  {
+    path: 'conductor/perfil',
+    loadComponent: () =>
+      import('./pages/conductor/perfil/perfil.page')
+        .then((m) => m.PerfilPage),
   },
   {
     path: 'agregar-hijo',

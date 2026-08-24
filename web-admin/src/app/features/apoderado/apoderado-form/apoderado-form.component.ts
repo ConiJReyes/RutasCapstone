@@ -38,11 +38,15 @@ export class ApoderadoFormComponent implements OnInit {
     if (idParam) {
       this.apoderadoId = Number(idParam);
       this.isEditMode = true;
-      const apoderado = this.apoderadoService.getApoderadoById(this.apoderadoId);
-      if (apoderado) {
-        this.apoderadoForm.patchValue(apoderado);
-        this.estudiantesList = apoderado.estudiantes ? [...apoderado.estudiantes] : [];
-      }
+      this.apoderadoService.getApoderadoById(this.apoderadoId).subscribe({
+        next: (apoderado) => {
+          if (apoderado) {
+            this.apoderadoForm.patchValue(apoderado);
+            this.estudiantesList = apoderado.estudiantes ? [...apoderado.estudiantes] : [];
+          }
+        },
+        error: (err) => console.error('Error al obtener apoderado:', err)
+      });
     }
   }
 
@@ -118,16 +122,34 @@ export class ApoderadoFormComponent implements OnInit {
 
     const formData = {
       ...this.apoderadoForm.value,
-      id: this.apoderadoId ?? undefined,
       estudiantes: this.estudiantesList
     };
 
-    this.apoderadoService.saveApoderado(formData);
-
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.router.navigate(['/apoderados']);
-    }, 300);
+    if (this.isEditMode && this.apoderadoId) {
+      this.apoderadoService.actualizarApoderado(this.apoderadoId, formData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/apoderados']);
+        },
+        error: (err) => {
+          console.error('Error al actualizar apoderado:', err);
+          this.isSubmitting = false;
+          alert(err.error?.message || 'Error al actualizar el apoderado.');
+        }
+      });
+    } else {
+      this.apoderadoService.crearApoderado(formData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/apoderados']);
+        },
+        error: (err) => {
+          console.error('Error al crear apoderado:', err);
+          this.isSubmitting = false;
+          alert(err.error?.message || 'Error al crear el apoderado.');
+        }
+      });
+    }
   }
 
   onCancel(): void {

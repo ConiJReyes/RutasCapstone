@@ -5,11 +5,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.http import FileResponse, Http404
 from django.conf import settings
-from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor
+from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado
 from .serializers import (
     RegistroApoderadoSerializer,
     RegistroConductorSerializer,
     ConductorSerializer,
+    ApoderadoSerializer,
     LoginSerializer,
     UsuarioResponseSerializer,
     EstudianteSerializer,
@@ -43,6 +44,116 @@ class RegistroApoderadoView(APIView):
             'message': 'Error en el registro.',
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DashboardStatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        estudiantes_count = Estudiante.objects.count()
+        conductores_count = Usuario.objects.filter(rol='conductor').count()
+        apoderados_count = Usuario.objects.filter(rol='apoderado').count()
+        return Response({
+            'estudiantes': estudiantes_count,
+            'conductores': conductores_count,
+            'apoderados': apoderados_count,
+            'furgones': 0,
+            'rutas': 0
+        }, status=status.HTTP_200_OK)
+
+
+
+class ApoderadoListCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        apoderados = Usuario.objects.filter(rol='apoderado').order_by('-id')
+        serializer = ApoderadoSerializer(apoderados, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        data = request.data.copy()
+        if 'nombre_completo' in data and not data.get('nombre'):
+            parts = data['nombre_completo'].strip().split(' ', 1)
+            data['nombre'] = parts[0]
+            data['apellido'] = parts[1] if len(parts) > 1 else ''
+        if 'usuario' in data and not data.get('email'):
+            data['email'] = data['usuario']
+        if not data.get('password'):
+            data['password'] = '123456'
+
+        serializer = RegistroApoderadoSerializer(data=data)
+        if serializer.is_valid():
+            usuario = serializer.save()
+            user_data = ApoderadoSerializer(usuario).data
+            return Response({
+                'message': 'Apoderado registrado exitosamente.',
+                'apoderado': user_data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            'message': 'Error al registrar el apoderado.',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ApoderadoDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, apoderado_id):
+        try:
+            apoderado = Usuario.objects.get(id=apoderado_id, rol='apoderado')
+        except Usuario.DoesNotExist:
+            raise Http404
+        return Response(ApoderadoSerializer(apoderado).data, status=status.HTTP_200_OK)
+
+    def patch(self, request, apoderado_id):
+        try:
+            apoderado = Usuario.objects.get(id=apoderado_id, rol='apoderado')
+        except Usuario.DoesNotExist:
+            raise Http404
+
+        nombre = request.data.get('nombre') or request.data.get('nombre_completo')
+        if nombre:
+            parts = nombre.strip().split(' ', 1)
+            apoderado.first_name = parts[0]
+            apoderado.last_name = parts[1] if len(parts) > 1 else ''
+
+        email = request.data.get('email') or request.data.get('usuario')
+        if email and email.lower().strip() != apoderado.email:
+            new_email = email.lower().strip()
+            if Usuario.objects.filter(email=new_email).exclude(id=apoderado.id).exists():
+                return Response({'message': 'El correo electrónico ya está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+            apoderado.email = new_email
+            apoderado.username = new_email
+
+        password = request.data.get('password')
+        if password:
+            apoderado.set_password(password)
+
+        apoderado.save()
+
+        if hasattr(apoderado, 'perfil_apoderado'):
+            perfil = apoderado.perfil_apoderado
+            if 'rut' in request.data:
+                perfil.rut = request.data['rut'].strip()
+            if 'telefono' in request.data:
+                perfil.telefono = request.data['telefono'].strip()
+            perfil.save()
+
+        return Response({
+            'message': 'Apoderado actualizado exitosamente.',
+            'apoderado': ApoderadoSerializer(apoderado).data
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, apoderado_id):
+        try:
+            apoderado = Usuario.objects.get(id=apoderado_id, rol='apoderado')
+        except Usuario.DoesNotExist:
+            raise Http404
+
+        apoderado.delete()
+        return Response({'message': 'Apoderado eliminado correctamente.'}, status=status.HTTP_200_OK)
+
 
 
 class ConductorListCreateView(APIView):

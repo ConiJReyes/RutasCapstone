@@ -12,9 +12,8 @@ import { ApoderadoService, Apoderado } from '../../../core/services/apoderado.se
 })
 export class ApoderadoListaComponent implements OnInit {
   apoderados: Apoderado[] = [];
-  
-  // Set para llevar el control de qué ID de apoderado está abierto/desplegado
   expandedApoderadoIds: Set<number> = new Set<number>();
+  cargando = false;
 
   constructor(
     private apoderadoService: ApoderadoService,
@@ -22,12 +21,23 @@ export class ApoderadoListaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.apoderadoService.getApoderados().subscribe((data) => {
-      this.apoderados = data;
+    this.cargarApoderados();
+  }
+
+  cargarApoderados(): void {
+    this.cargando = true;
+    this.apoderadoService.getApoderados().subscribe({
+      next: (data) => {
+        this.apoderados = data;
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar apoderados:', err);
+        this.cargando = false;
+      }
     });
   }
 
-  // Alterna abrir/cerrar los estudiantes del apoderado
   toggleExpand(id: number): void {
     if (this.expandedApoderadoIds.has(id)) {
       this.expandedApoderadoIds.delete(id);
@@ -46,7 +56,15 @@ export class ApoderadoListaComponent implements OnInit {
 
   onDelete(id: number): void {
     if (confirm('¿Estás seguro de que deseas eliminar este apoderado?')) {
-      this.apoderadoService.deleteApoderado(id);
+      this.apoderadoService.deleteApoderado(id).subscribe({
+        next: () => {
+          this.cargarApoderados();
+        },
+        error: (err) => {
+          console.error('Error al eliminar apoderado:', err);
+          alert('Ocurrió un error al eliminar el apoderado.');
+        }
+      });
     }
   }
 }

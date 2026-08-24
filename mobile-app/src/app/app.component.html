@@ -7,22 +7,24 @@
 
         <div class="sidebar-container">
 
-          <!-- Cabecera del Sidebar -->
-          <div class="sidebar-header">
+          <!-- Cabecera del Sidebar (Clickable a Perfil) -->
+          <ion-menu-toggle autoHide="false">
+            <div class="sidebar-header clickable-header" [routerLink]="usuario?.rol === 'conductor' ? ['/conductor/perfil'] : ['/apoderado/inicio']" title="Ver mi perfil">
 
-            <div class="user-avatar">
-              <span>👤</span>
+              <div class="user-avatar">
+                <span>👤</span>
+              </div>
+
+              <div class="user-info">
+                <span class="user-role">{{ usuario?.rol === 'conductor' ? 'Conductor' : 'Apoderado' }}</span>
+
+                <h3>{{ usuario?.first_name || 'Usuario' }} {{ usuario?.last_name || '' }}</h3>
+
+                <p>{{ usuario?.email || '' }}</p>
+              </div>
+
             </div>
-
-            <div class="user-info">
-              <span class="user-role">{{ usuario?.rol === 'conductor' ? 'Conductor' : 'Apoderado' }}</span>
-
-              <h3>{{ usuario?.first_name || 'Usuario' }} {{ usuario?.last_name || '' }}</h3>
-
-              <p>{{ usuario?.email || '' }}</p>
-            </div>
-
-          </div>
+          </ion-menu-toggle>
 
 
           <!-- Menú de Navegación -->
@@ -34,6 +36,13 @@
                 <a [routerLink]="['/conductor/inicio']" class="menu-item" routerLinkActive="active">
                   <span class="item-icon">🏠</span>
                   <span class="item-text">Inicio Conductor</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/perfil']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👤</span>
+                  <span class="item-text">Mi Perfil</span>
                 </a>
               </ion-menu-toggle>
 

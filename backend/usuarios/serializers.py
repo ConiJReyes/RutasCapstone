@@ -159,6 +159,58 @@ class ConductorSerializer(serializers.ModelSerializer):
         return obj.perfil_conductor.licencia_conducir if hasattr(obj, 'perfil_conductor') else ''
 
 
+class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    direccion_retiro = serializers.CharField(source='direccion_principal', read_only=True)
+    estado_matricula = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Estudiante
+        fields = [
+            'id', 'rut', 'nombre', 'apellido', 'nombre_completo',
+            'fecha_nacimiento', 'curso', 'colegio', 'direccion_retiro',
+            'estado_matricula'
+        ]
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.nombre} {obj.apellido}".strip()
+
+    def get_estado_matricula(self, obj):
+        return 'aprobado'
+
+
+class ApoderadoSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    rut = serializers.SerializerMethodField()
+    telefono = serializers.SerializerMethodField()
+    usuario = serializers.CharField(source='email', read_only=True)
+    estudiantes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'id', 'usuario', 'email', 'first_name', 'last_name',
+            'nombre_completo', 'rut', 'telefono', 'rol', 'estudiantes'
+        ]
+
+    def get_nombre_completo(self, obj):
+        full_name = f"{obj.first_name} {obj.last_name}".strip()
+        return full_name if full_name else obj.email
+
+    def get_rut(self, obj):
+        return obj.perfil_apoderado.rut if hasattr(obj, 'perfil_apoderado') else ''
+
+    def get_telefono(self, obj):
+        return obj.perfil_apoderado.telefono if hasattr(obj, 'perfil_apoderado') else ''
+
+    def get_estudiantes(self, obj):
+        if hasattr(obj, 'perfil_apoderado'):
+            estudiantes = obj.perfil_apoderado.estudiantes.all()
+            return ApoderadoEstudianteSerializer(estudiantes, many=True).data
+        return []
+
+
+
 class EstudianteSerializer(serializers.ModelSerializer):
     tiene_foto = serializers.SerializerMethodField(read_only=True)
     MAX_FOTO_BYTES = 5 * 1024 * 1024

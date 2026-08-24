@@ -11,6 +11,7 @@ export interface Usuario {
   rol: string;
   rut?: string;
   telefono?: string;
+  licencia_conducir?: string;
 }
 
 export interface AuthResponse {

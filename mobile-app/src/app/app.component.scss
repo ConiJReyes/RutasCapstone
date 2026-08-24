@@ -19,6 +19,20 @@ ion-menu {
   border-radius: 18px;
   margin-bottom: 24px;
   border: 1px solid #dce7e5;
+  transition: all 0.2s ease;
+
+  &.clickable-header {
+    cursor: pointer;
+
+    &:hover {
+      background: #e8f5f3;
+      border-color: #a7d8d2;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
 
 .user-avatar {

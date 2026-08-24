@@ -1,13 +1,365 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>seguimiento</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="seguimiento-content">
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">seguimiento</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="seguimiento-page">
+
+    <!-- =========================================
+         ENCABEZADO
+    ========================================== -->
+
+    <div class="page-header">
+
+      <button class="back-button" type="button" (click)="volver()" aria-label="Volver">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+
+      <h1>Seguimiento</h1>
+
+    </div>
+
+
+    <!-- =========================================
+         CARGANDO
+    ========================================== -->
+
+    @if (cargando) {
+
+    <div class="loading-container">
+
+      <ion-spinner></ion-spinner>
+
+      <p>
+        Cargando seguimiento...
+      </p>
+
+    </div>
+
+    }
+
+
+    <!-- =========================================
+         ERROR
+    ========================================== -->
+
+    @else if (error) {
+
+    <div class="error-container">
+
+      <div class="error-icon">
+
+        <ion-icon name="alert-circle-outline"></ion-icon>
+
+      </div>
+
+      <h2>
+        No se pudo cargar el seguimiento
+      </h2>
+
+      <p>
+        {{ error }}
+      </p>
+
+      <button class="retry-button" type="button" (click)="cargarSeguimiento()">
+        <ion-icon name="refresh-outline"></ion-icon>
+
+        Reintentar
+      </button>
+
+    </div>
+
+    }
+
+
+    <!-- =========================================
+         DATOS DEL SEGUIMIENTO
+    ========================================== -->
+
+    @else if (seguimiento) {
+
+
+    <!-- =====================================
+           ESTADO DE LA RUTA
+      ====================================== -->
+
+    <div class="status-card">
+
+      <div class="status-indicator">
+
+        <span class="status-dot" [class.active]="
+              seguimiento.ruta.estado === 'en_camino'
+            "></span>
+
+      </div>
+
+      <div class="status-info">
+
+        <strong>
+          {{ estadoRuta }}
+        </strong>
+
+        <span>
+          {{ descripcionEstado }}
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================
+           MAPA
+      ====================================== -->
+
+    <div class="map-container">
+
+      @if (tieneUbicacion) {
+
+      <!--
+            AQUÍ SE INSERTARÁ LEAFLET
+            cuando conectemos el GPS real.
+
+            Las coordenadas reales están disponibles en:
+
+            seguimiento.ubicacion.latitud
+            seguimiento.ubicacion.longitud
+          -->
+
+      <div class="map-placeholder" [attr.data-lat]="
+              seguimiento.ubicacion.latitud
+            " [attr.data-lng]="
+              seguimiento.ubicacion.longitud
+            ">
+
+        <div class="map-message">
+
+          <ion-icon name="location-outline"></ion-icon>
+
+          <span>
+            Ubicación disponible
+          </span>
+
+        </div>
+
+        <div class="bus-marker">
+
+          <ion-icon name="bus-outline"></ion-icon>
+
+        </div>
+
+      </div>
+
+      }
+
+      @else {
+
+      <div class="no-location">
+
+        <ion-icon name="location-outline"></ion-icon>
+
+        <strong>
+          Ubicación no disponible
+        </strong>
+
+        <span>
+          El furgón aún no ha enviado su ubicación.
+        </span>
+
+      </div>
+
+      }
+
+    </div>
+
+
+    <!-- =====================================
+           CONDUCTOR
+      ====================================== -->
+
+    <div class="trip-card">
+
+      <div class="trip-section">
+
+        <div class="trip-icon">
+
+          <ion-icon name="person-outline"></ion-icon>
+
+        </div>
+
+        <div class="trip-info">
+
+          <span class="label">
+            Conductor
+          </span>
+
+          <strong>
+            {{ seguimiento.conductor.nombre }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- ===================================
+             ESTUDIANTE
+        ==================================== -->
+
+      <div class="trip-section">
+
+        <div class="trip-icon">
+
+          <ion-icon name="school-outline"></ion-icon>
+
+        </div>
+
+        <div class="trip-info">
+
+          <span class="label">
+            Estudiante
+          </span>
+
+          <strong>
+            {{ seguimiento.estudiante.nombre }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- ===================================
+             RUTA
+        ==================================== -->
+
+      <div class="trip-section">
+
+        <div class="trip-icon">
+
+          <ion-icon name="map-outline"></ion-icon>
+
+        </div>
+
+        <div class="trip-info">
+
+          <span class="label">
+            Ruta
+          </span>
+
+          <strong>
+            {{ seguimiento.ruta.nombre }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================
+           INFORMACIÓN DEL VIAJE
+      ====================================== -->
+
+    <div class="info-grid">
+
+
+      <!-- LLEGADA -->
+
+      <div class="info-box">
+
+        <ion-icon name="time-outline"></ion-icon>
+
+        <div>
+
+          <span>
+            Llegada estimada
+          </span>
+
+          <strong>
+
+            @if (seguimiento.llegada_estimada) {
+
+            {{ seguimiento.llegada_estimada }}
+
+            } @else {
+
+            Calculando...
+
+            }
+
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- ÚLTIMA UBICACIÓN -->
+
+      <div class="info-box">
+
+        <ion-icon name="location-outline"></ion-icon>
+
+        <div>
+
+          <span>
+            Última ubicación
+          </span>
+
+          <strong>
+
+            @if (
+            seguimiento.ubicacion.ultima_actualizacion
+            ) {
+
+            {{ seguimiento.ubicacion.ultima_actualizacion }}
+
+            } @else {
+
+            Sin datos
+
+            }
+
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================
+           CONTACTAR
+      ====================================== -->
+
+    @if (seguimiento.conductor.telefono) {
+
+    <button class="primary-action" type="button" (click)="contactarConductor()">
+
+      <ion-icon name="call-outline"></ion-icon>
+
+      Contactar al conductor
+
+    </button>
+
+    }
+
+
+    <!-- =====================================
+           RUTA COMPLETA
+      ====================================== -->
+
+    <button class="secondary-action" type="button" (click)="verRutaCompleta()">
+
+      <ion-icon name="map-outline"></ion-icon>
+
+      Ver ruta completa
+
+    </button>
+
+
+    }
+
+  </div>
+
 </ion-content>

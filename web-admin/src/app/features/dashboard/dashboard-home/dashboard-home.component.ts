@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -32,48 +32,48 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
   private readonly apiUrl = 'http://127.0.0.1:8000/api/dashboard/stats/';
 
-  stats: StatCard[] = [
-    {
-      key: 'estudiantes',
-      title: 'Estudiantes',
-      count: 0,
-      icon: 'graduation-cap',
-      colorClass: 'primary',
-      route: '/estudiantes'
-    },
-    {
-      key: 'furgones',
-      title: 'Furgones',
-      count: 0,
-      icon: 'bus',
-      colorClass: 'emerald',
-      route: '/furgones'
-    },
-    {
-      key: 'rutas',
-      title: 'Rutas',
-      count: 0,
-      icon: 'map-pin',
-      colorClass: 'amber',
-      route: '/rutas'
-    },
-    {
-      key: 'conductores',
-      title: 'Conductores',
-      count: 0,
-      icon: 'steering-wheel',
-      colorClass: 'cyan',
-      route: '/conductores'
-    },
-    {
-      key: 'apoderados',
-      title: 'Apoderados',
-      count: 0,
-      icon: 'users',
-      colorClass: 'purple',
-      route: '/apoderados'
-    }
-  ];
+  stats = signal<StatCard[]>([
+  {
+    key: 'estudiantes',
+    title: 'Estudiantes',
+    count: 0,
+    icon: 'graduation-cap',
+    colorClass: 'primary',
+    route: '/estudiantes'
+  },
+  {
+    key: 'furgones',
+    title: 'Furgones',
+    count: 0,
+    icon: 'bus',
+    colorClass: 'emerald',
+    route: '/furgones'
+  },
+  {
+    key: 'rutas',
+    title: 'Rutas',
+    count: 0,
+    icon: 'map-pin',
+    colorClass: 'amber',
+    route: '/rutas'
+  },
+  {
+    key: 'conductores',
+    title: 'Conductores',
+    count: 0,
+    icon: 'steering-wheel',
+    colorClass: 'cyan',
+    route: '/conductores'
+  },
+  {
+    key: 'apoderados',
+    title: 'Apoderados',
+    count: 0,
+    icon: 'users',
+    colorClass: 'purple',
+    route: '/apoderados'
+  }
+]);
 
   constructor(private http: HttpClient) {}
 
@@ -101,10 +101,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   private updateStatCount(key: string, count: number): void {
-    const item = this.stats.find(s => s.key === key);
-    if (item) {
-      item.count = count;
-    }
-  }
+  this.stats.update(stats =>
+    stats.map(stat =>
+      stat.key === key
+        ? { ...stat, count }
+        : stat
+    )
+  );
+}
 }
 

@@ -50,14 +50,31 @@ export class ApoderadoFormComponent implements OnInit {
     }
   }
 
-  initApoderadoForm(): void {
-    this.apoderadoForm = this.fb.group({
-      usuario: ['', [Validators.required]],
-      rut: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}-[0-9kK]{1}$')]],
-      nombre_completo: ['', [Validators.required, Validators.minLength(3)]],
-      telefono: ['', [Validators.required, Validators.pattern('^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$')]]
-    });
-  }
+initApoderadoForm(): void {
+  this.apoderadoForm = this.fb.group({
+    correo: ['', [
+      Validators.required,
+      Validators.email
+    ]],
+
+    rut: ['', [
+      Validators.required,
+      Validators.pattern('^[0-9]{7,8}-[0-9kK]{1}$')
+    ]],
+
+    nombre_completo: ['', [
+      Validators.required,
+      Validators.minLength(3)
+    ]],
+
+    telefono: ['', [
+      Validators.required,
+      Validators.pattern(
+        '^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$'
+      )
+    ]]
+  });
+}
 
   initEstudianteForm(): void {
     this.estudianteForm = this.fb.group({
@@ -113,44 +130,62 @@ export class ApoderadoFormComponent implements OnInit {
 
   // Guardar Apoderado + Estudiantes
   onSubmit(): void {
-    if (this.apoderadoForm.invalid) {
-      this.apoderadoForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const formData = {
-      ...this.apoderadoForm.value,
-      estudiantes: this.estudiantesList
-    };
-
-    if (this.isEditMode && this.apoderadoId) {
-      this.apoderadoService.actualizarApoderado(this.apoderadoId, formData).subscribe({
-        next: () => {
-          this.isSubmitting = false;
-          this.router.navigate(['/apoderados']);
-        },
-        error: (err) => {
-          console.error('Error al actualizar apoderado:', err);
-          this.isSubmitting = false;
-          alert(err.error?.message || 'Error al actualizar el apoderado.');
-        }
-      });
-    } else {
-      this.apoderadoService.crearApoderado(formData).subscribe({
-        next: () => {
-          this.isSubmitting = false;
-          this.router.navigate(['/apoderados']);
-        },
-        error: (err) => {
-          console.error('Error al crear apoderado:', err);
-          this.isSubmitting = false;
-          alert(err.error?.message || 'Error al crear el apoderado.');
-        }
-      });
-    }
+  if (this.apoderadoForm.invalid) {
+    this.apoderadoForm.markAllAsTouched();
+    return;
   }
+
+  this.isSubmitting = true;
+
+  const formData = {
+    nombre_completo: this.apoderadoForm.value.nombre_completo,
+    rut: this.apoderadoForm.value.rut,
+    usuario: this.apoderadoForm.value.correo,
+    telefono: this.apoderadoForm.value.telefono
+  };
+
+  if (this.isEditMode && this.apoderadoId) {
+    this.apoderadoService.actualizarApoderado(
+      this.apoderadoId,
+      formData
+    ).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.router.navigate(['/apoderados']);
+      },
+      error: (err) => {
+        console.error('Error al actualizar apoderado:', err);
+        this.isSubmitting = false;
+        alert(
+          err.error?.message ||
+          'Error al actualizar el apoderado.'
+        );
+      }
+    });
+
+  } else {
+    this.apoderadoService.crearApoderado(formData).subscribe({
+      next: (response) => {
+        console.log('✅ APODERADO CREADO:', response);
+
+        this.isSubmitting = false;
+        this.router.navigate(['/apoderados']);
+      },
+      error: (err) => {
+        console.error('❌ ERROR AL CREAR APODERADO:', err);
+
+        this.isSubmitting = false;
+
+        alert(
+          err.error?.errors
+            ? JSON.stringify(err.error.errors)
+            : err.error?.message ||
+              'Error al crear el apoderado.'
+        );
+      }
+    });
+  }
+}
 
   onCancel(): void {
     this.router.navigate(['/apoderados']);

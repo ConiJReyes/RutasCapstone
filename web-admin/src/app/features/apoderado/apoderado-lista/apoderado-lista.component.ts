@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ApoderadoService, Apoderado } from '../../../core/services/apoderado.service';
@@ -17,26 +17,37 @@ export class ApoderadoListaComponent implements OnInit {
 
   constructor(
     private apoderadoService: ApoderadoService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.cargarApoderados();
-  }
+ngOnInit(): void {
+  console.log('🟢 APODERADO COMPONENTE INICIADO');
 
-  cargarApoderados(): void {
-    this.cargando = true;
-    this.apoderadoService.getApoderados().subscribe({
-      next: (data) => {
-        this.apoderados = data;
-        this.cargando = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar apoderados:', err);
-        this.cargando = false;
-      }
-    });
-  }
+  this.cargarApoderados();
+}
+
+cargarApoderados(): void {
+  this.cargando = true;
+
+  this.apoderadoService.getApoderados().subscribe({
+    next: (data) => {
+      console.log('🔵 DATOS RECIBIDOS:', data);
+      
+
+      this.apoderados = data;
+      this.cargando = false;
+
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('❌ ERROR AL CARGAR APODERADOS:', err);
+      this.cargando = false;
+
+      this.cdr.markForCheck();
+    }
+  });
+}
 
   toggleExpand(id: number): void {
     if (this.expandedApoderadoIds.has(id)) {

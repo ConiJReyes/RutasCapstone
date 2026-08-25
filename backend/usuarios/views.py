@@ -52,7 +52,7 @@ class DashboardStatsView(APIView):
     def get(self, request):
         estudiantes_count = Estudiante.objects.count()
         conductores_count = Usuario.objects.filter(rol='conductor').count()
-        apoderados_count = Usuario.objects.filter(rol='apoderado').count()
+        apoderados_count = Usuario.objects.filter(rol='apoderado',is_superuser=False,is_staff=False).count()
         return Response({
             'estudiantes': estudiantes_count,
             'conductores': conductores_count,
@@ -67,7 +67,7 @@ class ApoderadoListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        apoderados = Usuario.objects.filter(rol='apoderado').order_by('-id')
+        apoderados = Usuario.objects.filter(rol='apoderado', is_superuser=False, is_staff=False).order_by('-id')
         serializer = ApoderadoSerializer(apoderados, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

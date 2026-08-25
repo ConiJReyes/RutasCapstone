@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ConductorService, Conductor } from '../../../core/services/conductor.service';
@@ -16,7 +16,8 @@ export class ConductorListaComponent implements OnInit {
 
   constructor(
     private conductorService: ConductorService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +30,7 @@ export class ConductorListaComponent implements OnInit {
       next: (data) => {
         this.conductores = data;
         this.cargando = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error cargando conductores desde backend:', err);

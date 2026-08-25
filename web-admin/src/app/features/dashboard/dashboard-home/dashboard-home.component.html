@@ -8,7 +8,7 @@
 
   <!-- Rejilla de tarjetas de resumen (Métricas) -->
   <div class="stats-grid">
-    @for (stat of stats; track stat.title) {
+    @for (stat of stats(); track stat.title) {
       <div class="stat-card glass-panel">
         <!-- Icono representativo con color de acento -->
         <div class="stat-icon-box" [class]="'icon-' + stat.colorClass">

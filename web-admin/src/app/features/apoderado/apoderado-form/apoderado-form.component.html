@@ -35,8 +35,11 @@
         </div>
 
         <div class="form-group">
-          <label for="usuario">Cuenta de Usuario <span class="required">*</span></label>
-          <input id="usuario" type="text" formControlName="usuario" placeholder="Ej: jperez" [class.invalid]="isFieldInvalid(apoderadoForm, 'usuario')" />
+          <label for="correo">Correo Electrónico <span class="required">*</span></label>
+          <input id="correo" type="email" formControlName="correo" placeholder="Ej: jperez@example.com" [class.invalid]="isFieldInvalid(apoderadoForm, 'correo')" />
+          @if (isFieldInvalid(apoderadoForm, 'correo')) {
+            <span class="error-message">Formato de correo electrónico inválido.</span>
+          }
         </div>
       </div>
 

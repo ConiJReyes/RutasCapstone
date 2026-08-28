@@ -1,19 +1,16 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { NotificationService } from '../../../services/notification.service';
 
 import {
   IonContent,
   IonButton,
-  IonCard,
-  IonCardContent,
   IonSpinner,
   IonMenuToggle,
   IonIcon,
-  IonToast,
-  IonBadge,
-  IonModal
+  IonToast
 } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
@@ -82,17 +79,12 @@ export interface QrDataEscaneado {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     IonContent,
     IonButton,
-    IonCard,
-    IonCardContent,
     IonSpinner,
     IonMenuToggle,
     IonIcon,
-    IonToast,
-    IonBadge,
-    IonModal
+    IonToast
   ]
 })
 export class EscanearQrPage implements OnInit, OnDestroy {
@@ -120,7 +112,10 @@ export class EscanearQrPage implements OnInit, OnDestroy {
 
   private stream: MediaStream | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
     this.iniciarCamara();
@@ -260,6 +255,15 @@ export class EscanearQrPage implements OnInit, OnDestroy {
 
   confirmarRecepcion() {
     if (!this.qrEscaneado || !this.qrEsValido) return;
+
+    const accionBackend = this.tipoAccion === 'RECEPCION' ? 'abordar' : 'llegar';
+    const estId = this.qrEscaneado.id_estudiante;
+    const rut = this.qrEscaneado.rut_estudiante || this.qrEscaneado.rut;
+
+    this.notificationService.escanearQR(estId, rut, accionBackend).subscribe({
+      next: () => console.log('[EscanearQR] Notificación de Abordaje/Llegada registrada en Backend.'),
+      error: (err: any) => console.warn('[EscanearQR] Error enviando escaneo a Backend:', err)
+    });
 
     this.confirmacionExitosa = true;
     this.lanzarToast('¡Abordaje / Entrega registrado exitosamente!', 'success');

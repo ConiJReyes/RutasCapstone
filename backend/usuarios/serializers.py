@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante
+from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante, FCMToken, Notificacion
 
 
 class RegistroApoderadoSerializer(serializers.Serializer):
@@ -137,12 +137,14 @@ class ConductorSerializer(serializers.ModelSerializer):
     telefono = serializers.SerializerMethodField()
     licencia_conducir = serializers.SerializerMethodField()
     usuario = serializers.CharField(source='email', read_only=True)
+    total_estudiantes = serializers.SerializerMethodField()
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
-            'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol'
+            'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol',
+            'total_estudiantes'
         ]
 
     def get_nombre_completo(self, obj):
@@ -158,18 +160,24 @@ class ConductorSerializer(serializers.ModelSerializer):
     def get_licencia_conducir(self, obj):
         return obj.perfil_conductor.licencia_conducir if hasattr(obj, 'perfil_conductor') else ''
 
+    def get_total_estudiantes(self, obj):
+        if hasattr(obj, 'perfil_conductor'):
+            return obj.perfil_conductor.estudiantes_asignados.count()
+        return 0
+
 
 class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField()
     direccion_retiro = serializers.CharField(source='direccion_principal', read_only=True)
     estado_matricula = serializers.SerializerMethodField()
+    conductor_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = Estudiante
         fields = [
             'id', 'rut', 'nombre', 'apellido', 'nombre_completo',
             'fecha_nacimiento', 'curso', 'colegio', 'direccion_retiro',
-            'estado_matricula'
+            'estado_matricula', 'conductor', 'conductor_nombre'
         ]
 
     def get_nombre_completo(self, obj):
@@ -177,6 +185,11 @@ class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
 
     def get_estado_matricula(self, obj):
         return 'aprobado'
+
+    def get_conductor_nombre(self, obj):
+        if obj.conductor:
+            return obj.conductor.usuario.get_full_name() or obj.conductor.usuario.email
+        return None
 
 
 class ApoderadoSerializer(serializers.ModelSerializer):
@@ -213,17 +226,54 @@ class ApoderadoSerializer(serializers.ModelSerializer):
 
 class EstudianteSerializer(serializers.ModelSerializer):
     tiene_foto = serializers.SerializerMethodField(read_only=True)
+    nombre_completo = serializers.SerializerMethodField(read_only=True)
+    apoderado_nombre = serializers.SerializerMethodField(read_only=True)
+    apoderado_telefono = serializers.SerializerMethodField(read_only=True)
+    conductor_id = serializers.SerializerMethodField(read_only=True)
+    conductor_nombre = serializers.SerializerMethodField(read_only=True)
+
     MAX_FOTO_BYTES = 5 * 1024 * 1024
     MAX_FOTO_PIXELS = 20_000_000
     FORMATOS_PERMITIDOS = {'JPEG', 'PNG', 'WEBP'}
 
     class Meta:
         model = Estudiante
-        fields = ['id', 'nombre', 'apellido', 'rut', 'fecha_nacimiento', 'colegio', 'curso',
-                  'direccion_principal', 'direccion_alternativa', 'persona_autorizada',
-                  'rut_persona_autorizada', 'foto', 'tiene_foto', 'created_at', 'updated_at']
+        fields = [
+            'id', 'nombre', 'apellido', 'nombre_completo', 'rut', 'fecha_nacimiento', 'colegio', 'curso',
+            'direccion_principal', 'direccion_alternativa', 'persona_autorizada',
+            'rut_persona_autorizada', 'foto', 'tiene_foto',
+            'apoderado', 'apoderado_nombre', 'apoderado_telefono',
+            'conductor', 'conductor_id', 'conductor_nombre',
+            'created_at', 'updated_at'
+        ]
         read_only_fields = ['id', 'tiene_foto', 'created_at', 'updated_at']
         extra_kwargs = {'foto': {'write_only': True, 'required': False, 'allow_null': True}}
+
+    def get_tiene_foto(self, obj):
+        return bool(obj.foto)
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.nombre} {obj.apellido}".strip()
+
+    def get_apoderado_nombre(self, obj):
+        if obj.apoderado and obj.apoderado.usuario:
+            return obj.apoderado.usuario.get_full_name() or obj.apoderado.usuario.email
+        return None
+
+    def get_apoderado_telefono(self, obj):
+        if obj.apoderado:
+            return obj.apoderado.telefono
+        return None
+
+    def get_conductor_id(self, obj):
+        if obj.conductor:
+            return obj.conductor.usuario.id
+        return None
+
+    def get_conductor_nombre(self, obj):
+        if obj.conductor and obj.conductor.usuario:
+            return obj.conductor.usuario.get_full_name() or obj.conductor.usuario.email
+        return None
 
     def get_tiene_foto(self, obj):
         return bool(obj.foto)
@@ -294,3 +344,28 @@ class EstudianteUpdateSerializer(serializers.ModelSerializer):
                 'rut': 'El RUT del estudiante no puede modificarse.'
             })
         return attrs
+
+
+class FCMTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FCMToken
+        fields = ['id', 'token', 'device_name', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_active', 'created_at', 'updated_at']
+
+
+class NotificacionSerializer(serializers.ModelSerializer):
+    estudiante_nombre = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notificacion
+        fields = [
+            'id', 'titulo', 'mensaje', 'tipo', 'leido',
+            'creado_en', 'estudiante', 'estudiante_nombre'
+        ]
+        read_only_fields = ['id', 'creado_en']
+
+    def get_estudiante_nombre(self, obj):
+        if obj.estudiante:
+            return f"{obj.estudiante.nombre} {obj.estudiante.apellido}".strip()
+        return None
+

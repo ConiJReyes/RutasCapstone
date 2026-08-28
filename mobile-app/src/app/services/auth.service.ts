@@ -84,6 +84,29 @@ export class AuthService {
     );
   }
 
+  actualizarPerfilApoderado(id: number, data: { first_name?: string; last_name?: string; telefono?: string }): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/apoderados/${id}/`, data).pipe(
+      tap(res => {
+        if (res && res.apoderado) {
+          const current = this.getUsuario();
+          if (current) {
+            current.first_name = res.apoderado.first_name || current.first_name;
+            current.last_name = res.apoderado.last_name || current.last_name;
+            current.telefono = res.apoderado.telefono || current.telefono;
+            localStorage.setItem('user', JSON.stringify(current));
+          }
+        }
+      })
+    );
+  }
+
+  cambiarPassword(id: number, passwordActual: string, nuevaPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/apoderados/${id}/cambiar-password/`, {
+      password_actual: passwordActual,
+      nueva_password: nuevaPassword
+    });
+  }
+
   guardarSesion(token: string, usuario: Usuario): void {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('user', JSON.stringify(usuario));

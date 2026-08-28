@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.http import FileResponse, Http404
 from django.conf import settings
-from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado
+from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, FCMToken, Notificacion
 from .serializers import (
     RegistroApoderadoSerializer,
     RegistroConductorSerializer,
@@ -14,8 +14,11 @@ from .serializers import (
     LoginSerializer,
     UsuarioResponseSerializer,
     EstudianteSerializer,
-    EstudianteUpdateSerializer
+    EstudianteUpdateSerializer,
+    FCMTokenSerializer,
+    NotificacionSerializer
 )
+from .push_service import crear_y_despachar_notificacion, notificar_apoderados_de_estudiantes
 
 import secrets
 
@@ -96,6 +99,107 @@ class ApoderadoListCreateView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+class EstudianteSinAsignarListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        estudiantes = Estudiante.objects.filter(conductor__isnull=True)
+        serializer = EstudianteSerializer(estudiantes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ConductorEstudiantesListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, conductor_id):
+        try:
+            conductor_user = Usuario.objects.get(id=conductor_id, rol='conductor')
+            perfil_conductor = conductor_user.perfil_conductor
+        except (Usuario.DoesNotExist, PerfilConductor.DoesNotExist):
+            raise Http404
+
+        estudiantes = perfil_conductor.estudiantes_asignados.all()
+        serializer = EstudianteSerializer(estudiantes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ConductorAsignarEstudiantesView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, conductor_id):
+        try:
+            conductor_user = Usuario.objects.get(id=conductor_id, rol='conductor')
+            perfil_conductor = conductor_user.perfil_conductor
+        except (Usuario.DoesNotExist, PerfilConductor.DoesNotExist):
+            raise Http404
+
+        estudiante_ids = request.data.get('estudiante_ids', [])
+        if not isinstance(estudiante_ids, list):
+            return Response({'message': 'El formato de estudiante_ids debe ser una lista.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        estudiantes_a_asignar = list(Estudiante.objects.filter(id__in=estudiante_ids).select_related('apoderado__usuario'))
+        estudiantes_actualizados = Estudiante.objects.filter(id__in=estudiante_ids).update(conductor=perfil_conductor)
+
+        # Enviar notificación Push a los apoderados correspondientes
+        from .push_service import crear_y_despachar_notificacion
+        nombre_conductor = conductor_user.get_full_name() or conductor_user.email
+
+        for est in estudiantes_a_asignar:
+            if est.apoderado:
+                nombre_estudiante = f"{est.nombre} {est.apellido}".strip()
+                crear_y_despachar_notificacion(
+                    apoderado=est.apoderado,
+                    titulo="🚌 Conductor Asignado",
+                    mensaje=f"Se ha asignado a {nombre_conductor} como furgón/conductor de transporte para {nombre_estudiante}.",
+                    tipo="aviso_sistema",
+                    estudiante=est
+                )
+
+        estudiantes = perfil_conductor.estudiantes_asignados.all()
+        return Response({
+            'message': f'{estudiantes_actualizados} estudiantes asignados exitosamente.',
+            'estudiantes': EstudianteSerializer(estudiantes, many=True).data
+        }, status=status.HTTP_200_OK)
+
+
+class ConductorDesasignarEstudianteView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, conductor_id):
+        try:
+            conductor_user = Usuario.objects.get(id=conductor_id, rol='conductor')
+            perfil_conductor = conductor_user.perfil_conductor
+        except (Usuario.DoesNotExist, PerfilConductor.DoesNotExist):
+            raise Http404
+
+        estudiante_id = request.data.get('estudiante_id')
+        if not estudiante_id:
+            return Response({'message': 'Debe especificar el estudiante_id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        estudiantes_a_desasignar = list(Estudiante.objects.filter(id=estudiante_id, conductor=perfil_conductor).select_related('apoderado__usuario'))
+        Estudiante.objects.filter(id=estudiante_id, conductor=perfil_conductor).update(conductor=None)
+
+        # Enviar notificación Push al apoderado
+        from .push_service import crear_y_despachar_notificacion
+
+        for est in estudiantes_a_desasignar:
+            if est.apoderado:
+                nombre_estudiante = f"{est.nombre} {est.apellido}".strip()
+                crear_y_despachar_notificacion(
+                    apoderado=est.apoderado,
+                    titulo="🚌 Cambio en Transporte Escolar",
+                    mensaje=f"Se ha desasignado el furgón/conductor de transporte para {nombre_estudiante}.",
+                    tipo="aviso_sistema",
+                    estudiante=est
+                )
+
+        estudiantes = perfil_conductor.estudiantes_asignados.all()
+        return Response({
+            'message': 'Estudiante desasignado exitosamente.',
+            'estudiantes': EstudianteSerializer(estudiantes, many=True).data
+        }, status=status.HTTP_200_OK)
+
+
 class ApoderadoDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -112,8 +216,15 @@ class ApoderadoDetailView(APIView):
         except Usuario.DoesNotExist:
             raise Http404
 
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        if first_name is not None:
+            apoderado.first_name = first_name.strip()
+        if last_name is not None:
+            apoderado.last_name = last_name.strip()
+
         nombre = request.data.get('nombre') or request.data.get('nombre_completo')
-        if nombre:
+        if nombre and first_name is None:
             parts = nombre.strip().split(' ', 1)
             apoderado.first_name = parts[0]
             apoderado.last_name = parts[1] if len(parts) > 1 else ''
@@ -134,8 +245,6 @@ class ApoderadoDetailView(APIView):
 
         if hasattr(apoderado, 'perfil_apoderado'):
             perfil = apoderado.perfil_apoderado
-            if 'rut' in request.data:
-                perfil.rut = request.data['rut'].strip()
             if 'telefono' in request.data:
                 perfil.telefono = request.data['telefono'].strip()
             perfil.save()
@@ -144,6 +253,40 @@ class ApoderadoDetailView(APIView):
             'message': 'Apoderado actualizado exitosamente.',
             'apoderado': ApoderadoSerializer(apoderado).data
         }, status=status.HTTP_200_OK)
+
+
+class CambiarPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, apoderado_id):
+        try:
+            apoderado = Usuario.objects.get(id=apoderado_id, rol='apoderado')
+        except Usuario.DoesNotExist:
+            raise Http404
+
+        if request.user.id != apoderado.id and not request.user.is_staff:
+            return Response({'message': 'No tiene permisos para modificar la contraseña de este usuario.'}, status=status.HTTP_403_FORBIDDEN)
+
+        password_actual = request.data.get('password_actual', '')
+        nueva_password = request.data.get('nueva_password', '')
+
+        if not password_actual or not nueva_password:
+            return Response({'message': 'Debe ingresar la contraseña actual y la nueva contraseña.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not apoderado.check_password(password_actual):
+            return Response({'message': 'La contraseña actual es incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if apoderado.check_password(nueva_password) or password_actual == nueva_password:
+            return Response({'message': 'La nueva contraseña no puede ser igual a la contraseña anterior.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(nueva_password) < 6:
+            return Response({'message': 'La nueva contraseña debe tener al menos 6 caracteres.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        apoderado.set_password(nueva_password)
+        apoderado.save()
+
+        return Response({'message': 'Contraseña actualizada exitosamente.'}, status=status.HTTP_200_OK)
+
 
     def delete(self, request, apoderado_id):
         try:
@@ -631,3 +774,216 @@ class ConfirmarRecuperacionView(APIView):
             'message':
                 'Contraseña actualizada correctamente.'
         })
+
+
+class RegistrarFCMTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        token = request.data.get('token', '').strip()
+        device_name = request.data.get('device_name', 'Dispositivo Móvil').strip()
+
+        if not token:
+            return Response({'message': 'El token FCM es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        fcm_token, created = FCMToken.objects.update_or_create(
+            token=token,
+            defaults={
+                'usuario': request.user,
+                'device_name': device_name,
+                'is_active': True
+            }
+        )
+
+        return Response({
+            'message': 'Token FCM registrado exitosamente.',
+            'token': FCMTokenSerializer(fcm_token).data
+        }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+
+
+class NotificacionListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not hasattr(request.user, 'perfil_apoderado'):
+            return Response({'message': 'Solo apoderados tienen bandeja de notificaciones.'}, status=status.HTTP_403_FORBIDDEN)
+
+        notificaciones = Notificacion.objects.filter(apoderado=request.user.perfil_apoderado)
+        no_leidas_count = notificaciones.filter(leido=False).count()
+        serializer = NotificacionSerializer(notificaciones, many=True)
+
+        return Response({
+            'no_leidas_count': no_leidas_count,
+            'notificaciones': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class MarcarNotificacionLeidaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, notificacion_id):
+        if not hasattr(request.user, 'perfil_apoderado'):
+            return Response({'message': 'Permiso denegado.'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            notificacion = Notificacion.objects.get(
+                id=notificacion_id,
+                apoderado=request.user.perfil_apoderado
+            )
+            notificacion.leido = True
+            notificacion.save(update_fields=['leido'])
+            return Response({'message': 'Notificación marcada como leída.'}, status=status.HTTP_200_OK)
+        except Notificacion.DoesNotExist:
+            raise Http404
+
+
+class MarcarTodasNotificacionesLeidasView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not hasattr(request.user, 'perfil_apoderado'):
+            return Response({'message': 'Permiso denegado.'}, status=status.HTTP_403_FORBIDDEN)
+
+        Notificacion.objects.filter(
+            apoderado=request.user.perfil_apoderado,
+            leido=False
+        ).update(leido=True)
+
+        return Response({'message': 'Todas las notificaciones han sido marcadas como leídas.'}, status=status.HTTP_200_OK)
+
+
+# ==========================================
+# ACCIONES REALES DEL SISTEMA QUE GENERAN PUSH
+# ==========================================
+
+class RutaIniciarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        apoderados = PerfilApoderado.objects.all()
+        cnt = 0
+        for apoderado in apoderados:
+            crear_y_despachar_notificacion(
+                apoderado=apoderado,
+                titulo="🚌 Ruta Iniciada",
+                mensaje="El furgón escolar ha comenzado su recorrido habitual.",
+                tipo="ruta_iniciada"
+            )
+            cnt += 1
+
+        return Response({
+            'message': 'Ruta iniciada exitosamente.',
+            'notificados': cnt
+        }, status=status.HTTP_200_OK)
+
+
+class RutaEscanearQRView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        estudiante_id = request.data.get('estudiante_id')
+        rut = request.data.get('rut', '').strip()
+        accion = request.data.get('accion', 'abordar')
+
+        estudiante = None
+        if estudiante_id:
+            estudiante = Estudiante.objects.filter(id=estudiante_id).first()
+        elif rut:
+            estudiante = Estudiante.objects.filter(rut=rut).first()
+
+        if not estudiante:
+            estudiante = Estudiante.objects.first()
+
+        if not estudiante:
+            return Response({'message': 'Estudiante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if accion == 'abordar':
+            titulo = "🎒 Estudiante Abordó"
+            mensaje = f"¡{estudiante.nombre} {estudiante.apellido} ha abordado el furgón escolar!"
+            tipo = "estudiante_abordo"
+        else:
+            titulo = "🏠 Estudiante Llegó"
+            mensaje = f"¡{estudiante.nombre} {estudiante.apellido} ha llegado a su destino!"
+            tipo = "estudiante_llego"
+
+        notificacion = crear_y_despachar_notificacion(
+            apoderado=estudiante.apoderado,
+            titulo=titulo,
+            mensaje=mensaje,
+            tipo=tipo,
+            estudiante=estudiante
+        )
+
+        return Response({
+            'message': f"Escaneo registrado: {accion}",
+            'estudiante': f"{estudiante.nombre} {estudiante.apellido}",
+            'notificacion': NotificacionSerializer(notificacion).data
+        }, status=status.HTTP_200_OK)
+
+
+class RutaFinalizarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        apoderados = PerfilApoderado.objects.all()
+        cnt = 0
+        for apoderado in apoderados:
+            crear_y_despachar_notificacion(
+                apoderado=apoderado,
+                titulo="🏁 Ruta Finalizada",
+                mensaje="El furgón escolar ha completado todo el recorrido de hoy.",
+                tipo="ruta_finalizada"
+            )
+            cnt += 1
+
+        return Response({
+            'message': 'Ruta finalizada exitosamente.',
+            'notificados': cnt
+        }, status=status.HTTP_200_OK)
+
+
+class EmergenciaCrearView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        detalle = request.data.get('detalle', 'Imprevisto en el recorrido').strip()
+        apoderados = PerfilApoderado.objects.all()
+        cnt = 0
+        for apoderado in apoderados:
+            crear_y_despachar_notificacion(
+                apoderado=apoderado,
+                titulo="🚨 ALERTA DE EMERGENCIA",
+                mensaje=f"El conductor reporta una alerta en la ruta: {detalle}",
+                tipo="emergencia"
+            )
+            cnt += 1
+
+        return Response({
+            'message': 'Alerta de emergencia emitida y notificada a los apoderados.',
+            'notificados': cnt
+        }, status=status.HTTP_200_OK)
+
+
+class AvisoSistemaView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        titulo = request.data.get('titulo', 'Aviso del Sistema').strip()
+        mensaje = request.data.get('mensaje', 'Estimado apoderado, se recuerda mantener actualizada la información de retiro.').strip()
+
+        apoderados = PerfilApoderado.objects.all()
+        cnt = 0
+        for apoderado in apoderados:
+            crear_y_despachar_notificacion(
+                apoderado=apoderado,
+                titulo=f"📢 {titulo}",
+                mensaje=mensaje,
+                tipo="aviso_sistema"
+            )
+            cnt += 1
+
+        return Response({
+            'message': 'Aviso del sistema despachado a los apoderados.',
+            'notificados': cnt
+        }, status=status.HTTP_200_OK)
+

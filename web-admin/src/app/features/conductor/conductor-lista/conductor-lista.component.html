@@ -1,8 +1,8 @@
 <div class="list-page fade-in">
   <div class="list-header">
     <div>
-      <h2>Gestión de Conductores</h2>
-      <p>Listado de conductores registrados en la plataforma.</p>
+      <h2>Gestión de Conductores y Rutas</h2>
+      <p>Listado de conductores registrados y asignación de estudiantes por furgón.</p>
     </div>
     <a routerLink="/conductores/nuevo" class="btn-primary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -27,7 +27,7 @@
               <th>Nombre Completo</th>
               <th>Licencia</th>
               <th>Teléfono</th>
-              <th>Usuario</th>
+              <th>Estudiantes en Ruta</th>
               <th class="actions-col">Acciones</th>
             </tr>
           </thead>
@@ -38,14 +38,30 @@
                 <td>{{ conductor.nombre_completo }}</td>
                 <td><span class="badge">{{ conductor.licencia_conducir }}</span></td>
                 <td>{{ conductor.telefono }}</td>
-                <td><code>{{ conductor.usuario }}</code></td>
+                <td>
+                  <span class="badge-count" [class.has-students]="(conductor.total_estudiantes || 0) > 0">
+                    👶 {{ conductor.total_estudiantes || 0 }} estudiante(s)
+                  </span>
+                </td>
                 <td class="actions-col">
+                  <!-- Botón Gestionar Estudiantes -->
+                  <button type="button" class="btn-action assign" (click)="abrirModalAsignacion(conductor)" title="Gestionar Estudiantes de la Ruta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Asignar</span>
+                  </button>
+
                   <button type="button" class="btn-action edit" (click)="onEdit(conductor.id)" title="Editar">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
                   </button>
+
                   <button type="button" class="btn-action delete" (click)="onDelete(conductor.id)" title="Eliminar">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"></polyline>
@@ -61,3 +77,111 @@
     }
   </div>
 </div>
+
+<!-- ==========================================
+     MODAL INTERACTIVO DE ASIGNACIÓN DE RUTA
+=========================================== -->
+@if (mostrarModalAsignacion) {
+  <div class="modal-backdrop fade-in" (click)="cerrarModalAsignacion()">
+    <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>🎒 Asignación de Estudiantes a la Ruta</h3>
+          <p>Conductor: <strong>{{ conductorSeleccionado?.nombre_completo }}</strong> ({{ conductorSeleccionado?.rut }})</p>
+        </div>
+        <button class="btn-close" (click)="cerrarModalAsignacion()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        @if (cargandoModal) {
+          <div class="modal-loading">
+            <p>Cargando información de ruta y estudiantes...</p>
+          </div>
+        } @else {
+          <!-- SECCIÓN 1: ESTUDIANTES ACTUALMENTE EN RUTA -->
+          <div class="route-section">
+            <div class="section-header">
+              <h4>🚌 Estudiantes Actualmente en esta Ruta ({{ estudiantesAsignados.length }})</h4>
+            </div>
+
+            @if (estudiantesAsignados.length === 0) {
+              <p class="empty-text">No hay estudiantes asignados a este conductor en este momento.</p>
+            } @else {
+              <div class="student-list">
+                @for (est of estudiantesAsignados; track est.id) {
+                  <div class="student-card assigned-card">
+                    <div class="student-info">
+                      <strong>{{ est.nombre_completo }}</strong>
+                      <span class="student-meta">{{ est.rut }} · {{ est.colegio }} ({{ est.curso }})</span>
+                      @if (est.apoderado_nombre) {
+                        <span class="parent-meta">👤 Apoderado: {{ est.apoderado_nombre }} {{ est.apoderado_telefono ? '· ' + est.apoderado_telefono : '' }}</span>
+                      }
+                    </div>
+                    <button type="button" class="btn-remove" (click)="desasignarEstudiante(est.id)">
+                      Desasignar
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <hr class="modal-divider" />
+
+          <!-- SECCIÓN 2: ESTUDIANTES DISPONIBLES SIN ASIGNACIÓN -->
+          <div class="route-section">
+            <div class="section-header">
+              <h4>📋 Estudiantes Disponibles sin Furgón ({{ estudiantesDisponibles.length }})</h4>
+            </div>
+
+            @if (estudiantesDisponibles.length === 0) {
+              <p class="empty-text">Todos los estudiantes registrados ya tienen furgón asignado.</p>
+            } @else {
+              <div class="student-list">
+                @for (est of estudiantesDisponibles; track est.id) {
+                  <div 
+                    class="student-card available-card" 
+                    [class.selected]="estaSeleccionado(est.id)"
+                    (click)="toggleSeleccion(est.id)"
+                  >
+                    <input 
+                      type="checkbox" 
+                      [checked]="estaSeleccionado(est.id)" 
+                      (click)="$event.stopPropagation(); toggleSeleccion(est.id)"
+                    />
+                    <div class="student-info">
+                      <strong>{{ est.nombre_completo }}</strong>
+                      <span class="student-meta">{{ est.rut }} · {{ est.colegio }} ({{ est.curso }})</span>
+                      @if (est.apoderado_nombre) {
+                        <span class="parent-meta">👤 Apoderado: {{ est.apoderado_nombre }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="modal-actions-bar">
+                <button 
+                  type="button" 
+                  class="btn-primary" 
+                  [disabled]="estudiantesSeleccionadosIds.length === 0 || guardandoAsignacion"
+                  (click)="asignarSeleccionados()"
+                >
+                  @if (guardandoAsignacion) {
+                    Guardando...
+                  } @else {
+                    ➕ Asignar {{ estudiantesSeleccionadosIds.length }} estudiante(s) seleccionado(s)
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cerrarModalAsignacion()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

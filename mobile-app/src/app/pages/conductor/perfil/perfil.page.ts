@@ -6,7 +6,9 @@ import {
   IonContent,
   IonButton,
   IonMenuToggle,
-  IonIcon
+  IonIcon,
+  ToastController,
+  MenuController
 } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
@@ -62,7 +64,9 @@ export class PerfilPage implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastController: ToastController,
+    private menuController: MenuController
   ) {}
 
   ngOnInit() {
@@ -90,8 +94,20 @@ export class PerfilPage implements OnInit {
     return (fn + ln).toUpperCase() || 'C';
   }
 
-  cerrarSesion() {
+  async cerrarSesion() {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    await this.menuController.close('main-menu');
+    await this.mostrarToast('Has cerrado sesión correctamente.', 'success');
+    this.router.navigate(['/login'], { replaceUrl: true });
+  }
+
+  private async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: color,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }

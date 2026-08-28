@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonInput,
+  IonInputPasswordToggle,
   IonItem,
   IonButton,
   IonSpinner,
@@ -24,6 +25,7 @@ import { AuthService } from '../../../services/auth.service';
     RouterLink,
     IonContent,
     IonInput,
+    IonInputPasswordToggle,
     IonItem,
     IonButton,
     IonSpinner

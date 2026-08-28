@@ -66,6 +66,13 @@ class Estudiante(models.Model):
         on_delete=models.CASCADE,
         related_name='estudiantes'
     )
+    conductor = models.ForeignKey(
+        PerfilConductor,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='estudiantes_asignados'
+    )
     nombre = models.CharField(max_length=150)
     apellido = models.CharField(max_length=150)
     rut = models.CharField(max_length=12, unique=True)
@@ -118,3 +125,57 @@ class CodigoRecuperacion(models.Model):
 
     def __str__(self):
         return f'{self.usuario.email} - {self.codigo}'
+
+
+class FCMToken(models.Model):
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='fcm_tokens'
+    )
+    token = models.TextField(unique=True)
+    device_name = models.CharField(max_length=100, null=True, blank=True, default='Dispositivo Móvil')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.usuario.email} - {self.device_name} ({'Activo' if self.is_active else 'Inactivo'})"
+
+
+class Notificacion(models.Model):
+    TIPOS = (
+        ('ruta_iniciada', 'Ruta Iniciada'),
+        ('estudiante_abordo', 'Estudiante Abordó'),
+        ('estudiante_llego', 'Estudiante Llegó'),
+        ('ruta_finalizada', 'Ruta Finalizada'),
+        ('emergencia', 'Alerta de Emergencia'),
+        ('aviso_sistema', 'Aviso del Sistema'),
+    )
+
+    apoderado = models.ForeignKey(
+        PerfilApoderado,
+        on_delete=models.CASCADE,
+        related_name='notificaciones'
+    )
+    estudiante = models.ForeignKey(
+        Estudiante,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notificaciones'
+    )
+    titulo = models.CharField(max_length=150)
+    mensaje = models.TextField()
+    tipo = models.CharField(max_length=30, choices=TIPOS, default='aviso_sistema')
+    leido = models.BooleanField(default=False)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f"[{self.get_tipo_display()}] {self.apoderado.usuario.email}: {self.titulo}"

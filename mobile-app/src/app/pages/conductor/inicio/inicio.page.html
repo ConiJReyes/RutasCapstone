@@ -19,7 +19,7 @@
 
       <!-- MENÚ -->
       <ion-menu-toggle menu="main-menu">
-        <button class="menu-button" type="button">
+        <button class="menu-button" type="button" title="Abrir menú">
           <ion-icon name="menu-outline"></ion-icon>
         </button>
       </ion-menu-toggle>
@@ -44,7 +44,7 @@
           <h2>Ruta no iniciada</h2>
 
           <p>
-            Ruta escolar #01
+            Ruta asignada: {{ totalEstudiantes }} estudiante(s) a cargo
           </p>
         </div>
 
@@ -73,7 +73,7 @@
 
 
     <!-- =================================
-         NIÑOS A CARGO
+         NIÑOS A CARGO (DINÁMICO)
     ================================== -->
     <section class="section">
 
@@ -85,95 +85,83 @@
         </div>
 
         <span class="student-count">
-          3 estudiantes
+          {{ totalEstudiantes }} estudiantes
         </span>
 
       </div>
 
 
-      <div class="students-list">
+      <!-- ESTADOS DE CARGA / VACÍO / LISTA -->
+      @if (cargandoEstudiantes) {
 
-        <!-- ESTUDIANTE 1 -->
-        <article class="student-card">
+        <div class="loading-box">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Cargando niños asignados a tu furgón...</p>
+        </div>
 
-          <div class="student-avatar">
-            <ion-icon name="person-outline"></ion-icon>
-          </div>
+      } @else if (errorEstudiantes) {
 
-          <div class="student-info">
+        <div class="error-box">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>{{ errorEstudiantes }}</p>
+        </div>
 
-            <h3>Andrés Pérez</h3>
+      } @else if (estudiantes.length === 0) {
 
-            <p>
-              5° Básico · Colegio San José
-            </p>
+        <div class="empty-box">
+          <div class="empty-icon">🚌</div>
+          <h3>Sin estudiantes asignados</h3>
+          <p>
+            Aún no tienes niños asignados a tu ruta. El administrador los vinculará desde el Web Admin.
+          </p>
+        </div>
 
-          </div>
+      } @else {
 
-          <span class="student-status status-route">
-            <span></span>
-            En ruta
-          </span>
+        <div class="students-list">
 
-        </article>
+          @for (estudiante of estudiantes; track estudiante.id) {
 
+            <article class="student-card">
 
-        <!-- ESTUDIANTE 2 -->
-        <article class="student-card">
+              <div class="student-avatar">
+                <ion-icon name="person-outline"></ion-icon>
+              </div>
 
-          <div class="student-avatar">
-            <ion-icon name="person-outline"></ion-icon>
-          </div>
+              <div class="student-info">
 
-          <div class="student-info">
+                <h3>{{ estudiante.nombre }} {{ estudiante.apellido }}</h3>
 
-            <h3>Lucía Pérez</h3>
+                <p>
+                  {{ estudiante.curso }} · {{ estudiante.colegio }}
+                </p>
 
-            <p>
-              3° Básico · Colegio San José
-            </p>
+                @if (estudiante.apoderado_nombre) {
+                  <span class="parent-info">
+                    👤 Apoderado: {{ estudiante.apoderado_nombre }}
+                  </span>
+                }
 
-          </div>
+              </div>
 
-          <span class="student-status status-waiting">
-            <span></span>
-            Esperando
-          </span>
+              <span class="student-status status-pending">
+                <span></span>
+                Pendiente
+              </span>
 
-        </article>
+            </article>
 
+          }
 
-        <!-- ESTUDIANTE 3 -->
-        <article class="student-card">
+        </div>
 
-          <div class="student-avatar">
-            <ion-icon name="person-outline"></ion-icon>
-          </div>
-
-          <div class="student-info">
-
-            <h3>Tomás Martínez</h3>
-
-            <p>
-              6° Básico · Colegio Central
-            </p>
-
-          </div>
-
-          <span class="student-status status-pending">
-            <span></span>
-            Pendiente
-          </span>
-
-        </article>
-
-      </div>
+      }
 
     </section>
 
 
     <!-- =================================
-         PRÓXIMA PARADA
+         PRÓXIMA PARADA (DINÁMICO)
     ================================== -->
     <section class="section">
 
@@ -187,37 +175,51 @@
       </div>
 
 
-      <div class="next-stop-card">
+      @if (proximaParada) {
 
-        <div class="next-stop-icon">
-          <ion-icon name="location-outline"></ion-icon>
-        </div>
+        <div class="next-stop-card">
 
-        <div class="next-stop-info">
-
-          <span>ESTUDIANTE</span>
-
-          <h3>Lucía Pérez</h3>
-
-          <p>
+          <div class="next-stop-icon">
             <ion-icon name="location-outline"></ion-icon>
-            Av. Los Carrera 1234
-          </p>
+          </div>
 
-          <div class="receiver">
+          <div class="next-stop-info">
 
-            <ion-icon name="person-outline"></ion-icon>
+            <span>PRIMERA PARADA DEL RECORRIDO</span>
 
-            <div>
-              <span>RECIBE</span>
-              <strong>María González · Nana</strong>
-            </div>
+            <h3>{{ proximaParada.nombre }} {{ proximaParada.apellido }}</h3>
+
+            <p>
+              <ion-icon name="location-outline"></ion-icon>
+              {{ proximaParada.direccion_principal || 'Dirección no registrada' }}
+            </p>
+
+            @if (proximaParada.persona_autorizada) {
+
+              <div class="receiver">
+
+                <ion-icon name="person-outline"></ion-icon>
+
+                <div>
+                  <span>RECIBE EN DOMICILIO</span>
+                  <strong>{{ proximaParada.persona_autorizada }} {{ proximaParada.rut_persona_autorizada ? '(' + proximaParada.rut_persona_autorizada + ')' : '' }}</strong>
+                </div>
+
+              </div>
+
+            }
 
           </div>
 
         </div>
 
-      </div>
+      } @else {
+
+        <div class="no-next-stop">
+          <p>No hay paradas programadas por el momento.</p>
+        </div>
+
+      }
 
     </section>
 
@@ -248,8 +250,7 @@
           <h3>Recuerda revisar el tráfico</h3>
 
           <p>
-            Verifica las condiciones de tránsito antes
-            de iniciar tu recorrido.
+            Verifica las condiciones de tránsito antes de iniciar tu recorrido.
           </p>
 
         </div>
@@ -268,8 +269,7 @@
           <h3>Horarios de la ruta</h3>
 
           <p>
-            Recuerda respetar los horarios establecidos
-            para cada parada.
+            Recuerda respetar los horarios establecidos para cada parada.
           </p>
 
         </div>

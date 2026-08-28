@@ -2,6 +2,20 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface EstudianteItem {
+  id: number;
+  rut: string;
+  nombre: string;
+  apellido: string;
+  nombre_completo: string;
+  colegio: string;
+  curso: string;
+  apoderado_nombre?: string;
+  apoderado_telefono?: string;
+  conductor_id?: number;
+  conductor_nombre?: string;
+}
+
 export interface Conductor {
   id?: number;
   usuario?: string;
@@ -16,6 +30,7 @@ export interface Conductor {
   licencia_conducir?: string;
   password?: string;
   rol?: string;
+  total_estudiantes?: number;
 }
 
 export interface ConductorCreateResponse {
@@ -57,5 +72,25 @@ export class ConductorService {
 
   eliminarConductor(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}${id}/`);
+  }
+
+  getEstudiantesSinAsignar(): Observable<EstudianteItem[]> {
+    return this.http.get<EstudianteItem[]>('http://127.0.0.1:8000/api/estudiantes/sin-asignar/');
+  }
+
+  getEstudiantesConductor(conductorId: number): Observable<EstudianteItem[]> {
+    return this.http.get<EstudianteItem[]>(`${this.apiUrl}${conductorId}/estudiantes/`);
+  }
+
+  asignarEstudiantes(conductorId: number, estudianteIds: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}${conductorId}/asignar-estudiantes/`, {
+      estudiante_ids: estudianteIds
+    });
+  }
+
+  desasignarEstudiante(conductorId: number, estudianteId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}${conductorId}/desasignar-estudiante/`, {
+      estudiante_id: estudianteId
+    });
   }
 }

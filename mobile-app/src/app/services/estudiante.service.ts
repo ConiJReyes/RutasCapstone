@@ -17,6 +17,10 @@ export interface Estudiante {
   persona_autorizada?: string;
   rut_persona_autorizada?: string;
   tiene_foto?: boolean;
+  apoderado_nombre?: string;
+  apoderado_telefono?: string;
+  conductor?: number;
+  conductor_nombre?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -57,6 +61,15 @@ export class EstudianteService {
   obtenerEstudiantes(): Observable<Estudiante[]> {
     return this.http.get<Estudiante[]>(
       `${this.apiUrl}/estudiantes/`,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
+  }
+
+  obtenerEstudiantesConductor(conductorId: number): Observable<Estudiante[]> {
+    return this.http.get<Estudiante[]>(
+      `${this.apiUrl}/conductores/${conductorId}/estudiantes/`,
       {
         headers: this.getAuthHeaders()
       }

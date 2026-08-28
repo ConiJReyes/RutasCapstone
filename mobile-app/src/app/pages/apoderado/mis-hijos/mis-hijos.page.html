@@ -126,6 +126,11 @@
                 {{ estudiante.curso }}
               </span>
 
+              <div class="conductor-tag" [class.assigned]="estudiante.conductor_nombre">
+                <ion-icon name="bus-outline"></ion-icon>
+                <span>{{ estudiante.conductor_nombre ? 'Furgón: ' + estudiante.conductor_nombre : 'Sin conductor asignado' }}</span>
+              </div>
+
             </div>
 
           </div>

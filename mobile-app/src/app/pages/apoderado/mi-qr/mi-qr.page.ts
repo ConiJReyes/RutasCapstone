@@ -75,17 +75,10 @@ addIcons({
     RouterLink,
     IonContent,
     IonButton,
-    IonCard,
-    IonCardContent,
     IonSpinner,
     IonMenuToggle,
     IonIcon,
-    IonToast,
-    IonSegment,
-    IonSegmentButton,
-    IonLabel,
-    IonSelect,
-    IonSelectOption
+    IonToast
   ]
 })
 export class MiQrPage implements OnInit, OnDestroy {

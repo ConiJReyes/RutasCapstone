@@ -6,7 +6,8 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonMenuToggle
+  IonMenuToggle,
+  IonSpinner
 } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
@@ -20,10 +21,13 @@ import {
   notificationsOutline,
   informationCircleOutline,
   cardOutline,
-  shieldCheckmarkOutline
+  shieldCheckmarkOutline,
+  alertCircleOutline,
+  schoolOutline
 } from 'ionicons/icons';
 
 import { AuthService, Usuario } from '../../../services/auth.service';
+import { EstudianteService, Estudiante } from '../../../services/estudiante.service';
 
 addIcons({
   menuOutline,
@@ -34,7 +38,9 @@ addIcons({
   notificationsOutline,
   informationCircleOutline,
   cardOutline,
-  shieldCheckmarkOutline
+  shieldCheckmarkOutline,
+  alertCircleOutline,
+  schoolOutline
 });
 
 @Component({
@@ -48,25 +54,54 @@ addIcons({
     IonContent,
     IonButton,
     IonIcon,
-    IonMenuToggle
+    IonMenuToggle,
+    IonSpinner
   ]
 })
 export class InicioPage implements OnInit {
 
   usuario: Usuario | null = null;
+  estudiantes: Estudiante[] = [];
+  cargandoEstudiantes: boolean = true;
+  errorEstudiantes: string = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private estudianteService: EstudianteService
+  ) {}
 
   ngOnInit() {
-    this.cargarUsuario();
+    this.cargarDatosConductor();
   }
 
   ionViewWillEnter() {
-    this.cargarUsuario();
+    this.cargarDatosConductor();
   }
 
-  cargarUsuario() {
+  cargarDatosConductor() {
     this.usuario = this.authService.getUsuario();
+    if (this.usuario && this.usuario.id) {
+      this.cargarEstudiantesConductor(this.usuario.id);
+    } else {
+      this.cargandoEstudiantes = false;
+    }
+  }
+
+  cargarEstudiantesConductor(conductorId: number) {
+    this.cargandoEstudiantes = true;
+    this.errorEstudiantes = '';
+
+    this.estudianteService.obtenerEstudiantesConductor(conductorId).subscribe({
+      next: (data) => {
+        this.estudiantes = data;
+        this.cargandoEstudiantes = false;
+      },
+      error: (err) => {
+        console.error('Error al obtener estudiantes del conductor:', err);
+        this.cargandoEstudiantes = false;
+        this.errorEstudiantes = 'No se pudieron cargar los estudiantes asignados a tu ruta.';
+      }
+    });
   }
 
   get saludo(): string {
@@ -83,5 +118,13 @@ export class InicioPage implements OnInit {
   get nombreMostrar(): string {
     if (!this.usuario) return 'Conductor';
     return this.usuario.first_name || 'Conductor';
+  }
+
+  get totalEstudiantes(): number {
+    return this.estudiantes.length;
+  }
+
+  get proximaParada(): Estudiante | null {
+    return this.estudiantes.length > 0 ? this.estudiantes[0] : null;
   }
 }

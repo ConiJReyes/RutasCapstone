@@ -9,7 +9,7 @@
 
           <!-- Cabecera del Sidebar (Clickable a Perfil) -->
           <ion-menu-toggle autoHide="false">
-            <div class="sidebar-header clickable-header" [routerLink]="usuario?.rol === 'conductor' ? ['/conductor/perfil'] : ['/apoderado/inicio']" title="Ver mi perfil">
+            <div class="sidebar-header clickable-header" [routerLink]="usuario?.rol === 'conductor' ? ['/conductor/perfil'] : ['/apoderado/perfil']" title="Ver mi perfil">
 
               <div class="user-avatar">
                 <span>👤</span>
@@ -77,6 +77,13 @@
               </ion-menu-toggle>
 
               <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/perfil']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👤</span>
+                  <span class="item-text">Mi Perfil</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
                 <a [routerLink]="['/apoderado/mis-hijos']" class="menu-item" routerLinkActive="active">
                   <span class="item-icon">👧</span>
                   <span class="item-text">Mis Hijos</span>
@@ -94,6 +101,14 @@
                 <a [routerLink]="['/apoderado/mi-qr']" class="menu-item" routerLinkActive="active">
                   <span class="item-icon">📱</span>
                   <span class="item-text">Mi QR</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/notificaciones']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🔔</span>
+                  <span class="item-text">Notificaciones</span>
+                  <span class="badge" *ngIf="(notificationService.unreadCount$ | async) as count" [class.show]="count > 0">{{ count }}</span>
                 </a>
               </ion-menu-toggle>
 

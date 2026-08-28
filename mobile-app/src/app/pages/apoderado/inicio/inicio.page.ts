@@ -5,11 +5,7 @@ import { RouterLink } from '@angular/router';
 
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonButton,
-  IonIcon,
   IonMenuToggle
 } from '@ionic/angular/standalone';
 
@@ -23,11 +19,7 @@ import {
     FormsModule,
     RouterLink,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonButton,
-    IonIcon,
     IonMenuToggle
   ]
 })

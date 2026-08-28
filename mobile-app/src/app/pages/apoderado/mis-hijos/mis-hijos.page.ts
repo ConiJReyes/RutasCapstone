@@ -18,7 +18,8 @@ import { addIcons } from 'ionicons';
 import {
   menuOutline,
   alertCircleOutline,
-  chevronForwardOutline
+  chevronForwardOutline,
+  busOutline
 } from 'ionicons/icons';
 
 import {
@@ -29,7 +30,8 @@ import {
 addIcons({
   menuOutline,
   alertCircleOutline,
-  chevronForwardOutline
+  chevronForwardOutline,
+  busOutline
 });
 
 @Component({
@@ -61,7 +63,8 @@ export class MisHijosPage {
   constructor(
     private estudianteService: EstudianteService
   ) {
-      addIcons({menuOutline,alertCircleOutline,chevronForwardOutline});}
+    addIcons({ menuOutline, alertCircleOutline, chevronForwardOutline, busOutline });
+  }
 
   ionViewWillEnter() {
     this.cargarEstudiantes();

@@ -407,6 +407,61 @@
   background: #aab7b4;
 }
 
+.parent-info {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--verde-rutas);
+}
+
+.loading-box,
+.empty-box,
+.error-box,
+.no-next-stop {
+  padding: 24px 20px;
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  text-align: center;
+  color: var(--texto-secundario);
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+}
+
+.loading-box ion-spinner {
+  color: var(--verde-rutas);
+  margin-bottom: 8px;
+}
+
+.empty-box {
+  border-style: dashed;
+  .empty-icon {
+    font-size: 32px;
+    margin-bottom: 6px;
+  }
+  h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--texto-principal);
+  }
+}
+
+.error-box {
+  background: #fff3f2;
+  border-color: #f5d7d4;
+  color: #b64b43;
+  ion-icon {
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+}
+
 
 /* =================================
    PRÓXIMA PARADA

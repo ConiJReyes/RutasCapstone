@@ -13,6 +13,8 @@ import {
 } from '@ionic/angular/standalone';
 
 import { AuthService, Usuario } from './services/auth.service';
+import { PushNotificationService } from './services/push-notification.service';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -34,10 +36,17 @@ export class AppComponent {
 
   constructor(
     private authService: AuthService,
+    private pushNotificationService: PushNotificationService,
+    public notificationService: NotificationService,
     private router: Router,
     private toastController: ToastController,
     private menuController: MenuController
-  ) {}
+  ) {
+    if (this.estaAutenticado) {
+      this.pushNotificationService.inicializarPushNotifications();
+      this.notificationService.getNotificaciones().subscribe({ error: () => {} });
+    }
+  }
 
   get usuario(): Usuario | null {
     return this.authService.getUsuario();
@@ -51,7 +60,7 @@ export class AppComponent {
     this.authService.logout();
     await this.menuController.close('main-menu');
     await this.mostrarToast('Has cerrado sesión correctamente.', 'success');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   private async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning') {

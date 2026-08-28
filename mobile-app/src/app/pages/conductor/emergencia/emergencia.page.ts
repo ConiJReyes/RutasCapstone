@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonIcon,
-  IonMenuToggle, IonHeader, IonToolbar, IonTitle } from '@ionic/angular/standalone';
+  IonMenuToggle
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   menuOutline,
@@ -19,15 +19,17 @@ addIcons({
   sendOutline
 });
 
+import { NotificationService } from '../../../services/notification.service';
+import { ToastController } from '@ionic/angular/standalone';
+
 @Component({
   selector: 'app-emergencia',
   templateUrl: './emergencia.page.html',
   styleUrls: ['./emergencia.page.scss'],
   standalone: true,
-  imports: [IonTitle, IonToolbar, IonHeader, 
+  imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     IonContent,
     IonIcon,
     IonMenuToggle
@@ -40,12 +42,27 @@ export class EmergenciaPage {
   categoria = '';
   descripcion = '';
 
+  constructor(
+    private notificationService: NotificationService,
+    private toastController: ToastController
+  ) {}
+
   enviar() {
-    console.log({
-      tipo: this.tipo,
-      estudiante: this.estudiante,
-      categoria: this.categoria,
-      descripcion: this.descripcion
+    const detalle = this.descripcion.trim() || `Alerta de ${this.categoria || 'emergencia general'}`;
+
+    this.notificationService.enviarEmergencia(detalle).subscribe({
+      next: async () => {
+        const toast = await this.toastController.create({
+          message: '🚨 Alerta de emergencia enviada y notificada a los apoderados.',
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom'
+        });
+        await toast.present();
+      },
+      error: async (err) => {
+        console.error('Error enviando emergencia:', err);
+      }
     });
   }
 }

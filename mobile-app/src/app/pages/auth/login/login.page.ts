@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonInput,
+  IonInputPasswordToggle,
   IonItem,
   IonButton,
   IonSpinner,
@@ -39,6 +40,7 @@ addIcons({
     RouterLink,
     IonContent,
     IonInput,
+    IonInputPasswordToggle,
     IonItem,
     IonButton,
     IonSpinner,
@@ -103,6 +105,17 @@ export class LoginPage implements OnInit {
       next: async (res) => {
 
         this.cargando = false;
+
+        if (this.rol && res.usuario.rol !== this.rol) {
+          this.authService.logout();
+
+          const rolEsperado = this.rol === 'conductor' ? 'Conductor' : 'Apoderado';
+          const mensajeError = `Correo electrónico o contraseña incorrectos. La cuenta ingresada no corresponde a un perfil de ${rolEsperado}.`;
+
+          this.errorMensaje = mensajeError;
+          await this.mostrarToast(mensajeError, 'danger');
+          return;
+        }
 
         await this.mostrarToast(
           `¡Bienvenido/a ${res.usuario.first_name}!`,

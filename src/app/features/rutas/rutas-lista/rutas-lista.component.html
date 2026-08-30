@@ -1,0 +1,48 @@
+<div class="page-container">
+  <div class="header-section">
+    <div>
+      <h2>Gestión de Rutas</h2>
+      <p>Administra los recorridos, conductores y colegios asignados.</p>
+    </div>
+    <button class="primary-btn" (click)="nuevaRuta()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nueva Ruta</span>
+    </button>
+  </div>
+
+  <div class="table-card glass-panel">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre de Ruta</th>
+          <th>Conductor Asignado</th>
+          <th>Colegio Destino</th>
+          <th>Estudiantes</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ruta of rutas(); track ruta.id) {
+        <tr>
+          <td class="font-bold">{{ ruta.nombre }}</td>
+          <td>{{ ruta.conductor }}</td>
+          <td>{{ ruta.colegio }}</td>
+          <td>{{ ruta.estudiantesCount }} alumnos</td>
+          <td>
+            <span class="status-badge" [class.active]="ruta.estado === 'activa'">
+              {{ ruta.estado === 'activa' ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td>
+            <button class="action-btn" (click)="editarRuta(ruta.id)">Editar</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

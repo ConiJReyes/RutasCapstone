@@ -179,3 +179,38 @@ class Notificacion(models.Model):
 
     def __str__(self):
         return f"[{self.get_tipo_display()}] {self.apoderado.usuario.email}: {self.titulo}"
+
+
+class Furgon(models.Model):
+    ESTADOS = (
+        ('disponible', 'Disponible'),
+        ('en_ruta', 'En Ruta'),
+        ('mantenimiento', 'Mantenimiento'),
+    )
+    patente = models.CharField(max_length=20, unique=True)
+    marca_modelo = models.CharField(max_length=100)
+    capacidad = models.IntegerField(default=15)
+    conductor_asignado = models.CharField(max_length=150, blank=True, default='')
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='disponible')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.patente} - {self.marca_modelo}"
+
+
+class Ruta(models.Model):
+    ESTADOS = (
+        ('activa', 'Activa'),
+        ('inactiva', 'Inactiva'),
+    )
+    nombre = models.CharField(max_length=150)
+    conductor = models.CharField(max_length=150, blank=True, default='')
+    colegio = models.CharField(max_length=200, default='Escuela Bosques del Viento')
+    estudiantes_count = models.IntegerField(default=0)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='activa')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.colegio})"

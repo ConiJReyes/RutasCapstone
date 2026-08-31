@@ -60,7 +60,7 @@ export class AgregarHijoPage {
   apellido = '';
   rut = '';
   fechaNacimiento = '';
-  colegio = '';
+  colegio = 'Escuela Bosques del Viento';
   curso = '';
 
   direccionPrincipal = '';

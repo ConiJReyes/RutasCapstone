@@ -5,7 +5,23 @@ from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante, FCMToken, Notificacion
+from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante, FCMToken, Notificacion, Furgon, Ruta
+
+class FurgonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Furgon
+        fields = ['id', 'patente', 'marca_modelo', 'capacidad', 'conductor_asignado', 'estado', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class RutaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ruta
+        fields = ['id', 'nombre', 'conductor', 'colegio', 'estudiantes_count', 'estado', 'created_at']
+        read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'colegio': {'default': 'Escuela Bosques del Viento'}
+        }
 
 
 class RegistroApoderadoSerializer(serializers.Serializer):

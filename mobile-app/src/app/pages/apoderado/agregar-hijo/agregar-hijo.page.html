@@ -171,11 +171,14 @@
           label="Colegio"
           labelPlacement="floating"
           type="text"
-          placeholder="Nombre del colegio"
+          [readonly]="true"
           [(ngModel)]="colegio">
         </ion-input>
 
       </ion-item>
+      <p style="margin: -6px 0 12px 12px; font-size: 0.75rem; color: #64748b;">
+        Colegio único asignado para el proyecto: Escuela Bosques del Viento
+      </p>
 
 
       <ion-item

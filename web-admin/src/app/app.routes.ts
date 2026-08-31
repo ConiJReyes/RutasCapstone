@@ -13,6 +13,14 @@ import { ConductorFormComponent } from './features/conductor/conductor-form/cond
 import { ApoderadoListaComponent } from './features/apoderado/apoderado-lista/apoderado-lista.component';
 import { ApoderadoFormComponent } from './features/apoderado/apoderado-form/apoderado-form.component';
 
+// Furgones
+import { FurgonesListaComponent } from './features/furgones/furgones-lista/furgones-lista.component';
+import { FurgonesFormComponent } from './features/furgones/furgones-form/furgones-form.component';
+
+// Rutas
+import { RutasListaComponent } from './features/rutas/rutas-lista/rutas-lista.component';
+import { RutasFormComponent } from './features/rutas/rutas-form/rutas-form.component';
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -42,9 +50,17 @@ export const routes: Routes = [
       { path: 'apoderados/nuevo', component: ApoderadoFormComponent },
       { path: 'apoderados/editar/:id', component: ApoderadoFormComponent },
 
+      // Furgones
+      { path: 'furgones', component: FurgonesListaComponent },
+      { path: 'furgones/nuevo', component: FurgonesFormComponent },
+      { path: 'furgones/editar/:id', component: FurgonesFormComponent },
+
+      // Rutas
+      { path: 'rutas', component: RutasListaComponent },
+      { path: 'rutas/nuevo', component: RutasFormComponent },
+      { path: 'rutas/editar/:id', component: RutasFormComponent },
+
       // Otros
-      { path: 'furgones', component: ModulePlaceholderComponent },
-      { path: 'rutas', component: ModulePlaceholderComponent },
       { path: 'estudiantes', component: ModulePlaceholderComponent }
     ]
   },

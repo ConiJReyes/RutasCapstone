@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.http import FileResponse, Http404
 from django.conf import settings
-from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, FCMToken, Notificacion
+from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, FCMToken, Notificacion, Furgon, Ruta
 from .serializers import (
     RegistroApoderadoSerializer,
     RegistroConductorSerializer,
@@ -16,7 +16,9 @@ from .serializers import (
     EstudianteSerializer,
     EstudianteUpdateSerializer,
     FCMTokenSerializer,
-    NotificacionSerializer
+    NotificacionSerializer,
+    FurgonSerializer,
+    RutaSerializer
 )
 from .push_service import crear_y_despachar_notificacion, notificar_apoderados_de_estudiantes
 
@@ -56,12 +58,14 @@ class DashboardStatsView(APIView):
         estudiantes_count = Estudiante.objects.count()
         conductores_count = Usuario.objects.filter(rol='conductor').count()
         apoderados_count = Usuario.objects.filter(rol='apoderado',is_superuser=False,is_staff=False).count()
+        furgones_count = Furgon.objects.count()
+        rutas_count = Ruta.objects.count()
         return Response({
             'estudiantes': estudiantes_count,
             'conductores': conductores_count,
             'apoderados': apoderados_count,
-            'furgones': 0,
-            'rutas': 0
+            'furgones': furgones_count,
+            'rutas': rutas_count
         }, status=status.HTTP_200_OK)
 
 
@@ -986,4 +990,96 @@ class AvisoSistemaView(APIView):
             'message': 'Aviso del sistema despachado a los apoderados.',
             'notificados': cnt
         }, status=status.HTTP_200_OK)
+
+
+class FurgonListCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        furgones = Furgon.objects.all().order_by('-id')
+        serializer = FurgonSerializer(furgones, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = FurgonSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FurgonDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get_object(self, pk):
+        try:
+            return Furgon.objects.get(pk=pk)
+        except Furgon.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        furgon = self.get_object(pk)
+        serializer = FurgonSerializer(furgon)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        furgon = self.get_object(pk)
+        serializer = FurgonSerializer(furgon, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        furgon = self.get_object(pk)
+        furgon.delete()
+        return Response({'message': 'Furgón eliminado.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class RutaListCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        rutas = Ruta.objects.all().order_by('-id')
+        serializer = RutaSerializer(rutas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        data = request.data.copy()
+        data['colegio'] = 'Escuela Bosques del Viento'
+        serializer = RutaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RutaDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get_object(self, pk):
+        try:
+            return Ruta.objects.get(pk=pk)
+        except Ruta.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        ruta = self.get_object(pk)
+        serializer = RutaSerializer(ruta)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        ruta = self.get_object(pk)
+        data = request.data.copy()
+        data['colegio'] = 'Escuela Bosques del Viento'
+        serializer = RutaSerializer(ruta, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        ruta = self.get_object(pk)
+        ruta.delete()
+        return Response({'message': 'Ruta eliminada.'}, status=status.HTTP_204_NO_CONTENT)
 

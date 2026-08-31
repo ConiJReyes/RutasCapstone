@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  padding: 30px;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff !important; /* Título principal en blanco */
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #94a3b8 !important; /* Subtítulo en gris claro */
+  }
+}
+
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #3f8178;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #2d6861;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.table-card {
+  background: #ffffff !important; /* Fondo de tarjeta siempre blanco */
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  /* Celdas de la tabla con texto bien oscuro para que se lea perfecto */
+  th, td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #0f172a !important; /* Texto negro/azul oscuro */
+  }
+
+  th {
+    background: #f8fafc !important;
+    color: #475569 !important; /* Encabezados en gris oscuro */
+    font-weight: 700;
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: #0f172a !important;
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.disponible {
+    background: #e0f2fe;
+    color: #0369a1 !important;
+  }
+
+  &.en_ruta {
+    background: #dbeafe;
+    color: #1d4ed8 !important;
+  }
+
+  &.mantenimiento {
+    background: #fee2e2;
+    color: #b91c1c !important;
+  }
+}
+
+.action-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: #0f172a !important;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+}

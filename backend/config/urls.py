@@ -22,7 +22,11 @@ from usuarios.views import (
     RutaEscanearQRView,
     RutaFinalizarView,
     EmergenciaCrearView,
-    AvisoSistemaView
+    AvisoSistemaView,
+    FurgonListCreateView,
+    FurgonDetailView,
+    RutaListCreateView,
+    RutaDetailView
 )
 
 urlpatterns = [
@@ -41,6 +45,12 @@ urlpatterns = [
     path('api/apoderados/<int:apoderado_id>/', ApoderadoDetailView.as_view(), name='apoderado-detail'),
     path('api/apoderados/<int:apoderado_id>/cambiar-password/', CambiarPasswordView.as_view(), name='apoderado-cambiar-password'),
     path('api/dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
+
+    # Furgones & Rutas CRUD
+    path('api/furgones/', FurgonListCreateView.as_view(), name='furgones-list-create'),
+    path('api/furgones/<int:pk>/', FurgonDetailView.as_view(), name='furgon-detail'),
+    path('api/rutas-admin/', RutaListCreateView.as_view(), name='rutas-admin-list-create'),
+    path('api/rutas-admin/<int:pk>/', RutaDetailView.as_view(), name='rutas-admin-detail'),
 
     # Notificaciones & FCM
     path('api/notificaciones/fcm-token/', RegistrarFCMTokenView.as_view(), name='fcm-token-register'),

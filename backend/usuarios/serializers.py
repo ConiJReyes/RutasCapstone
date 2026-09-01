@@ -159,7 +159,7 @@ class ConductorSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
-            'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol',
+            'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol','is_active',
             'total_estudiantes'
         ]
 
@@ -219,7 +219,7 @@ class ApoderadoSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
-            'nombre_completo', 'rut', 'telefono', 'rol', 'estudiantes'
+            'nombre_completo', 'rut', 'telefono', 'rol', 'is_active', 'estudiantes'
         ]
 
     def get_nombre_completo(self, obj):

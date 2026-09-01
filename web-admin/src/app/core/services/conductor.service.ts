@@ -30,6 +30,7 @@ export interface Conductor {
   licencia_conducir?: string;
   password?: string;
   rol?: string;
+  is_active?: boolean;
   total_estudiantes?: number;
 }
 

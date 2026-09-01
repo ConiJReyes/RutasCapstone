@@ -55,20 +55,35 @@ export class ConductorListaComponent implements OnInit {
     }
   }
 
-  onDelete(id?: number): void {
-    if (!id) return;
-    if (confirm('¿Estás seguro de que deseas eliminar este conductor?')) {
-      this.conductorService.eliminarConductor(id).subscribe({
-        next: () => {
-          this.cargarConductores();
-        },
-        error: (err) => {
-          console.error('Error eliminando conductor:', err);
-          alert('No se pudo eliminar el conductor.');
-        }
-      });
-    }
+cambiarEstadoConductor(conductor: Conductor): void {
+  if (conductor.id === undefined) {
+    console.error('El conductor no tiene ID:', conductor);
+    return;
   }
+
+  const nuevoEstado = !conductor.is_active;
+
+  this.conductorService.actualizarConductor(conductor.id, {
+    is_active: nuevoEstado
+  }).subscribe({
+    next: (response) => {
+      console.log('Conductor actualizado:', response);
+
+      // Actualizamos inmediatamente el objeto visual
+      conductor.is_active = nuevoEstado;
+
+      // Forzamos la detección de cambios
+      this.cdr.detectChanges();
+
+      // Volvemos a consultar el backend para confirmar
+      this.cargarConductores();
+    },
+
+    error: (error) => {
+      console.error('Error al cambiar estado del conductor:', error);
+    }
+  });
+}
 
   // --- MÉTODOS DEL MODAL DE ASIGNACIÓN DE ESTUDIANTES ---
 

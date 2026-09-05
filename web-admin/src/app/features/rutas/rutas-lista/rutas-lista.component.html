@@ -40,6 +40,17 @@
           <td>
             <button class="action-btn" (click)="editarRuta(ruta.id)">Editar</button>
             <button class="action-btn danger-btn" style="margin-left: 6px; color: #dc2626;" (click)="eliminarRuta(ruta.id)">Eliminar</button>
+            
+            <button 
+              class="action-btn tracking-btn" 
+              [disabled]="ruta.estado !== 'activa'" 
+              (click)="abrirMapa(ruta)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="10" r="3"></circle>
+                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+              </svg>
+              <span>Ver Mapa</span>
+            </button>
           </td>
         </tr>
         }
@@ -47,3 +58,10 @@
     </table>
   </div>
 </div>
+
+@if (mostrarMapa()) {
+  <app-mapa-seguimiento 
+    [rutaNombre]="rutaSeleccionada()?.nombre || ''"
+    (alCerrar)="cerrarMapa()">
+  </app-mapa-seguimiento>
+}

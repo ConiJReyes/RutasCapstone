@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import Usuario, PerfilApoderado, PerfilConductor, Estudiante, FCMToken, Notificacion, Furgon, Ruta
+from .models import Usuario, PerfilApoderado, PerfilConductor, PerfilDelegado, Estudiante, FCMToken, Notificacion, Furgon, Ruta
 
 class FurgonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,6 +93,61 @@ class RegistroConductorSerializer(serializers.Serializer):
         return usuario
 
 
+class RegistroDelegadoSerializer(serializers.Serializer):
+    nombre = serializers.CharField(max_length=150)
+    apellido = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    rut = serializers.CharField(max_length=12)
+    email = serializers.EmailField()
+    telefono = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
+    password = serializers.CharField(write_only=True, min_length=6)
+
+    def validate_email(self, value):
+        normalized_email = value.lower().strip()
+        if Usuario.objects.filter(email=normalized_email).exists():
+            raise serializers.ValidationError('Este correo electrónico ya está registrado.')
+        return normalized_email
+
+    def validate_rut(self, value):
+        cleaned_rut = value.strip()
+        if PerfilDelegado.objects.filter(rut=cleaned_rut).exists():
+            raise serializers.ValidationError('Este RUT ya está registrado como delegado.')
+
+        rut_clean_compare = cleaned_rut.replace('.', '').replace('-', '').upper()
+
+        estudiantes = Estudiante.objects.all()
+        encontrado = False
+        for est in estudiantes:
+            if est.rut_persona_autorizada:
+                est_rut_clean = est.rut_persona_autorizada.replace('.', '').replace('-', '').upper().strip()
+                if rut_clean_compare in est_rut_clean or est_rut_clean in rut_clean_compare:
+                    encontrado = True
+                    break
+
+        if not encontrado:
+            raise serializers.ValidationError(
+                f'El RUT {cleaned_rut} no ha sido previamente autorizado por ningún apoderado. '
+                'Por favor, solicita al apoderado del estudiante que te agregue como persona autorizada en la app.'
+            )
+
+        return cleaned_rut
+
+    def create(self, validated_data):
+        usuario = Usuario.objects.create_user(
+            username=validated_data['email'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data['nombre'],
+            last_name=validated_data.get('apellido', ''),
+            rol='delegado'
+        )
+        PerfilDelegado.objects.create(
+            usuario=usuario,
+            rut=validated_data['rut'],
+            telefono=validated_data.get('telefono', '')
+        )
+        return usuario
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
@@ -132,6 +187,8 @@ class UsuarioResponseSerializer(serializers.ModelSerializer):
             return obj.perfil_apoderado.rut
         if hasattr(obj, 'perfil_conductor'):
             return obj.perfil_conductor.rut
+        if hasattr(obj, 'perfil_delegado'):
+            return obj.perfil_delegado.rut
         return None
 
     def get_telefono(self, obj):
@@ -139,12 +196,95 @@ class UsuarioResponseSerializer(serializers.ModelSerializer):
             return obj.perfil_apoderado.telefono
         if hasattr(obj, 'perfil_conductor'):
             return obj.perfil_conductor.telefono
+        if hasattr(obj, 'perfil_delegado'):
+            return obj.perfil_delegado.telefono
         return None
 
     def get_licencia_conducir(self, obj):
         if hasattr(obj, 'perfil_conductor'):
             return obj.perfil_conductor.licencia_conducir
         return None
+
+
+class DelegadoEstudianteSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    apoderado_nombre = serializers.SerializerMethodField()
+    apoderado_telefono = serializers.SerializerMethodField()
+    conductor_nombre = serializers.SerializerMethodField()
+    conductor_telefono = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Estudiante
+        fields = [
+            'id', 'rut', 'nombre', 'apellido', 'nombre_completo',
+            'fecha_nacimiento', 'colegio', 'curso', 'direccion_principal', 'direccion_alternativa',
+            'persona_autorizada', 'rut_persona_autorizada',
+            'apoderado_nombre', 'apoderado_telefono',
+            'conductor_nombre', 'conductor_telefono'
+        ]
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.nombre} {obj.apellido}".strip()
+
+    def get_apoderado_nombre(self, obj):
+        if obj.apoderado and obj.apoderado.usuario:
+            return obj.apoderado.usuario.get_full_name() or obj.apoderado.usuario.email
+        return None
+
+    def get_apoderado_telefono(self, obj):
+        if obj.apoderado:
+            return obj.apoderado.telefono
+        return None
+
+    def get_conductor_nombre(self, obj):
+        if obj.conductor and obj.conductor.usuario:
+            return obj.conductor.usuario.get_full_name() or obj.conductor.usuario.email
+        return None
+
+    def get_conductor_telefono(self, obj):
+        if obj.conductor:
+            return obj.conductor.telefono
+        return None
+
+
+class DelegadoSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    rut = serializers.SerializerMethodField()
+    telefono = serializers.SerializerMethodField()
+    usuario = serializers.CharField(source='email', read_only=True)
+    estudiantes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'id', 'usuario', 'email', 'first_name', 'last_name',
+            'nombre_completo', 'rut', 'telefono', 'rol', 'estudiantes'
+        ]
+
+    def get_nombre_completo(self, obj):
+        full_name = f"{obj.first_name} {obj.last_name}".strip()
+        return full_name if full_name else obj.email
+
+    def get_rut(self, obj):
+        return obj.perfil_delegado.rut if hasattr(obj, 'perfil_delegado') else ''
+
+    def get_telefono(self, obj):
+        return obj.perfil_delegado.telefono if hasattr(obj, 'perfil_delegado') else ''
+
+    def get_estudiantes(self, obj):
+        if hasattr(obj, 'perfil_delegado') and obj.perfil_delegado.rut:
+            rut_clean = obj.perfil_delegado.rut.replace('.', '').replace('-', '').upper().strip()
+            estudiantes = []
+            if rut_clean:
+                for est in Estudiante.objects.all():
+                    if est.rut_persona_autorizada:
+                        est_rut_clean = est.rut_persona_autorizada.replace('.', '').replace('-', '').upper().strip()
+                        if rut_clean in est_rut_clean or est_rut_clean in rut_clean:
+                            estudiantes.append(est)
+            return DelegadoEstudianteSerializer(estudiantes, many=True).data
+        return []
+
+
 
 
 class ConductorSerializer(serializers.ModelSerializer):

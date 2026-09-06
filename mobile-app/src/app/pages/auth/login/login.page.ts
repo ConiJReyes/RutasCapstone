@@ -109,7 +109,10 @@ export class LoginPage implements OnInit {
         if (this.rol && res.usuario.rol !== this.rol) {
           this.authService.logout();
 
-          const rolEsperado = this.rol === 'conductor' ? 'Conductor' : 'Apoderado';
+          let rolEsperado = 'Apoderado';
+          if (this.rol === 'conductor') rolEsperado = 'Conductor';
+          if (this.rol === 'delegado') rolEsperado = 'Delegado Autorizado';
+
           const mensajeError = `Correo electrónico o contraseña incorrectos. La cuenta ingresada no corresponde a un perfil de ${rolEsperado}.`;
 
           this.errorMensaje = mensajeError;
@@ -123,23 +126,13 @@ export class LoginPage implements OnInit {
         );
 
         if (res.usuario.rol === 'apoderado') {
-
-          this.router.navigate([
-            '/apoderado/inicio'
-          ]);
-
+          this.router.navigate(['/apoderado/inicio']);
         } else if (res.usuario.rol === 'conductor') {
-
-          this.router.navigate([
-            '/conductor/inicio'
-          ]);
-
+          this.router.navigate(['/conductor/inicio']);
+        } else if (res.usuario.rol === 'delegado') {
+          this.router.navigate(['/delegado/inicio']);
         } else {
-
-          this.router.navigate([
-            '/home'
-          ]);
-
+          this.router.navigate(['/home']);
         }
 
       },

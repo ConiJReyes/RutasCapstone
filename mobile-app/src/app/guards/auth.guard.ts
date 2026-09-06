@@ -20,6 +20,8 @@ export const authGuard: CanActivateFn = (route, state) => {
       router.navigate(['/apoderado/inicio'], { replaceUrl: true });
     } else if (usuario.rol === 'conductor') {
       router.navigate(['/conductor/inicio'], { replaceUrl: true });
+    } else if (usuario.rol === 'delegado') {
+      router.navigate(['/delegado/inicio'], { replaceUrl: true });
     } else {
       router.navigate(['/login'], { replaceUrl: true });
     }

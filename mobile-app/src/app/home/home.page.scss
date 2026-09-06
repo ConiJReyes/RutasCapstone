@@ -330,6 +330,30 @@
 
 
 /* =================================
+   DELEGADO
+================================= */
+
+.delegate-button {
+  --background: #f8fafc;
+
+  --color: #0f766e;
+
+  --border-width: 1.5px;
+
+  --border-style: solid;
+
+  --border-color: #0f766e;
+
+  --box-shadow: none;
+}
+
+.delegate-button .button-icon {
+  background: rgba(15, 118, 110, 0.12);
+}
+
+
+
+/* =================================
    FOOTER
 ================================= */
 

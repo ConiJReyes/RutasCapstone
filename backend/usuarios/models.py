@@ -12,6 +12,7 @@ class Usuario(AbstractUser):
         ('apoderado', 'Apoderado'),
         ('conductor', 'Conductor'),
         ('admin', 'Administrador'),
+        ('delegado', 'Delegado'),
     )
 
     email = models.EmailField(unique=True)
@@ -58,6 +59,22 @@ class PerfilConductor(models.Model):
 
     def __str__(self):
         return f"Conductor: {self.usuario.get_full_name()} ({self.rut})"
+
+
+class PerfilDelegado(models.Model):
+    usuario = models.OneToOneField(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='perfil_delegado'
+    )
+    rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Delegado: {self.usuario.get_full_name()} ({self.rut})"
+
 
 
 class Estudiante(models.Model):

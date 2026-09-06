@@ -98,6 +98,34 @@
       </ion-button>
 
 
+      <!-- DELEGADO AUTORIZADO -->
+      <ion-button
+        expand="block"
+        class="role-button delegate-button"
+        routerLink="/login"
+        [queryParams]="{ rol: 'delegado' }">
+
+        <div class="button-content">
+
+          <div class="button-icon">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </div>
+
+          <div class="button-text">
+            <strong>Soy Delegado Autorizado</strong>
+            <span>Entrega y recepción autorizada</span>
+          </div>
+
+          <ion-icon
+            class="arrow-icon"
+            name="chevron-forward-outline">
+          </ion-icon>
+
+        </div>
+
+      </ion-button>
+
+
     </section>
 
 

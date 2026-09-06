@@ -13,6 +13,10 @@ import { ConductorFormComponent } from './features/conductor/conductor-form/cond
 import { ApoderadoListaComponent } from './features/apoderado/apoderado-lista/apoderado-lista.component';
 import { ApoderadoFormComponent } from './features/apoderado/apoderado-form/apoderado-form.component';
 
+// Delegados
+import { DelegadoListaComponent } from './features/delegado/delegado-lista/delegado-lista.component';
+import { DelegadoFormComponent } from './features/delegado/delegado-form/delegado-form.component';
+
 // Furgones
 import { FurgonesListaComponent } from './features/furgones/furgones-lista/furgones-lista.component';
 import { FurgonesFormComponent } from './features/furgones/furgones-form/furgones-form.component';
@@ -49,6 +53,11 @@ export const routes: Routes = [
       { path: 'apoderados', component: ApoderadoListaComponent },
       { path: 'apoderados/nuevo', component: ApoderadoFormComponent },
       { path: 'apoderados/editar/:id', component: ApoderadoFormComponent },
+
+      // Delegados
+      { path: 'delegados', component: DelegadoListaComponent },
+      { path: 'delegados/nuevo', component: DelegadoFormComponent },
+      { path: 'delegados/editar/:id', component: DelegadoFormComponent },
 
       // Furgones
       { path: 'furgones', component: FurgonesListaComponent },

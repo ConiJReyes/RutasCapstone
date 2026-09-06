@@ -103,21 +103,21 @@
         </ion-button>
 
 
-        <!-- Separador -->
+        <!-- Separador y Registro -->
         @if (rol === 'apoderado' || !rol) {
-
         <div class="separator">
           o
         </div>
-
-
-        <!-- Crear cuenta -->
         <ion-button expand="block" fill="clear" routerLink="/registro" class="register-button">
-
           Crear Cuenta
-
         </ion-button>
-
+        } @else if (rol === 'delegado') {
+        <div class="separator">
+          o
+        </div>
+        <ion-button expand="block" fill="clear" routerLink="/delegado/registro" class="register-button">
+          Registrarme como Delegado
+        </ion-button>
         }
 
       </form>
@@ -127,11 +127,13 @@
 
     <!-- Identificador del rol -->
     @if (rol === 'conductor') {
-
     <div class="role-label">
       Acceso exclusivo para conductores
     </div>
-
+    } @else if (rol === 'delegado') {
+    <div class="role-label">
+      Acceso para Delegados Autorizados
+    </div>
     }
 
   </div>

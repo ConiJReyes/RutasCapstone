@@ -1,0 +1,112 @@
+<ion-content [fullscreen]="true">
+
+  <div class="perfil-page">
+
+    <!-- BOTÓN VOLVER -->
+    <button class="back-button" type="button" (click)="volver()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
+    <!-- HEADER BANNER -->
+    <div class="profile-header">
+      <div class="avatar-box">🛡️</div>
+      <h1>{{ usuario?.first_name }} {{ usuario?.last_name }}</h1>
+      <div class="verified-badge">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <span>Delegado Autorizado</span>
+      </div>
+    </div>
+
+    <!-- TARJETA DATOS -->
+    <div class="profile-card">
+      <div class="card-title-row">
+        <h2>Información Personal</h2>
+        <button class="edit-toggle-btn" (click)="toggleEditar()">
+          {{ editando ? 'Cancelar' : 'Editar' }}
+        </button>
+      </div>
+
+      <form (ngSubmit)="guardarPerfil()">
+
+        <!-- RUT (Read only) -->
+        <div class="field-box readonly">
+          <ion-icon name="card-outline"></ion-icon>
+          <div class="field-content">
+            <span class="field-label">RUT Autorizado</span>
+            <span class="field-value">{{ usuario?.rut || 'Sin RUT' }}</span>
+          </div>
+          <span class="lock-tag">Verificado</span>
+        </div>
+
+        <!-- EMAIL (Read only) -->
+        <div class="field-box readonly">
+          <ion-icon name="mail-outline"></ion-icon>
+          <div class="field-content">
+            <span class="field-label">Correo Electrónico</span>
+            <span class="field-value">{{ usuario?.email }}</span>
+          </div>
+        </div>
+
+        <!-- NOMBRE -->
+        <div class="field-box" [class.editable]="editando">
+          <ion-icon name="person-outline"></ion-icon>
+          <div class="field-content">
+            <span class="field-label">Nombre</span>
+            @if (!editando) {
+            <span class="field-value">{{ usuario?.first_name }}</span>
+            } @else {
+            <ion-input type="text" name="nombre" [(ngModel)]="nombre" required></ion-input>
+            }
+          </div>
+        </div>
+
+        <!-- APELLIDO -->
+        <div class="field-box" [class.editable]="editando">
+          <ion-icon name="person-outline"></ion-icon>
+          <div class="field-content">
+            <span class="field-label">Apellido</span>
+            @if (!editando) {
+            <span class="field-value">{{ usuario?.last_name || '-' }}</span>
+            } @else {
+            <ion-input type="text" name="apellido" [(ngModel)]="apellido"></ion-input>
+            }
+          </div>
+        </div>
+
+        <!-- TELÉFONO -->
+        <div class="field-box" [class.editable]="editando">
+          <ion-icon name="call-outline"></ion-icon>
+          <div class="field-content">
+            <span class="field-label">Teléfono de Contacto</span>
+            @if (!editando) {
+            <span class="field-value">{{ usuario?.telefono || 'No registrado' }}</span>
+            } @else {
+            <ion-input type="tel" name="telefono" [(ngModel)]="telefono"></ion-input>
+            }
+          </div>
+        </div>
+
+        @if (editando) {
+        <ion-button expand="block" type="submit" class="save-btn" [disabled]="guardando">
+          @if (guardando) {
+          <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+          Guardar Cambios
+          }
+        </ion-button>
+        }
+
+      </form>
+    </div>
+
+    <!-- BOTÓN CERRAR SESIÓN -->
+    <div class="logout-container">
+      <ion-button expand="block" color="danger" fill="outline" class="logout-btn" (click)="cerrarSesion()">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        Cerrar Sesión
+      </ion-button>
+    </div>
+
+  </div>
+
+</ion-content>

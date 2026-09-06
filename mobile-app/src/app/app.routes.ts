@@ -174,4 +174,46 @@ export const routes: Routes = [
       import('./pages/conductor/perfil/perfil.page')
         .then((m) => m.PerfilPage),
   },
+
+  // =========================
+  // DELEGADO AUTORIZADO
+  // =========================
+  {
+    path: 'delegado/registro',
+    loadComponent: () =>
+      import('./pages/delegado/registro/registro.page')
+        .then((m) => m.RegistroDelegadoPage),
+  },
+  {
+    path: 'delegado/inicio',
+    canActivate: [authGuard],
+    data: { rol: 'delegado' },
+    loadComponent: () =>
+      import('./pages/delegado/inicio/inicio.page')
+        .then((m) => m.InicioDelegadoPage),
+  },
+  {
+    path: 'delegado/mi-qr',
+    canActivate: [authGuard],
+    data: { rol: 'delegado' },
+    loadComponent: () =>
+      import('./pages/delegado/mi-qr/mi-qr.page')
+        .then((m) => m.MiQrDelegadoPage),
+  },
+  {
+    path: 'delegado/seguimiento',
+    canActivate: [authGuard],
+    data: { rol: 'delegado' },
+    loadComponent: () =>
+      import('./pages/delegado/seguimiento/seguimiento.page')
+        .then((m) => m.SeguimientoDelegadoPage),
+  },
+  {
+    path: 'delegado/perfil',
+    canActivate: [authGuard],
+    data: { rol: 'delegado' },
+    loadComponent: () =>
+      import('./pages/delegado/perfil/perfil.page')
+        .then((m) => m.PerfilDelegadoPage),
+  },
 ];

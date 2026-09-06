@@ -18,12 +18,12 @@
     margin: 0;
     font-size: 28px;
     font-weight: 800;
-    color: #ffffff !important; /* Título principal en blanco */
+    color: var(--rs-text-dark, #234640) !important;
   }
 
   p {
     margin: 4px 0 0;
-    color: #94a3b8 !important; /* Subtítulo en gris claro */
+    color: var(--rs-muted, #718783) !important;
   }
 }
 
@@ -50,7 +50,7 @@
 }
 
 .table-card {
-  background: #ffffff !important; /* Fondo de tarjeta siempre blanco */
+  background: #ffffff !important;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -60,18 +60,17 @@
   width: 100%;
   border-collapse: collapse;
 
-  /* Celdas de la tabla con texto bien oscuro para que se lea perfecto */
   th, td {
     padding: 16px 20px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
     font-size: 14px;
-    color: #0f172a !important; /* Texto negro/azul oscuro */
+    color: #0f172a !important;
   }
 
   th {
     background: #f8fafc !important;
-    color: #475569 !important; /* Encabezados en gris oscuro */
+    color: #475569 !important;
     font-weight: 700;
   }
 

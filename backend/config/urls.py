@@ -13,6 +13,11 @@ from usuarios.views import (
     ApoderadoListCreateView,
     ApoderadoDetailView,
     CambiarPasswordView,
+    DelegadoEstudiantesListView,
+    DelegadoPerfilView,
+    DelegadoAdminListCreateView,
+    DelegadoAdminDetailView,
+    DelegadoDesvincularEstudianteView,
     DashboardStatsView,
     RegistrarFCMTokenView,
     NotificacionListView,
@@ -44,6 +49,11 @@ urlpatterns = [
     path('api/apoderados/', ApoderadoListCreateView.as_view(), name='apoderados-list-create'),
     path('api/apoderados/<int:apoderado_id>/', ApoderadoDetailView.as_view(), name='apoderado-detail'),
     path('api/apoderados/<int:apoderado_id>/cambiar-password/', CambiarPasswordView.as_view(), name='apoderado-cambiar-password'),
+    path('api/delegados/', DelegadoAdminListCreateView.as_view(), name='delegados-admin-list-create'),
+    path('api/delegados/<int:delegado_id>/', DelegadoAdminDetailView.as_view(), name='delegado-admin-detail'),
+    path('api/delegados/desvincular-estudiante/', DelegadoDesvincularEstudianteView.as_view(), name='delegado-desvincular-estudiante'),
+    path('api/delegados/estudiantes/', DelegadoEstudiantesListView.as_view(), name='delegado-estudiantes-list'),
+    path('api/delegados/perfil/', DelegadoPerfilView.as_view(), name='delegado-perfil'),
     path('api/dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
 
     # Furgones & Rutas CRUD

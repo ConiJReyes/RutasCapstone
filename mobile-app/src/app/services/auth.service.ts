@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -29,6 +29,15 @@ export interface RegistroApoderadoData {
   password: string;
 }
 
+export interface RegistroDelegadoData {
+  nombre: string;
+  apellido: string;
+  rut: string;
+  email: string;
+  telefono: string;
+  password: string;
+}
+
 export interface RecuperacionResponse {
   message: string;
 }
@@ -42,11 +51,42 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      'Authorization': token ? `Token ${token}` : ''
+    });
+  }
+
   registrarApoderado(data: RegistroApoderadoData): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/registro/`, data).pipe(
       tap(response => {
         if (response && response.token) {
           this.guardarSesion(response.token, response.usuario);
+        }
+      })
+    );
+  }
+
+  registrarDelegado(data: RegistroDelegadoData): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/registro-delegado/`, data).pipe(
+      tap(response => {
+        if (response && response.token) {
+          this.guardarSesion(response.token, response.usuario);
+        }
+      })
+    );
+  }
+
+  getEstudiantesDelegado(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delegados/estudiantes/`, { headers: this.getAuthHeaders() });
+  }
+
+  actualizarPerfilDelegado(data: { first_name?: string; last_name?: string; telefono?: string }): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/delegados/perfil/`, data, { headers: this.getAuthHeaders() }).pipe(
+      tap((res: any) => {
+        if (res && res.usuario) {
+          localStorage.setItem('user', JSON.stringify(res.usuario));
         }
       })
     );

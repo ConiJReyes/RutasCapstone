@@ -1,0 +1,60 @@
+<ion-content [fullscreen]="true">
+
+  <div class="qr-page">
+
+    <!-- BOTÓN VOLVER -->
+    <button class="back-button" type="button" (click)="volver()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
+    <!-- CABECERA -->
+    <div class="qr-header">
+      <div class="badge-tag">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <span>DELEGADO AUTORIZADO</span>
+      </div>
+      <h1>Código QR de Verificación</h1>
+      <p>Presenta este código al conductor para autorizar la entrega o retiro del estudiante</p>
+    </div>
+
+    <!-- TARJETA DEL QR -->
+    <div class="qr-card">
+      <div class="user-badge">
+        <div class="user-avatar">🛡️</div>
+        <div class="user-details">
+          <h3>{{ usuario?.first_name }} {{ usuario?.last_name }}</h3>
+          <p>RUT: {{ usuario?.rut }}</p>
+        </div>
+      </div>
+
+      <!-- TIMER VIGENCIA -->
+      <div class="timer-box" [class.expired]="!esValido">
+        <ion-icon name="time-outline"></ion-icon>
+        @if (esValido) {
+        <span>Código válido por: <strong>{{ tiempoRestanteTexto }}</strong></span>
+        } @else {
+        <span>Código expirado. Genera uno nuevo.</span>
+        }
+      </div>
+
+      <!-- QR IMAGE / SVG -->
+      <div class="qr-code-box" [class.blur-qr]="!esValido">
+        <div class="qr-wrapper" [innerHTML]="qrSvgSafe"></div>
+      </div>
+
+      <!-- BOTÓN REGENERAR -->
+      <ion-button expand="block" class="refresh-button" (click)="regenerarQR()">
+        <ion-icon slot="start" name="refresh-outline"></ion-icon>
+        Actualizar Código QR
+      </ion-button>
+    </div>
+
+    <!-- INSTRUCCIONES -->
+    <div class="info-footer">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>Este código QR certifica tu autorización válida como persona encargada ante el transporte escolar.</p>
+    </div>
+
+  </div>
+
+</ion-content>

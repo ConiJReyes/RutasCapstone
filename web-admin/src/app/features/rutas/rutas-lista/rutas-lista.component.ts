@@ -2,17 +2,21 @@ import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RutasService, Ruta } from '../../../core/services/rutas.service';
+import { MapaSeguimientoComponent } from '../../mapa/mapa-seguimiento.component';
 
 @Component({
   selector: 'app-rutas-lista',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MapaSeguimientoComponent],
   templateUrl: './rutas-lista.component.html',
   styleUrl: './rutas-lista.component.scss'
 })
 export class RutasListaComponent implements OnInit {
   rutas = signal<Ruta[]>([]);
   cargando = signal<boolean>(true);
+  
+  mostrarMapa = signal<boolean>(false);
+  rutaSeleccionada = signal<Ruta | null>(null);
 
   constructor(
     private rutasService: RutasService,
@@ -28,10 +32,11 @@ export class RutasListaComponent implements OnInit {
     this.cargando.set(true);
     this.rutasService.getRutas().subscribe({
       next: (data) => {
-        const mapped = data.map(r => ({
+        const mapped: Ruta[] = data.map(r => ({
           ...r,
           colegio: 'Escuela Bosques del Viento',
-          estudiantesCount: r.estudiantesCount ?? r.estudiantes_count ?? 0
+          estudiantesCount: r.estudiantesCount ?? r.estudiantes_count ?? 0,
+          estado: (r.estado || 'inactiva').toString().toLowerCase() as any
         }));
         this.rutas.set(mapped);
         this.cargando.set(false);
@@ -60,5 +65,15 @@ export class RutasListaComponent implements OnInit {
         next: () => this.cargarRutas()
       });
     }
+  }
+
+  abrirMapa(ruta: Ruta): void {
+    this.rutaSeleccionada.set(ruta);
+    this.mostrarMapa.set(true);
+  }
+
+  cerrarMapa(): void {
+    this.mostrarMapa.set(false);
+    this.rutaSeleccionada.set(null);
   }
 }

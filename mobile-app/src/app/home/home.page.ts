@@ -12,6 +12,7 @@ import { addIcons } from 'ionicons';
 import {
   peopleOutline,
   busOutline,
+  shieldCheckmarkOutline,
   chevronForwardOutline,
   arrowBackOutline
 } from 'ionicons/icons';
@@ -19,6 +20,7 @@ import {
 addIcons({
   peopleOutline,
   busOutline,
+  shieldCheckmarkOutline,
   chevronForwardOutline,
   arrowBackOutline
 });

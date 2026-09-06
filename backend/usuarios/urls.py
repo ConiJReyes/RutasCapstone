@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     RegistroApoderadoView,
+    RegistroDelegadoView,
     LoginView,
     SolicitarRecuperacionView,
     ConfirmarRecuperacionView,
@@ -13,6 +14,12 @@ urlpatterns = [
         'registro/',
         RegistroApoderadoView.as_view(),
         name='registro-apoderado'
+    ),
+
+    path(
+        'registro-delegado/',
+        RegistroDelegadoView.as_view(),
+        name='registro-delegado'
     ),
 
     path(

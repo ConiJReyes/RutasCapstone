@@ -37,6 +37,11 @@ export class DashboardLayoutComponent {
       icon: 'steering-wheel'
     },
     {
+      label: 'Delegados',
+      route: '/delegados',
+      icon: 'shield'
+    },
+    {
       label: 'Furgones',
       route: '/furgones',
       icon: 'bus'

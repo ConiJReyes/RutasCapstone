@@ -27,7 +27,6 @@ export class FurgonesFormComponent implements OnInit {
       patente: ['', [Validators.required, Validators.pattern(/^[A-Z0-9-]{6,8}$/i)]],
       marcaModelo: ['', Validators.required],
       capacidad: ['', [Validators.required, Validators.min(1)]],
-      conductorAsignado: ['', Validators.required],
       estado: ['disponible', Validators.required]
     });
   }
@@ -49,7 +48,6 @@ export class FurgonesFormComponent implements OnInit {
             patente: furgon.patente,
             marcaModelo: furgon.marcaModelo || furgon.marca_modelo || '',
             capacidad: furgon.capacidad,
-            conductorAsignado: furgon.conductorAsignado || furgon.conductor_asignado || '',
             estado: furgon.estado
           });
         }
@@ -69,7 +67,6 @@ export class FurgonesFormComponent implements OnInit {
       patente: formVal.patente,
       marcaModelo: formVal.marcaModelo,
       capacidad: Number(formVal.capacidad),
-      conductorAsignado: formVal.conductorAsignado,
       estado: formVal.estado
     };
 

@@ -54,6 +54,10 @@ class PerfilConductor(models.Model):
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
     licencia_conducir = models.CharField(max_length=50, null=True, blank=True)
+    furgon_asignado = models.OneToOneField(
+        'Furgon', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='perfil_conductor_asignado'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -207,7 +211,6 @@ class Furgon(models.Model):
     patente = models.CharField(max_length=20, unique=True)
     marca_modelo = models.CharField(max_length=100)
     capacidad = models.IntegerField(default=15)
-    conductor_asignado = models.CharField(max_length=150, blank=True, default='')
     estado = models.CharField(max_length=20, choices=ESTADOS, default='disponible')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

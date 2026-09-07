@@ -599,6 +599,25 @@ class ConductorDetailView(APIView):
             if 'licencia_conducir' in request.data:
                 perfil.licencia_conducir = request.data['licencia_conducir'].strip()
 
+            if 'furgon_asignado' in request.data:
+                furgon_id = request.data['furgon_asignado']
+                if furgon_id in (None, ''):
+                    perfil.furgon_asignado = None
+                else:
+                    try:
+                        furgon = Furgon.objects.get(id=furgon_id)
+                    except Furgon.DoesNotExist:
+                        return Response(
+                            {'message': 'El furgón seleccionado no existe.'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    if PerfilConductor.objects.filter(furgon_asignado=furgon).exclude(id=perfil.id).exists():
+                        return Response(
+                            {'message': 'El furgón seleccionado ya está asignado a otro conductor.'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    perfil.furgon_asignado = furgon
+
             perfil.save()
 
         return Response({

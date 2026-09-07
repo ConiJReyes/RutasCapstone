@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RutasService, Ruta } from '../../../core/services/rutas.service';
+import { Conductor, ConductorService } from '../../../core/services/conductor.service';
 
 @Component({
   selector: 'app-rutas-form',
@@ -16,13 +17,16 @@ export class RutasFormComponent implements OnInit {
   isEditMode = signal(false);
   rutaId = signal<string | null>(null);
   guardando = signal(false);
+  conductores = signal<Conductor[]>([]);
+  cargandoConductores = signal(true);
   readonly colegioFijo = 'Escuela Bosques del Viento';
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private rutasService: RutasService
+    private rutasService: RutasService,
+    private conductorService: ConductorService
   ) {
     this.rutaForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -39,6 +43,32 @@ export class RutasFormComponent implements OnInit {
       this.rutaId.set(id);
       this.cargarRuta(id);
     }
+    this.cargarConductores();
+  }
+
+  cargarConductores(): void {
+    this.cargandoConductores.set(true);
+    this.conductorService.getConductores().subscribe({
+      next: (conductores) => {
+        this.conductores.set(conductores);
+        this.cargandoConductores.set(false);
+
+        // Una ruta requiere un conductor antes de poder registrarse.
+        if (!this.isEditMode() && conductores.length === 0) {
+          this.router.navigate(['/conductores/nuevo']);
+        }
+      },
+      error: () => this.cargandoConductores.set(false)
+    });
+  }
+
+  nombreConductor(conductor: Conductor): string {
+    return conductor.nombre_completo
+      || [conductor.nombre || conductor.first_name, conductor.apellido || conductor.last_name]
+        .filter(Boolean)
+        .join(' ')
+      || conductor.usuario
+      || conductor.email;
   }
 
   cargarRuta(id: string): void {

@@ -26,6 +26,7 @@
               <th>RUT</th>
               <th>Nombre Completo</th>
               <th>Licencia</th>
+              <th>Furgón Asignado</th>
               <th>Teléfono</th>
               <th>Estudiantes en Ruta</th>
               <th class="actions-col">Acciones</th>
@@ -37,6 +38,7 @@
                 <td class="font-bold">{{ conductor.rut }}</td>
                 <td>{{ conductor.nombre_completo }}</td>
                 <td><span class="badge">{{ conductor.licencia_conducir }}</span></td>
+                <td>{{ conductor.furgon_asignado_nombre || 'Sin asignar' }}</td>
                 <td>{{ conductor.telefono }}</td>
                 <td>
                   <span class="badge-count" [class.has-students]="(conductor.total_estudiantes || 0) > 0">

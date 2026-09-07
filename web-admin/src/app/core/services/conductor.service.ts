@@ -10,6 +10,8 @@ export interface EstudianteItem {
   nombre_completo: string;
   colegio: string;
   curso: string;
+  direccion_principal?: string;
+  direccion_alternativa?: string | null;
   apoderado_nombre?: string;
   apoderado_telefono?: string;
   conductor_id?: number;
@@ -32,6 +34,8 @@ export interface Conductor {
   rol?: string;
   is_active?: boolean;
   total_estudiantes?: number;
+  furgon_asignado?: number | null;
+  furgon_asignado_nombre?: string | null;
 }
 
 export interface ConductorCreateResponse {
@@ -62,6 +66,7 @@ export class ConductorService {
     email: string;
     telefono?: string;
     licencia_conducir?: string;
+    furgon_asignado?: number | null;
     password: string;
   }): Observable<ConductorCreateResponse> {
     return this.http.post<ConductorCreateResponse>(this.apiUrl, conductorData);

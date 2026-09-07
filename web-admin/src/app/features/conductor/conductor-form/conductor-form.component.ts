@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { ConductorService } from '../../../core/services/conductor.service';
+import { Furgon, FurgonesService } from '../../../core/services/furgones.service';
 
 @Component({
   selector: 'app-conductor-form',
@@ -17,6 +18,8 @@ export class ConductorFormComponent implements OnInit {
   isEditMode = false;
   conductorId: number | null = null;
   errorMessage = '';
+  furgones: Furgon[] = [];
+  cargandoFurgones = true;
 
   licenciasDisponibles = ['Clase A1', 'Clase A2', 'Clase A3', 'Clase B'];
 
@@ -24,11 +27,13 @@ export class ConductorFormComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private conductorService: ConductorService
+    private conductorService: ConductorService,
+    private furgonesService: FurgonesService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.cargarFurgones();
 
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
@@ -44,8 +49,22 @@ export class ConductorFormComponent implements OnInit {
       rut: ['', [Validators.required, Validators.pattern('^[0-9]{7,8}-[0-9kK]{1}$')]],
       telefono: ['', [Validators.required]],
       licencia_conducir: ['', [Validators.required]],
+      furgon_asignado: [null],
       email: ['', [Validators.required, Validators.email]],
       password: ['', this.isEditMode ? [] : [Validators.required, Validators.minLength(6)]]
+    });
+  }
+
+  cargarFurgones(): void {
+    this.furgonesService.getFurgones().subscribe({
+      next: (furgones) => {
+        this.furgones = furgones;
+        this.cargandoFurgones = false;
+      },
+      error: () => {
+        this.cargandoFurgones = false;
+        this.errorMessage = 'No se pudo cargar la lista de furgones.';
+      }
     });
   }
 
@@ -59,6 +78,7 @@ export class ConductorFormComponent implements OnInit {
             rut: conductor.rut,
             telefono: conductor.telefono,
             licencia_conducir: conductor.licencia_conducir,
+            furgon_asignado: conductor.furgon_asignado ?? null,
             email: conductor.email
           });
         }
@@ -98,6 +118,7 @@ export class ConductorFormComponent implements OnInit {
         rut: val.rut.trim(),
         telefono: val.telefono.trim(),
         licencia_conducir: val.licencia_conducir,
+        furgon_asignado: val.furgon_asignado || null,
         email: val.email.trim()
       };
 
@@ -124,6 +145,7 @@ export class ConductorFormComponent implements OnInit {
         email: val.email.trim(),
         telefono: val.telefono.trim(),
         licencia_conducir: val.licencia_conducir,
+        furgon_asignado: val.furgon_asignado || null,
         password: val.password
       };
 

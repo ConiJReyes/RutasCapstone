@@ -15,7 +15,14 @@
 
     <div class="form-group">
       <label for="conductor">Conductor Asignado</label>
-      <input id="conductor" type="text" formControlName="conductor" placeholder="Nombre del conductor" />
+      <select id="conductor" formControlName="conductor" [disabled]="cargandoConductores()">
+        <option value="" disabled>
+          {{ cargandoConductores() ? 'Cargando conductores...' : 'Selecciona un conductor' }}
+        </option>
+        @for (conductor of conductores(); track conductor.id) {
+          <option [value]="nombreConductor(conductor)">{{ nombreConductor(conductor) }}</option>
+        }
+      </select>
       @if (rutaForm.get('conductor')?.invalid && rutaForm.get('conductor')?.touched) {
         <span class="field-error">El conductor es obligatorio</span>
       }

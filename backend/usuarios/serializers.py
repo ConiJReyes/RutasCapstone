@@ -10,7 +10,7 @@ from .models import Usuario, PerfilApoderado, PerfilConductor, PerfilDelegado, E
 class FurgonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Furgon
-        fields = ['id', 'patente', 'marca_modelo', 'capacidad', 'conductor_asignado', 'estado', 'created_at']
+        fields = ['id', 'patente', 'marca_modelo', 'capacidad', 'estado', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 
@@ -61,6 +61,7 @@ class RegistroConductorSerializer(serializers.Serializer):
     email = serializers.EmailField()
     telefono = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     licencia_conducir = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
+    furgon_asignado = serializers.PrimaryKeyRelatedField(queryset=Furgon.objects.all(), required=False, allow_null=True)
     password = serializers.CharField(write_only=True, min_length=6)
 
     def validate_email(self, value):
@@ -75,6 +76,11 @@ class RegistroConductorSerializer(serializers.Serializer):
             raise serializers.ValidationError('Este RUT ya está registrado como conductor.')
         return cleaned_rut
 
+    def validate_furgon_asignado(self, value):
+        if value and PerfilConductor.objects.filter(furgon_asignado=value).exists():
+            raise serializers.ValidationError('El furgón seleccionado ya está asignado a otro conductor.')
+        return value
+
     def create(self, validated_data):
         usuario = Usuario.objects.create_user(
             username=validated_data['email'],
@@ -88,7 +94,8 @@ class RegistroConductorSerializer(serializers.Serializer):
             usuario=usuario,
             rut=validated_data['rut'],
             telefono=validated_data.get('telefono', ''),
-            licencia_conducir=validated_data.get('licencia_conducir', '')
+            licencia_conducir=validated_data.get('licencia_conducir', ''),
+            furgon_asignado=validated_data.get('furgon_asignado')
         )
         return usuario
 
@@ -294,13 +301,15 @@ class ConductorSerializer(serializers.ModelSerializer):
     licencia_conducir = serializers.SerializerMethodField()
     usuario = serializers.CharField(source='email', read_only=True)
     total_estudiantes = serializers.SerializerMethodField()
+    furgon_asignado = serializers.SerializerMethodField()
+    furgon_asignado_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
             'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol','is_active',
-            'total_estudiantes'
+            'total_estudiantes', 'furgon_asignado', 'furgon_asignado_nombre'
         ]
 
     def get_nombre_completo(self, obj):
@@ -320,6 +329,17 @@ class ConductorSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'perfil_conductor'):
             return obj.perfil_conductor.estudiantes_asignados.count()
         return 0
+
+    def get_furgon_asignado(self, obj):
+        if hasattr(obj, 'perfil_conductor') and obj.perfil_conductor.furgon_asignado:
+            return obj.perfil_conductor.furgon_asignado.id
+        return None
+
+    def get_furgon_asignado_nombre(self, obj):
+        if hasattr(obj, 'perfil_conductor') and obj.perfil_conductor.furgon_asignado:
+            furgon = obj.perfil_conductor.furgon_asignado
+            return f"{furgon.patente} - {furgon.marca_modelo}"
+        return None
 
 
 class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
@@ -395,14 +415,37 @@ class EstudianteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Estudiante
         fields = [
-            'id', 'nombre', 'apellido', 'nombre_completo', 'rut', 'fecha_nacimiento', 'colegio', 'curso',
-            'direccion_principal', 'direccion_alternativa', 'persona_autorizada',
-            'rut_persona_autorizada', 'foto', 'tiene_foto',
-            'apoderado', 'apoderado_nombre', 'apoderado_telefono',
-            'conductor', 'conductor_id', 'conductor_nombre',
-            'created_at', 'updated_at'
+        'id',
+        'nombre',
+        'apellido',
+        'nombre_completo',
+        'rut',
+        'fecha_nacimiento',
+        'colegio',
+        'curso',
+        'direccion_principal',
+        'direccion_alternativa',
+        'persona_autorizada',
+        'rut_persona_autorizada',
+        'foto',
+        'tiene_foto',
+        'apoderado',
+        'apoderado_nombre',
+        'apoderado_telefono',
+        'conductor',
+        'conductor_id',
+        'conductor_nombre',
+        'created_at',
+        'updated_at'
         ]
-        read_only_fields = ['id', 'tiene_foto', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id',
+            'tiene_foto',
+            'created_at',
+            'updated_at',
+            'apoderado',
+            'conductor',
+        ]
         extra_kwargs = {'foto': {'write_only': True, 'required': False, 'allow_null': True}}
 
     def get_tiene_foto(self, obj):

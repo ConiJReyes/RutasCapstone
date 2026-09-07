@@ -97,6 +97,18 @@
           }
         </div>
 
+        <div class="form-group">
+          <label for="furgon_asignado">Furgón Asignado</label>
+          <div class="input-wrapper">
+            <select id="furgon_asignado" formControlName="furgon_asignado" [disabled]="cargandoFurgones">
+              <option [ngValue]="null">{{ cargandoFurgones ? 'Cargando furgones...' : 'Sin furgón asignado' }}</option>
+              @for (furgon of furgones; track furgon.id) {
+                <option [value]="furgon.id">{{ furgon.patente }} - {{ furgon.marcaModelo || furgon.marca_modelo }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
         <!-- Campo: Correo Electrónico (Login) -->
         <div class="form-group">
           <label for="email">Correo Electrónico (Acceso) <span class="required">*</span></label>

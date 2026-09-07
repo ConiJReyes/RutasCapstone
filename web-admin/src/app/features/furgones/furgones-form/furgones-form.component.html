@@ -30,14 +30,6 @@
     </div>
 
     <div class="form-group">
-      <label for="conductorAsignado">Conductor Asignado</label>
-      <input id="conductorAsignado" type="text" formControlName="conductorAsignado" placeholder="Nombre del conductor" />
-      @if (furgonForm.get('conductorAsignado')?.invalid && furgonForm.get('conductorAsignado')?.touched) {
-        <span class="field-error">El conductor asignado es obligatorio</span>
-      }
-    </div>
-
-    <div class="form-group">
       <label for="estado">Estado Operativo</label>
       <select id="estado" formControlName="estado">
         <option value="disponible">Disponible</option>

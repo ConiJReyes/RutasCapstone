@@ -30,8 +30,7 @@ export class FurgonesListaComponent implements OnInit {
       next: (data) => {
         const mapped = data.map(item => ({
           ...item,
-          marcaModelo: item.marcaModelo || item.marca_modelo || '',
-          conductorAsignado: item.conductorAsignado || item.conductor_asignado || 'Sin asignar'
+          marcaModelo: item.marcaModelo || item.marca_modelo || ''
         }));
         this.furgones.set(mapped);
         this.cargando.set(false);

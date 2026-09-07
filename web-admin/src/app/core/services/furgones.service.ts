@@ -8,8 +8,6 @@ export interface Furgon {
   marcaModelo?: string;
   marca_modelo?: string;
   capacidad: number;
-  conductorAsignado?: string;
-  conductor_asignado?: string;
   estado: 'disponible' | 'en_ruta' | 'mantenimiento';
 }
 
@@ -26,8 +24,6 @@ export class FurgonesService {
       marca_modelo: 'Mercedes-Benz Sprinter',
       marcaModelo: 'Mercedes-Benz Sprinter',
       capacidad: 19,
-      conductor_asignado: 'Carlos Pérez',
-      conductorAsignado: 'Carlos Pérez',
       estado: 'en_ruta'
     },
     {
@@ -36,8 +32,6 @@ export class FurgonesService {
       marca_modelo: 'Hyundai H350',
       marcaModelo: 'Hyundai H350',
       capacidad: 15,
-      conductor_asignado: 'María Gómez',
-      conductorAsignado: 'María Gómez',
       estado: 'disponible'
     }
   ];
@@ -64,7 +58,6 @@ export class FurgonesService {
       patente: furgon.patente,
       marca_modelo: furgon.marcaModelo || furgon.marca_modelo || '',
       capacidad: furgon.capacidad,
-      conductor_asignado: furgon.conductorAsignado || furgon.conductor_asignado || '',
       estado: furgon.estado
     };
     return this.http.post<Furgon>(this.apiUrl, payload).pipe(
@@ -81,7 +74,6 @@ export class FurgonesService {
       patente: furgon.patente,
       marca_modelo: furgon.marcaModelo || furgon.marca_modelo || '',
       capacidad: furgon.capacidad,
-      conductor_asignado: furgon.conductorAsignado || furgon.conductor_asignado || '',
       estado: furgon.estado
     };
     return this.http.put<Furgon>(`${this.apiUrl}${id}/`, payload).pipe(

@@ -1,23 +1,25 @@
-<div class="modal-overlay" (click)="cerrarModal()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (click)="cerrarModal($event)">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
     <div class="modal-header">
-      <div>
-        <h3>Seguimiento en Vivo</h3>
-        <p class="subtitle">{{ rutaNombre }}</p>
+      <div class="header-info">
+        <span class="live-badge"><span class="badge-dot"></span> EN VIVO</span>
+        <h3>Seguimiento de Ruta</h3>
+        <p class="subtitle">{{ rutaNombre || 'Ruta Escolar' }}</p>
       </div>
-      <button class="close-btn" (click)="cerrarModal()">&times;</button>
+      <button type="button" class="close-btn" (click)="cerrarModal($event)" aria-label="Cerrar">&times;</button>
     </div>
 
+    <!-- FORMULARIO DE DIRECCIÓN -->
     @if (necesitaDireccion) {
       <div class="direccion-form">
         <h4>Configurar Puntos del Recorrido</h4>
-        <p>Selecciona la dirección del apoderado para establecer el origen exacto del recorrido.</p>
-
+        <p>Selecciona la dirección del apoderado para establecer el origen exacto del trayecto.</p>
+        
         <div class="form-grid">
           <div class="form-group">
             <label>Región</label>
             <select [(ngModel)]="dirApoderado.region" (ngModelChange)="onRegionSelect($event)" class="select-control">
-              <option value="" disabled>-- Selecciona una región --</option>
               @for (reg of regiones; track reg) {
                 <option [value]="reg">{{ reg }}</option>
               }
@@ -27,7 +29,6 @@
           <div class="form-group">
             <label>Comuna</label>
             <select [(ngModel)]="dirApoderado.comuna" class="select-control" [disabled]="!dirApoderado.region">
-              <option value="" disabled>-- Selecciona una comuna --</option>
               @for (com of comunasDisponibles; track com) {
                 <option [value]="com">{{ com }}</option>
               }
@@ -36,25 +37,33 @@
 
           <div class="form-group">
             <label>Calle</label>
-            <input type="text" [(ngModel)]="dirApoderado.calle" placeholder="Ej: Victor Jara" class="input-control" />
+            <input type="text" [(ngModel)]="dirApoderado.calle" placeholder="Ej: Victor Jara" class="input-control">
           </div>
 
           <div class="form-group">
             <label>Número</label>
-            <input type="text" [(ngModel)]="dirApoderado.numero" placeholder="Ej: 549" class="input-control" />
+            <input type="text" [(ngModel)]="dirApoderado.numero" placeholder="Ej: 549" class="input-control">
           </div>
         </div>
 
         <div class="form-actions">
           <button type="button" class="confirm-btn" (click)="procesarDireccionesYIniciar()" [disabled]="cargandoGeo">
-            {{ cargandoGeo ? 'Cargando Mapa...' : 'Iniciar seguimiento' }}
+            @if (cargandoGeo) {
+              <span class="spinner"></span> Obteniendo coordenadas...
+            } @else {
+              Iniciar seguimiento en mapa
+            }
           </button>
         </div>
       </div>
-    } @else {
+    }
+
+    <!-- MAPA MODERNO Y ELEGANTE -->
+    @if (!necesitaDireccion) {
       <div class="map-wrapper">
-        <div #mapContainer class="map-container"></div>
+        <div id="mapa"></div>
       </div>
     }
+
   </div>
 </div>

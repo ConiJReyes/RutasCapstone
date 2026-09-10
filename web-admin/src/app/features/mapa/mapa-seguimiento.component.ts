@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { io, Socket } from 'socket.io-client';
 import * as L from 'leaflet';
 
 @Component({
@@ -12,59 +13,97 @@ import * as L from 'leaflet';
 })
 export class MapaSeguimientoComponent implements OnInit, OnDestroy {
   @Input() rutaNombre: string = '';
-  @Input() direccionExistente: { region?: string; comuna?: string; calle?: string; numero?: string } | null = null;
-  @Output() alCerrar = new EventEmitter<void>();
+  
+  @Input() set colegioNombreInput(val: string) {
+    if (val && val.trim()) this.dirColegio = val;
+  }
 
-  @ViewChild('mapContainer') mapContainer!: ElementRef;
+  @Output() cerrar = new EventEmitter<void>();
 
-  necesitaDireccion: boolean = true;
-  cargandoGeo: boolean = false;
+  private socket?: Socket;
+  private map?: L.Map;
+  private furgonMarker?: L.Marker;
+  private rutaPolylineGlow?: L.Polyline;
+  private rutaPolylineMain?: L.Polyline;
 
   dirApoderado = {
-    region: 'Región Metropolitana de Santiago',
-    comuna: 'Quilicura',
     calle: 'Victor Jara',
-    numero: '549'
+    numero: '549',
+    region: 'Región Metropolitana',
+    comuna: 'Quilicura'
   };
+  dirColegio = 'Colegio Quilicura';
 
-  dirColegio: string = 'Escuela Bosques del Viento, Santiago, Chile';
+  regiones: string[] = ['Región Metropolitana', 'Valparaíso', 'Biobío'];
+  comunasDisponibles: string[] = ['Quilicura', 'Santiago', 'Lampa', 'Pudahuel', 'Maipú'];
 
-  regiones: string[] = [
-    'Arica y Parinacota', 'Tarapacá', 'Antofagasta', 'Atacama', 'Coquimbo',
-    'Valparaíso', 'Región Metropolitana de Santiago', 'O\'Higgins', 'Maule',
-    'Ñuble', 'Bío Bío', 'La Araucanía', 'Los Ríos', 'Los Lagos', 'Aysén', 'Magallanes'
-  ];
+  origenCoords: [number, number] = [-33.3602, -70.7300];
+  destinoCoords: [number, number] = [-33.3550, -70.7250];
 
-  comunasPorRegion: { [key: string]: string[] } = {
-    'Región Metropolitana de Santiago': [
-      'Quilicura', 'Santiago', 'Providencia', 'Las Condes', 'Ñuñoa', 'Maipú', 
-      'La Florida', 'Pudahuel', 'Vitacura', 'San Miguel', 'Peñalolén'
-    ],
-    'Valparaíso': ['Valparaíso', 'Viña del Mar', 'Concón'],
-    'Bío Bío': ['Concepción', 'Talcahuano']
-  };
-
-  comunasDisponibles: string[] = [];
-
-  private map!: L.Map;
-  private furgonMarker!: L.Marker;
-  private intervalId: any;
-  private step: number = 0;
-  private totalSteps: number = 60;
-
-  // Coordenadas base (Quilicura -> Santiago Centro)
-  private origenCoords: [number, number] = [-33.3602, -70.7300]; 
-  private destinoCoords: [number, number] = [-33.4100, -70.6000]; 
+  cargandoGeo = false;
+  necesitaDireccion = true;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.comunasDisponibles = this.comunasPorRegion[this.dirApoderado.region] || [];
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    try {
+      this.socket = io('http://localhost:3000');
+      this.socket.on('posicionActualizada', (data: { lat: number; lon: number }) => {
+        if (this.furgonMarker) {
+          this.furgonMarker.setLatLng([data.lat, data.lon]);
+        }
+      });
+    } catch (e) {
+      console.warn('Socket no conectado:', e);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destruirMapaYSocket();
+  }
+
+  cerrarModal(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.destruirMapaYSocket();
+    this.necesitaDireccion = true;
+    this.cerrar.emit();
+    this.cdr.detectChanges();
+  }
+
+  private destruirMapaYSocket(): void {
+    try {
+      if (this.socket) {
+        this.socket.disconnect();
+        this.socket = undefined;
+      }
+      if (this.map) {
+        this.map.off();
+        this.map.remove();
+        this.map = undefined;
+      }
+    } catch (error) {
+      console.warn('Error al destruir el mapa:', error);
+      this.map = undefined;
+    }
   }
 
   onRegionSelect(region: string): void {
-    this.dirApoderado.region = region;
-    this.comunasDisponibles = this.comunasPorRegion[region] || [];
+    if (region === 'Región Metropolitana') {
+      this.comunasDisponibles = ['Quilicura', 'Santiago', 'Lampa', 'Pudahuel', 'Maipú'];
+    } else {
+      this.comunasDisponibles = [];
+    }
     this.dirApoderado.comuna = '';
   }
 
@@ -72,120 +111,130 @@ export class MapaSeguimientoComponent implements OnInit, OnDestroy {
     this.cargandoGeo = true;
     this.cdr.detectChanges();
 
-    const query = `${this.dirApoderado.calle} ${this.dirApoderado.numero}, ${this.dirApoderado.comuna}, Chile`;
-
     try {
-      // Intentar buscar coordenadas reales con límite de tiempo (timeout de 2s)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const urlOrigen = `http://localhost:3000/api/geo/ubicacion?calle=${encodeURIComponent(this.dirApoderado.calle)}&numero=${encodeURIComponent(this.dirApoderado.numero)}&comuna=${encodeURIComponent(this.dirApoderado.comuna)}`;
+      const resOrigen = await fetch(urlOrigen);
+      if (resOrigen.ok) {
+        const dataOrigen = await resOrigen.json();
+        if (dataOrigen.latitud && dataOrigen.longitud) {
+          this.origenCoords = [parseFloat(dataOrigen.latitud), parseFloat(dataOrigen.longitud)];
+        }
+      }
 
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
-      const res = await fetch(url, { signal: controller.signal });
-      const data = await res.json();
-      clearTimeout(timeoutId);
-
-      if (data && data.length > 0) {
-        this.origenCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      const urlColegio = `http://localhost:3000/api/geo/coincidencias?query=${encodeURIComponent(this.dirColegio)}&limite=1`;
+      const resColegio = await fetch(urlColegio);
+      if (resColegio.ok) {
+        const dataColegio = await resColegio.json();
+        if (dataColegio.coincidencias && dataColegio.coincidencias.length > 0) {
+          this.destinoCoords = [
+            parseFloat(dataColegio.coincidencias[0].latitud),
+            parseFloat(dataColegio.coincidencias[0].longitud)
+          ];
+        }
       }
     } catch (e) {
-      console.warn('Geocodificación falló o demoró mucho; usando coordenadas por defecto.', e);
+      console.warn('API local no disponible. Usando coordenadas por defecto.', e);
     }
 
-    // Ocultar formulario e instanciar mapa
     this.necesitaDireccion = false;
     this.cargandoGeo = false;
     this.cdr.detectChanges();
 
-    // Esperar renderizado del contenedor
     setTimeout(() => {
       this.inicializarMapa();
-    }, 200);
+    }, 150);
   }
 
-  private inicializarMapa(): void {
-    if (!this.mapContainer || !this.mapContainer.nativeElement) return;
+  async trazarRutaPorCalles(): Promise<void> {
+    try {
+      const urlRuta = `http://localhost:3000/api/geo/ruta?latOrigen=${this.origenCoords[0]}&lonOrigen=${this.origenCoords[1]}&latDestino=${this.destinoCoords[0]}&lonDestino=${this.destinoCoords[1]}`;
+      const resRuta = await fetch(urlRuta);
+      
+      if (resRuta.ok) {
+        const dataRuta = await resRuta.json();
+        if (this.map && dataRuta.puntosRuta) {
+          if (this.rutaPolylineGlow) this.map.removeLayer(this.rutaPolylineGlow);
+          if (this.rutaPolylineMain) this.map.removeLayer(this.rutaPolylineMain);
 
-    if (this.map) {
-      this.map.remove();
-    }
+          // Línea traslúcida inferior para efecto Glow/Brillo
+          this.rutaPolylineGlow = L.polyline(dataRuta.puntosRuta, {
+            color: '#3f8178',
+            weight: 12,
+            opacity: 0.25,
+            lineCap: 'round',
+            lineJoin: 'round'
+          }).addTo(this.map);
 
-    this.map = L.map(this.mapContainer.nativeElement).setView(this.origenCoords, 13);
+          // Línea principal de trazado
+          this.rutaPolylineMain = L.polyline(dataRuta.puntosRuta, {
+            color: '#2d6861',
+            weight: 5,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
+          }).addTo(this.map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
-
-    // Marcador Punto de Inicio (Apoderado)
-    L.marker(this.origenCoords)
-      .addTo(this.map)
-      .bindPopup(`<b>Inicio: Apoderado</b><br>${this.dirApoderado.calle} ${this.dirApoderado.numero}, ${this.dirApoderado.comuna}`)
-      .openPopup();
-
-    // Marcador Punto Destino (Colegio)
-    L.marker(this.destinoCoords)
-      .addTo(this.map)
-      .bindPopup(`<b>Destino: Colegio</b><br>${this.dirColegio}`);
-
-    // Línea trazada del recorrido
-    L.polyline([this.origenCoords, this.destinoCoords], {
-      color: '#3f8178',
-      weight: 4,
-      dashArray: '8, 8'
-    }).addTo(this.map);
-
-    // Ajustar zoom para enfocar ambos puntos
-    const bounds = L.latLngBounds([this.origenCoords, this.destinoCoords]);
-    this.map.fitBounds(bounds, { padding: [40, 40] });
-
-    // Icono animado del Furgón
-    const furgonIcon = L.divIcon({
-      className: 'furgon-pin-custom',
-      html: '<div style="font-size:24px; background:#ffffff; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); border:2px solid #3f8178;">🚐</div>',
-      iconSize: [40, 40],
-      iconAnchor: [20, 20]
-    });
-
-    this.furgonMarker = L.marker(this.origenCoords, { icon: furgonIcon }).addTo(this.map);
-
-    // Corregir tamaño de Leaflet dentro del modal
-    setTimeout(() => {
-      if (this.map) {
-        this.map.invalidateSize();
-      }
-    }, 100);
-
-    this.iniciarMovimientoFurgon();
-  }
-
-  private iniciarMovimientoFurgon(): void {
-    if (this.intervalId) clearInterval(this.intervalId);
-
-    this.step = 0;
-    this.intervalId = setInterval(() => {
-      if (this.step <= this.totalSteps) {
-        const factor = this.step / this.totalSteps;
-        const lat = this.origenCoords[0] + (this.destinoCoords[0] - this.origenCoords[0]) * factor;
-        const lng = this.origenCoords[1] + (this.destinoCoords[1] - this.origenCoords[1]) * factor;
-
-        const nuevaPosicion: [number, number] = [lat, lng];
-        if (this.furgonMarker) {
-          this.furgonMarker.setLatLng(nuevaPosicion);
+          const bounds = L.latLngBounds(dataRuta.puntosRuta);
+          this.map.fitBounds(bounds, { padding: [40, 40] });
         }
-
-        this.step++;
-      } else {
-        this.step = 0; // Reiniciar animación
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Error al trazar la ruta:', error);
+    }
   }
 
-  cerrarModal(): void {
-    if (this.intervalId) clearInterval(this.intervalId);
-    this.alCerrar.emit();
-  }
+  inicializarMapa(): void {
+    const mapElement = document.getElementById('mapa');
+    if (mapElement && !this.map) {
+      this.map = L.map('mapa', {
+        zoomControl: false
+      }).setView(this.origenCoords, 16); // Aumentamos ligeramente el zoom para ver mejor el círculo pequeño
 
-  ngOnDestroy(): void {
-    if (this.intervalId) clearInterval(this.intervalId);
-    if (this.map) this.map.remove();
+      L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        subdomains: 'abcd'
+      }).addTo(this.map);
+
+      // 🔵 CÍRCULO MÁS PEQUEÑO DE DIRECCIÓN APROXIMADA (50 metros)
+      L.circle(this.origenCoords, {
+        color: '#2d6861',         // Color del borde
+        fillColor: '#2d6861',     // Color del centro
+        fillOpacity: 0.22,        // Un poco más visible al ser compacto
+        weight: 2,                // Ancho del borde
+        dashArray: '3, 3',        // Punteado fino
+        radius: 50                // Radio ajustado a 50 metros
+      }).addTo(this.map).bindPopup('<b>Zona Apoderado</b><br>Ubicación aproximada');
+
+      // Icono Destino (Colegio)
+      const destinoIcon = L.divIcon({
+        html: `<div class="custom-pin pin-destino"><span>🏫</span></div>`,
+        className: 'custom-leaflet-marker',
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
+
+      // Icono Furgón Escolar
+      const furgonIcon = L.divIcon({
+        html: `
+          <div class="furgon-pin-container">
+            <div class="pulse-ring"></div>
+            <div class="furgon-card">🚌</div>
+          </div>`,
+        className: 'custom-leaflet-marker',
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+
+      L.marker(this.destinoCoords, { icon: destinoIcon }).addTo(this.map).bindPopup(`<b>Destino:</b> ${this.dirColegio}`);
+      this.furgonMarker = L.marker(this.origenCoords, { icon: furgonIcon }).addTo(this.map).bindPopup('<b>Furgón Escolar</b><br>Transmisión en Vivo');
+
+      this.trazarRutaPorCalles();
+
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 300);
+    }
   }
 }

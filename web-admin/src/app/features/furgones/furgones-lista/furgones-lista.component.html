@@ -1,0 +1,49 @@
+<div class="page-container">
+  <div class="header-section">
+    <div>
+      <h2>Gestión de Furgones Escolares</h2>
+      <p>Administra los vehículos de la flota, capacidad y asignaciones.</p>
+    </div>
+    <button class="primary-btn" (click)="nuevoFurgon()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nuevo Furgón</span>
+    </button>
+  </div>
+
+  <div class="table-card glass-panel">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Patente</th>
+          <th>Marca / Modelo</th>
+          <th>Capacidad</th>
+          <th>Conductor Asignado</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (furgon of furgones(); track furgon.id) {
+        <tr>
+          <td class="font-bold">{{ furgon.patente }}</td>
+          <td>{{ furgon.marcaModelo }}</td>
+          <td>{{ furgon.capacidad }} asientos</td>
+          <td>{{ furgon.conductorAsignado }}</td>
+          <td>
+            <span class="status-badge" [class]="furgon.estado">
+              {{ furgon.estado === 'en_ruta' ? 'En Ruta' : (furgon.estado === 'disponible' ? 'Disponible' : 'Mantenimiento') }}
+            </span>
+          </td>
+          <td>
+            <button class="action-btn" (click)="editarFurgon(furgon.id)">Editar</button>
+            <button class="action-btn danger-btn" style="margin-left: 6px; color: #dc2626;" (click)="eliminarFurgon(furgon.id)">Eliminar</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

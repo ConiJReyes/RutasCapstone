@@ -1,0 +1,178 @@
+Quiero implementar un nuevo flujo dentro del módulo CONDUCTOR de mi proyecto RutasCapstone.
+
+IMPORTANTE:
+- NO rehagas funcionalidades existentes.
+- NO cambies el sistema de login actual.
+- NO cambies la arquitectura del proyecto innecesariamente.
+- NO crees una aplicación separada.
+- Trabaja sobre la aplicación móvil existente.
+- La app móvil usa Ionic + Angular + Capacitor.
+- Quiero hacerlo por etapas, pero en esta tarea implementa completa la navegación y pantalla del escáner facial.
+- Antes de modificar archivos, revisa la estructura actual del proyecto y reutiliza los componentes, rutas, estilos y servicios que ya existen.
+
+OBJETIVO:
+
+El conductor puede iniciar sesión con la MISMA cuenta en dos dispositivos Android diferentes, por ejemplo:
+1. Su celular.
+2. Una tablet instalada dentro del furgón.
+
+Esto NO requiere ninguna comunicación especial entre los dos dispositivos.
+
+Ambos dispositivos simplemente tienen sesiones independientes contra el mismo backend Django, igual que iniciar sesión en Facebook desde el celular y el PC.
+
+FLUJO QUE QUIERO:
+
+MÓDULO CONDUCTOR
+        ↓
+Pantalla principal del conductor
+        ↓
+Botón "Escáner facial"
+        ↓
+Nueva pantalla "Escáner facial"
+        ↓
+Cámara del dispositivo
+        ↓
+Posteriormente integraremos el reconocimiento facial.
+
+EN ESTA TAREA NO IMPLEMENTES TODAVÍA EL RECONOCIMIENTO FACIAL.
+
+Primero quiero dejar funcionando correctamente la interfaz, navegación y estructura para que posteriormente conectemos FaceScanner.
+
+REQUISITOS:
+
+1. En el módulo/pantalla actual del conductor agrega una opción/botón claramente visible:
+
+   "Escáner facial"
+
+   con un icono de cámara o rostro.
+
+2. Al pulsarlo debe navegar a una NUEVA página/pantalla llamada:
+
+   FaceScannerPage
+
+   o el nombre equivalente siguiendo la convención que ya utilice el proyecto.
+
+3. La pantalla debe tener:
+
+   - Botón para volver atrás.
+   - Título "Escáner facial".
+   - Área grande destinada a mostrar posteriormente la cámara.
+   - Un placeholder visual indicando:
+
+       "Cámara"
+
+       "Apunta al rostro del estudiante"
+
+   - Estado inicial:
+
+       "Listo para escanear"
+
+   - Botón "Cancelar" o "Volver".
+
+4. La pantalla debe estar preparada para que posteriormente podamos integrar la cámara de Android y el motor de reconocimiento facial.
+
+5. NO uses la cámara todavía.
+   NO instales OpenCV dentro de Angular.
+   NO intentes ejecutar el Python FaceScanner directamente desde la app móvil.
+
+6. Mantén la lógica de reconocimiento facial separada de la interfaz.
+
+7. Respeta el sistema de navegación actual del proyecto.
+   Si el proyecto utiliza Angular Router, Ionic routing o lazy loading, utiliza exactamente el patrón existente.
+
+8. Respeta los estilos actuales de la aplicación.
+   No rediseñes toda la aplicación.
+
+9. Verifica que:
+   - La aplicación compile.
+   - La nueva ruta funcione.
+   - El botón del módulo conductor abra la pantalla.
+   - El botón volver funcione.
+   - No se rompan las rutas existentes.
+   - No se rompa el login.
+
+10. Al terminar, muéstrame:
+   - Archivos creados.
+   - Archivos modificados.
+   - Qué cambios hizo cada uno.
+   - Comandos utilizados para verificar que compila.
+
+CONTEXTO DEL PROYECTO:
+
+El sistema final será:
+
+                    DJANGO BACKEND
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+           CELULAR                  TABLET
+              │                       │
+        Mismo usuario             Mismo usuario
+          conductor                 conductor
+              │                       │
+              └───────────┬───────────┘
+                          │
+                    Mismo backend
+                          │
+                    Módulo conductor
+                          │
+                   Escáner facial
+                          │
+                    FaceScanner
+                          │
+                Reconocimiento facial
+                          │
+                  Estudiante detectado
+                          │
+                Verificar asignación
+                          │
+                   Registrar abordaje
+
+La tablet será el dispositivo utilizado principalmente para escanear los rostros.
+
+El celular seguirá mostrando las funciones normales del módulo conductor.
+
+IMPORTANTE SOBRE EL LOGIN:
+
+NO implementes ningún mecanismo de "vinculación celular-tablet".
+
+NO implementes WebSockets todavía.
+
+NO implementes sincronización directa entre dispositivos.
+
+NO implementes códigos QR para vincular dispositivos.
+
+NO implementes una sesión compartida entre ambos.
+
+Cada Android simplemente inicia sesión con la misma cuenta del conductor y ambos consumen el mismo backend.
+
+IMPORTANTE SOBRE FACE SCANNER:
+
+Ya existe un prototipo independiente llamado FaceScanner que estamos desarrollando con Python/OpenCV.
+
+Ese prototipo utiliza:
+- YuNet para detección facial.
+- SFace para reconocimiento facial.
+
+Por ahora NO lo integres directamente.
+
+Solo deja la pantalla de Ionic preparada para recibir posteriormente el componente/servicio de reconocimiento facial.
+
+ANTES DE MODIFICAR:
+
+Inspecciona primero:
+- estructura de src/app
+- módulo/página actual del conductor
+- routing
+- servicios de autenticación
+- guards
+- estilos existentes
+
+Después implementa la solución siguiendo las convenciones actuales del proyecto.
+
+NO inventes nombres de carpetas si ya existe una estructura equivalente.
+NO dupliques servicios.
+NO dupliques autenticación.
+NO reemplaces código existente que ya funciona.
+
+Quiero una implementación limpia y mínima que agregue solamente esta nueva funcionalidad.

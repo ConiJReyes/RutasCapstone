@@ -1,0 +1,683 @@
+:host {
+
+    --rs-primary: #3f8178;
+    --rs-primary-dark: #2d655e;
+    --rs-primary-light: #e1efed;
+
+    --rs-text: #28534e;
+    --rs-text-dark: #234640;
+    --rs-muted: #718783;
+
+    --rs-background: #f5f9f8;
+    --rs-white: #ffffff;
+
+    --rs-border: #dce7e5;
+}
+
+
+/* =========================================
+   CONTENIDO
+========================================= */
+
+.seguimiento-content {
+    --background: var(--rs-background);
+}
+
+
+/* =========================================
+   PÁGINA
+========================================= */
+
+.seguimiento-page {
+
+    min-height: 100%;
+
+    padding: 22px 18px 35px;
+
+    color: var(--rs-text);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.page-header {
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.page-header h1 {
+
+    margin: 0;
+
+    color: var(--rs-text-dark);
+
+    font-size: 30px;
+    font-weight: 800;
+}
+
+
+/* =========================================
+   BOTÓN VOLVER
+========================================= */
+
+.back-button {
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 13px;
+
+    background: var(--rs-primary-light);
+
+    color: var(--rs-primary-dark);
+
+    font-size: 21px;
+}
+
+
+/* =========================================
+   ESTADO
+========================================= */
+
+.status-card {
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 15px;
+
+    margin-bottom: 16px;
+
+    background: var(--rs-white);
+
+    border: 1px solid var(--rs-border);
+
+    border-radius: 17px;
+
+    box-shadow:
+        0 5px 15px rgba(40, 83, 78, 0.05);
+}
+
+.status-indicator {
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: var(--rs-primary-light);
+}
+
+.status-dot {
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    background: #aebdb9;
+}
+
+.status-dot.active {
+
+    background: var(--rs-primary);
+
+    box-shadow:
+        0 0 0 5px rgba(63, 129, 120, 0.13);
+}
+
+.status-info {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.status-info strong {
+
+    color: var(--rs-text-dark);
+
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.status-info span {
+
+    color: var(--rs-muted);
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   MAPA
+========================================= */
+
+.map-container {
+
+    width: 100%;
+
+    margin-bottom: 16px;
+}
+
+.map-placeholder {
+
+    position: relative;
+
+    width: 100%;
+    height: 250px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--rs-border);
+
+    border-radius: 18px;
+
+    background-color: #f5dfc8;
+
+    background-image:
+        linear-gradient(25deg,
+            transparent 47%,
+            rgba(63, 129, 120, 0.20) 48%,
+            rgba(63, 129, 120, 0.20) 50%,
+            transparent 51%),
+        linear-gradient(145deg,
+            transparent 47%,
+            rgba(63, 129, 120, 0.18) 48%,
+            rgba(63, 129, 120, 0.18) 50%,
+            transparent 51%);
+
+    background-size:
+        80px 80px,
+        100px 100px;
+
+    box-shadow:
+        0 6px 18px rgba(40, 83, 78, 0.07);
+}
+
+
+/* =========================================
+   MENSAJE MAPA
+========================================= */
+
+.map-message {
+
+    position: absolute;
+
+    top: 14px;
+    left: 14px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 7px 10px;
+
+    background: rgba(255, 255, 255, 0.90);
+
+    border-radius: 12px;
+
+    color: var(--rs-primary-dark);
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   MARCADOR FURGÓN
+========================================= */
+
+.bus-marker {
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform: translate(-50%, -50%);
+
+    background: var(--rs-primary);
+
+    color: white;
+
+    border: 4px solid white;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 5px 15px rgba(40, 83, 78, 0.25);
+}
+
+.bus-marker ion-icon {
+
+    font-size: 25px;
+}
+
+
+/* =========================================
+   UBICACIÓN NO DISPONIBLE
+========================================= */
+
+.no-location {
+
+    width: 100%;
+    height: 250px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 25px;
+
+    background: var(--rs-white);
+
+    border: 1px solid var(--rs-border);
+
+    border-radius: 18px;
+
+    text-align: center;
+}
+
+.no-location ion-icon {
+
+    color: var(--rs-primary);
+
+    font-size: 42px;
+}
+
+.no-location strong {
+
+    color: var(--rs-text-dark);
+
+    font-size: 16px;
+}
+
+.no-location span {
+
+    color: var(--rs-muted);
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   TARJETA INFORMACIÓN
+========================================= */
+
+.trip-card {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+
+    padding: 18px;
+
+    margin-bottom: 16px;
+
+    background: var(--rs-white);
+
+    border: 1px solid var(--rs-border);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 5px 15px rgba(40, 83, 78, 0.05);
+}
+
+.trip-section {
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.trip-icon {
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    background: var(--rs-primary-light);
+
+    color: var(--rs-primary);
+
+    font-size: 21px;
+}
+
+.trip-info {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.label {
+
+    color: var(--rs-muted);
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.trip-info strong {
+
+    color: var(--rs-text-dark);
+
+    font-size: 16px;
+    font-weight: 800;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   INFORMACIÓN DEL VIAJE
+========================================= */
+
+.info-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 11px;
+
+    margin-bottom: 18px;
+}
+
+.info-box {
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+
+    padding: 13px;
+
+    background: var(--rs-primary-light);
+
+    border-radius: 14px;
+}
+
+.info-box>ion-icon {
+
+    flex-shrink: 0;
+
+    color: var(--rs-primary);
+
+    font-size: 21px;
+}
+
+.info-box div {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.info-box span {
+
+    color: var(--rs-muted);
+
+    font-size: 10px;
+}
+
+.info-box strong {
+
+    color: var(--rs-text-dark);
+
+    font-size: 13px;
+    font-weight: 800;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.primary-action,
+.secondary-action {
+
+    width: 100%;
+    min-height: 49px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-bottom: 11px;
+
+    border-radius: 25px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.primary-action {
+
+    border: none;
+
+    background: var(--rs-primary);
+
+    color: white;
+
+    box-shadow:
+        0 5px 12px rgba(63, 129, 120, 0.20);
+}
+
+.secondary-action {
+
+    border: 1px solid #b7d1ce;
+
+    background: var(--rs-primary-light);
+
+    color: var(--rs-text);
+
+    font-weight: 600;
+}
+
+.primary-action ion-icon,
+.secondary-action ion-icon {
+
+    font-size: 19px;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.loading-container {
+
+    min-height: 350px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 15px;
+
+    color: var(--rs-muted);
+
+    text-align: center;
+}
+
+.loading-container ion-spinner {
+
+    width: 42px;
+    height: 42px;
+
+    --color: var(--rs-primary);
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error-container {
+
+    padding: 35px 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+.error-icon {
+
+    width: 65px;
+    height: 65px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 14px;
+
+    background: var(--rs-primary-light);
+
+    border-radius: 50%;
+
+    color: var(--rs-primary);
+
+    font-size: 34px;
+}
+
+.error-container h2 {
+
+    margin: 0 0 8px;
+
+    color: var(--rs-text-dark);
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.error-container p {
+
+    margin: 0 0 20px;
+
+    color: var(--rs-muted);
+
+    font-size: 13px;
+}
+
+.retry-button {
+
+    min-height: 45px;
+
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    border: none;
+    border-radius: 23px;
+
+    background: var(--rs-primary);
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 380px) {
+
+    .seguimiento-page {
+        padding: 18px 14px 30px;
+    }
+
+    .page-header h1 {
+        font-size: 27px;
+    }
+
+    .map-placeholder,
+    .no-location {
+        height: 220px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

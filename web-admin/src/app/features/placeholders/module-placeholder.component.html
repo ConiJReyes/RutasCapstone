@@ -1,0 +1,160 @@
+<div class="module-view fade-in">
+  <!-- Top module header -->
+  <div class="module-header glass-panel">
+    <div class="header-left">
+      <div class="module-icon-large" [class]="currentConfig.colorClass">
+        @switch (currentConfig.icon) {
+          @case ('users') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          }
+          @case ('steering-wheel') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M12 2v8"></path>
+              <path d="m4.93 18.07 5.66-5.66"></path>
+              <path d="m19.07 18.07-5.66-5.66"></path>
+            </svg>
+          }
+          @case ('bus') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="15" rx="3"></rect>
+              <path d="M7 19v2"></path>
+              <path d="M17 19v2"></path>
+              <path d="M3 11h18"></path>
+              <circle cx="7.5" cy="15.5" r="1.5"></circle>
+              <circle cx="16.5" cy="15.5" r="1.5"></circle>
+            </svg>
+          }
+          @case ('map-pin') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+            </svg>
+          }
+          @case ('graduation-cap') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          }
+        }
+      </div>
+
+      <div class="header-titles">
+        <div class="title-with-badge">
+          <h2>{{ currentConfig.title }}</h2>
+          <span class="badge badge-amber">{{ currentConfig.badge }}</span>
+        </div>
+        <p>{{ currentConfig.subtitle }}</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/dashboard" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Volver al Dashboard</span>
+      </a>
+      <button type="button" class="create-btn" [class]="'bg-' + currentConfig.colorClass">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Nuevo Registro</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CRUD Mock Table / Skeleton Preview -->
+  <div class="table-container glass-panel">
+    <div class="table-controls">
+      <div class="search-input-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" [placeholder]="'Buscar en ' + currentConfig.title + '...'" />
+      </div>
+
+      <div class="control-actions">
+        <button class="filter-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          <span>Filtrar</span>
+        </button>
+        <button class="export-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Exportar Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="responsive-table-wrapper">
+      <table class="crud-table">
+        <thead>
+          <tr>
+            @for (col of currentConfig.columns; track col) {
+              <th>{{ col }}</th>
+            }
+            <th class="actions-th">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of currentConfig.mockData; track row.col1) {
+            <tr>
+              <td class="font-medium text-white">{{ row.col1 }}</td>
+              <td>{{ row.col2 }}</td>
+              <td>{{ row.col3 }}</td>
+              <td>{{ row.col4 }}</td>
+              <td>{{ row.col5 }}</td>
+              <td>
+                <span class="badge" [class.badge-emerald]="row.status === 'Activo' || row.status === 'Operativo' || row.status === 'En Servicio' || row.status === 'Activa'" [class.badge-amber]="row.status === 'En Taller'">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="actions-td">
+                <button class="icon-action-btn edit" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                  </svg>
+                </button>
+                <button class="icon-action-btn delete" title="Eliminar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Banner Info Bottom -->
+    <div class="table-footer-info">
+      <div class="footer-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>Vista previa interactiva. Las funciones de creación, edición y eliminación (CRUD) se habilitarán en la siguiente fase de desarrollo.</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,365 @@
+:host {
+  display: block;
+
+  --verde-rutas: #0f766e;
+  --verde-rutas-oscuro: #0b5f59;
+  --verde-suave: #e8f5f3;
+
+  --texto-principal: #173330;
+  --texto-secundario: #6b7c79;
+
+  --borde: #dce7e5;
+  --fondo: #f7faf9;
+  --blanco: #ffffff;
+
+  --rojo: #dc2626;
+  --rojo-suave: #fee2e2;
+  --azul: #2563eb;
+  --azul-suave: #dbeafe;
+  --morado: #7c3aed;
+  --morado-suave: #ede9fe;
+  --amarillo: #d97706;
+  --amarillo-suave: #fef3c7;
+}
+
+.notifications-page-container {
+  min-height: 100%;
+  background: var(--fondo);
+  padding: 24px 20px 40px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ENCABEZADO */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--verde-rutas);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.header-info h1 {
+  margin: 0;
+  color: var(--texto-principal);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.menu-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  color: var(--verde-rutas);
+  box-shadow: 0 4px 14px rgba(23, 51, 48, 0.08);
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+/* BARRA DE ESTADO */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.unread-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+.all-read-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--verde-suave);
+  color: var(--verde-rutas);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+.mark-all-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--verde-rutas);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 15px;
+  }
+}
+
+/* CARGANDO */
+.loading-container {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--texto-secundario);
+
+  p {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+/* LISTA TARJETAS */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.notification-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(23, 51, 48, 0.04);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &.unread {
+    border-left: 4px solid var(--verde-rutas);
+    background: #fafdfd;
+  }
+
+  &.emergency-card {
+    border-left: 4px solid var(--rojo);
+    background: #fff8f8;
+  }
+}
+
+.notification-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 22px;
+  }
+
+  &.icon-ruta {
+    background: #e0f2fe;
+    color: #0284c7;
+  }
+
+  &.icon-abordo {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  &.icon-llego {
+    background: var(--verde-suave);
+    color: var(--verde-rutas);
+  }
+
+  &.icon-finalizada {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  &.icon-emergencia {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  &.icon-aviso {
+    background: #f3e8ff;
+    color: #6b21a8;
+  }
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.type-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+
+  &.icon-ruta { background: #e0f2fe; color: #0284c7; }
+  &.icon-abordo { background: #fef3c7; color: #b45309; }
+  &.icon-llego { background: var(--verde-suave); color: var(--verde-rutas); }
+  &.icon-finalizada { background: #dcfce7; color: #15803d; }
+  &.icon-emergencia { background: #fee2e2; color: #b91c1c; }
+  &.icon-aviso { background: #f3e8ff; color: #6b21a8; }
+}
+
+.timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--texto-secundario);
+
+  ion-icon {
+    font-size: 12px;
+  }
+}
+
+.notification-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--texto-principal);
+}
+
+.notification-message {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-secundario);
+  line-height: 1.4;
+}
+
+.student-tag {
+  display: inline-block;
+  margin-top: 8px;
+  background: #f0f4f3;
+  color: var(--texto-principal);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.unread-indicator {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--verde-rutas);
+}
+
+/* ESTADO VACÍO */
+.empty-state {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 20px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 30px;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--verde-suave);
+    color: var(--verde-rutas);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+    ion-icon {
+      font-size: 32px;
+    }
+  }
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--texto-principal);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--texto-secundario);
+  }
+}
+
+/* ACCIONES */
+.actions-section {
+  margin-bottom: 30px;
+
+  .back-button {
+    --border-color: var(--borde);
+    --color: var(--texto-principal);
+    --border-radius: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+/* FOOTER */
+.footer-message {
+  text-align: center;
+  color: #8a9895;
+
+  span {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 11px;
+  }
+}

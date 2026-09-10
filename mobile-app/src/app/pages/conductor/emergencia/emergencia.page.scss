@@ -1,0 +1,111 @@
+:host {
+  --verde: #0f766e;
+  --verde-suave: #e8f5f3;
+  --fondo: #f7faf9;
+  --texto: #173330;
+  --borde: #dce7e5;
+}
+
+.incident-page {
+  min-height: 100%;
+  background: var(--fondo);
+  padding: 24px 20px 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: var(--verde);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+h1 {
+  margin: 4px 0;
+  color: var(--texto);
+}
+
+.header p {
+  margin: 0;
+  color: #6b7c79;
+}
+
+.menu-btn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.chips {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.chip {
+  flex: 1;
+  height: 42px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.chip.active {
+  background: var(--verde-suave);
+  border-color: var(--verde);
+  color: var(--verde);
+  font-weight: 700;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 12px;
+  font: inherit;
+}
+
+.notice {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--verde-suave);
+  color: var(--verde);
+  margin-bottom: 18px;
+}
+
+.send-btn {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--verde);
+  color: #fff;
+  font-weight: 700;
+}

@@ -1,0 +1,360 @@
+<ion-content [fullscreen]="true">
+
+  <div class="scanner-page-container">
+
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
+    <header class="header-section">
+
+      <div class="header-info">
+        <span class="section-label">CONDUCTOR &bull; BIOMETRÍA</span>
+        <h1>FaceScanner</h1>
+      </div>
+
+      <div class="header-actions">
+        <ion-menu-toggle menu="main-menu">
+          <button class="menu-button" type="button" title="Abrir menú">
+            <ion-icon name="menu-outline"></ion-icon>
+          </button>
+        </ion-menu-toggle>
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         SELECTOR DE ACCIÓN
+    ========================== -->
+    <div class="action-selector-card">
+      <div class="selector-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="tipoAccion === 'RECEPCION'"
+          (click)="tipoAccion = 'RECEPCION'">
+          <span class="tab-icon">🎒</span>
+          <div class="tab-text">
+            <strong>Subida / Abordaje</strong>
+            <small>Al subir al furgón</small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="tipoAccion === 'ENTREGA'"
+          (click)="tipoAccion = 'ENTREGA'">
+          <span class="tab-icon">🏠</span>
+          <div class="tab-text">
+            <strong>Bajada / Entrega</strong>
+            <small>Al llegar a destino</small>
+          </div>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- =========================
+         VISOR DE CÁMARA Y RETÍCULA BIOMÉTRICA
+    ========================== -->
+    @if (!confirmacionExitosa) {
+
+      <div class="viewfinder-card">
+
+        <div class="viewfinder-header">
+
+          <div class="badge-live" [class.detected]="rostroDetectado && !rostroDetectado.esDesconocido">
+            <span class="dot-blinking"></span>
+            <span>{{ rostroDetectado ? (rostroDetectado.esDesconocido ? 'ROSTRO NO RECONOCIDO' : 'ROSTRO IDENTIFICADO') : 'FACESCANNER ACTIVO' }}</span>
+          </div>
+
+          <div class="camera-controls">
+            <button type="button" class="ctrl-btn" (click)="toggleCamara()" title="Cambiar cámara">
+              <ion-icon name="camera-reverse-outline"></ion-icon>
+            </button>
+
+            <button type="button" class="ctrl-btn" (click)="toggleFlash()" title="Flash">
+              <ion-icon [name]="flashEncendido ? 'flash-outline' : 'flash-off-outline'"></ion-icon>
+            </button>
+          </div>
+
+        </div>
+
+
+        <!-- Marco de cámara interactivo -->
+        <div class="camera-frame">
+
+          @if (cargandoCamara) {
+            <div class="camera-loading">
+              <ion-spinner name="crescent"></ion-spinner>
+              <p>Iniciando módulo FaceScanner...</p>
+            </div>
+          }
+
+          <!-- Video Stream HTML5 -->
+          <video #videoElement playsinline autoplay muted class="video-preview"></video>
+
+          <!-- Canvas Overlay para biometría -->
+          <canvas #canvasOverlay class="canvas-overlay"></canvas>
+
+          <!-- Indicador visual de escaneo -->
+          @if (!rostroDetectado) {
+            <div class="scan-overlay-hint">
+              <ion-icon name="scan-outline"></ion-icon>
+              <span>Posiciona el rostro del niño dentro del visor</span>
+            </div>
+          }
+
+        </div>
+
+
+        <!-- Botón de captura y reconocimiento instantáneo -->
+        <div class="camera-actions-bar">
+          <button
+            type="button"
+            class="capture-btn"
+            [disabled]="procesandoRostro"
+            (click)="capturarYReconocer()">
+
+            @if (procesandoRostro) {
+              <ion-spinner name="crescent" color="light"></ion-spinner>
+              <span>Analizando biometría facial...</span>
+            } @else {
+              <ion-icon name="sparkles-outline"></ion-icon>
+              <span>Escanear Rostro Ahora</span>
+            }
+
+          </button>
+        </div>
+
+
+        @if (errorCamara) {
+          <div class="camera-fallback-msg">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <p>{{ errorCamara }}</p>
+          </div>
+        }
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         RESULTADO DEL RECONOCIMIENTO FACIAL
+    ========================== -->
+    @if (rostroDetectado && !confirmacionExitosa) {
+
+      <div class="result-card" [class.unknown-card]="rostroDetectado.esDesconocido">
+
+        <!-- Encabezado de resultado -->
+        <div class="result-header">
+
+          <div class="score-pill" [class.success]="!rostroDetectado.esDesconocido" [class.warning]="rostroDetectado.esDesconocido">
+            <ion-icon [name]="!rostroDetectado.esDesconocido ? 'shield-checkmark-outline' : 'alert-circle-outline'"></ion-icon>
+            <span>{{ scoreCoincidencia }}% Coincidencia Biometría</span>
+          </div>
+
+          <button type="button" class="btn-rescan" (click)="resetearEscaneo()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            Reintentar
+          </button>
+
+        </div>
+
+
+        <!-- Ficha del Niño -->
+        @if (!rostroDetectado.esDesconocido) {
+
+          <div class="student-profile-box">
+
+            <div class="student-avatar-badge">
+              <span>🧑‍🎓</span>
+              <div class="verified-icon">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+              </div>
+            </div>
+
+            <div class="student-details">
+              <h2>{{ rostroDetectado.nombre }} {{ rostroDetectado.apellido }}</h2>
+              <span class="student-meta">RUT: {{ rostroDetectado.rut }}</span>
+              <p class="student-school">{{ rostroDetectado.curso }} &bull; {{ rostroDetectado.colegio }}</p>
+            </div>
+
+          </div>
+
+          <div class="detail-grid">
+
+            <div class="detail-item">
+              <span class="detail-label">👤 Apoderado:</span>
+              <strong class="detail-val">{{ rostroDetectado.apoderado_nombre }}</strong>
+            </div>
+
+            @if (rostroDetectado.apoderado_telefono) {
+              <div class="detail-item">
+                <span class="detail-label">📞 Teléfono:</span>
+                <strong class="detail-val">{{ rostroDetectado.apoderado_telefono }}</strong>
+              </div>
+            }
+
+            @if (rostroDetectado.persona_autorizada) {
+              <div class="detail-item full-width">
+                <span class="detail-label">🛡️ Recibe / Autorizado:</span>
+                <strong class="detail-val highlight">{{ rostroDetectado.persona_autorizada }}</strong>
+              </div>
+            }
+
+          </div>
+
+
+          <!-- Botón de Confirmación -->
+          <div class="confirm-box">
+
+            <button
+              type="button"
+              class="confirm-btn"
+              [disabled]="guardandoAsistencia"
+              (click)="confirmarAsistenciaFacial()">
+
+              @if (guardandoAsistencia) {
+                <ion-spinner name="crescent"></ion-spinner>
+                <span>Guardando y enviando push...</span>
+              } @else {
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                <span>Confirmar {{ tipoAccion === 'RECEPCION' ? 'Abordaje de' : 'Entrega de' }} {{ rostroDetectado.nombre }}</span>
+              }
+
+            </button>
+
+          </div>
+
+        } @else {
+
+          <div class="unknown-box">
+            <div class="unknown-icon">⚠️</div>
+            <h3>Rostro no reconocido</h3>
+            <p>El rostro detectado no coincide con ninguno de los niños asignados a tu ruta escolar.</p>
+            <button type="button" class="btn-rescan-full" (click)="resetearEscaneo()">
+              Volver a escanear
+            </button>
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         CONFIRMACIÓN EXITOSA
+    ========================== -->
+    @if (confirmacionExitosa && rostroDetectado) {
+
+      <div class="success-banner">
+
+        <div class="success-icon-wrap">
+          <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+        </div>
+
+        <h2>¡Asistencia Confirmada!</h2>
+
+        <p class="success-msg">
+          Se ha registrado el <strong>{{ tipoAccion === 'RECEPCION' ? 'Abordaje' : 'Destino' }}</strong> de
+          <strong>{{ rostroDetectado.nombre }} {{ rostroDetectado.apellido }}</strong> y se ha notificado a su apoderado en tiempo real.
+        </p>
+
+        <div class="success-actions">
+          <button type="button" class="btn-continue-scan" (click)="resetearEscaneo()">
+            <ion-icon name="scan-outline"></ion-icon>
+            Escanear Siguiente Niño
+          </button>
+
+          <button type="button" class="btn-return-route" (click)="volverARuta()">
+            <ion-icon name="bus-outline"></ion-icon>
+            Volver a Ruta Activa
+          </button>
+        </div>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         SIMULADOR Y PROBADOR RÁPIDO
+    ========================== -->
+    <div class="simulation-section">
+
+      <div class="sim-header">
+        <span class="sim-label">PRUEBAS Y SIMULADOR RÁPIDO</span>
+        <h3>Probador de FaceScanner</h3>
+        <p>Prueba el flujo de reconocimiento facial instantáneo con niños de tu ruta:</p>
+      </div>
+
+      <div class="sim-buttons">
+
+        @if (estudiantesAsignados && estudiantesAsignados.length > 0) {
+
+          @for (est of estudiantesAsignados; track est.id; let i = $index) {
+            <button type="button" class="sim-btn student" (click)="simularEscaneoEstudiante(i)">
+              <span class="sim-icon">🧑‍🎓</span>
+              <div class="sim-text">
+                <strong>Simular {{ est.nombre }} {{ est.apellido }}</strong>
+                <span>{{ est.curso }} &bull; {{ est.colegio }}</span>
+              </div>
+            </button>
+          }
+
+        } @else {
+
+          <button type="button" class="sim-btn student" (click)="simularEscaneoEstudiante(0)">
+            <span class="sim-icon">👧</span>
+            <div class="sim-text">
+              <strong>Simular Lucía Pérez Silva</strong>
+              <span>4° Básico &bull; 97% Coincidencia</span>
+            </div>
+          </button>
+
+          <button type="button" class="sim-btn student" (click)="simularEscaneoEstudiante(1)">
+            <span class="sim-icon">👦</span>
+            <div class="sim-text">
+              <strong>Simular Matías González</strong>
+              <span>2° Básico &bull; 95% Coincidencia</span>
+            </div>
+          </button>
+
+        }
+
+        <button type="button" class="sim-btn unknown" (click)="simularRostroDesconocido()">
+          <span class="sim-icon">❓</span>
+          <div class="sim-text">
+            <strong>Simular Rostro Desconocido</strong>
+            <span>Sin coincidencias en la base</span>
+          </div>
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         FOOTER INFORMATIVO
+    ========================== -->
+    <div class="footer-info">
+      <p>Módulo de Reconocimiento Facial Biométrico &bull; Rutas Seguras</p>
+    </div>
+
+  </div>
+
+  <ion-toast
+    [isOpen]="mostrarToast"
+    [message]="mensajeToast"
+    [duration]="3000"
+    [color]="colorToast"
+    (didDismiss)="mostrarToast = false">
+  </ion-toast>
+
+</ion-content>

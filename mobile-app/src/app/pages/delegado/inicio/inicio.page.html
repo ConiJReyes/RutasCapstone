@@ -1,0 +1,140 @@
+<ion-content [fullscreen]="true">
+
+  <div class="page-container">
+
+    <!-- ENCABEZADO -->
+    <div class="header-section">
+      <div class="header-user">
+        <div class="badge-role">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          <span>Delegado Autorizado</span>
+        </div>
+        <h1>Hola, {{ usuario?.first_name || 'Delegado' }}</h1>
+        <p class="rut-text">RUT: {{ usuario?.rut }}</p>
+      </div>
+
+      <button class="logout-btn" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </button>
+    </div>
+
+    <!-- CARGANDO -->
+    @if (cargando) {
+    <div class="loading-box">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando información del estudiante autorizado...</p>
+    </div>
+    }
+
+    <!-- CONTENIDO PRINCIPAL -->
+    @if (!cargando) {
+
+    <!-- TARJETAS DE ESTUDIANTES VINCULADOS -->
+    <div class="section-title">
+      <h2>Estudiantes Autorizados</h2>
+      <span class="count-badge">{{ estudiantes.length }}</span>
+    </div>
+
+    @if (estudiantes.length === 0) {
+    <div class="empty-card">
+      <div class="empty-icon">🛡️</div>
+      <h3>Sin Estudiantes Vinculados</h3>
+      <p>Aún no hay ningún estudiante vinculado con tu RUT ({{ usuario?.rut }}). Verifica con el apoderado que haya ingresado correctamente tu RUT en la app.</p>
+    </div>
+    }
+
+    @for (est of estudiantes; track est.id) {
+    <div class="student-card">
+      <div class="student-header">
+        <div class="student-avatar">🎒</div>
+        <div class="student-names">
+          <h3>{{ est.nombre_completo }}</h3>
+          <p class="student-rut-badge">RUT: <strong>{{ est.rut }}</strong></p>
+          <p><ion-icon name="school-outline"></ion-icon> {{ est.colegio }} - {{ est.curso }}</p>
+        </div>
+        <span class="active-tag">Autorizado</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Apoderado Titular:</span>
+          <span class="value">{{ est.apoderado_nombre || 'No registrado' }}</span>
+        </div>
+        @if (est.direccion_principal) {
+        <div class="info-item">
+          <span class="label">Dirección Retiro:</span>
+          <span class="value">{{ est.direccion_principal }}</span>
+        </div>
+        }
+        @if (est.apoderado_telefono) {
+        <button class="phone-chip" (click)="llamarTelefono(est.apoderado_telefono)">
+          <ion-icon name="call-outline"></ion-icon> Llamar Apoderado
+        </button>
+        }
+      </div>
+
+      <div class="info-grid conductor-box">
+        <div class="info-item">
+          <span class="label">Conductor Asignado:</span>
+          <span class="value">{{ est.conductor_nombre || 'Sin conductor asignado' }}</span>
+        </div>
+        @if (est.conductor_telefono) {
+        <button class="phone-chip driver-chip" (click)="llamarTelefono(est.conductor_telefono)">
+          <ion-icon name="bus-outline"></ion-icon> Llamar Conductor
+        </button>
+        }
+      </div>
+
+      <!-- BOTONES DE ACCIÓN PARA ESTE ESTUDIANTE -->
+      <div class="card-actions">
+        <ion-button expand="block" class="qr-action-btn" [routerLink]="['/delegado/mi-qr']" [queryParams]="{ estudianteId: est.id }">
+          <ion-icon slot="start" name="qr-code-outline"></ion-icon>
+          Mi QR de Entrega/Recepción
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" class="track-action-btn" [routerLink]="['/delegado/seguimiento']">
+          <ion-icon slot="start" name="navigate-outline"></ion-icon>
+          Seguimiento de Ruta
+        </ion-button>
+      </div>
+    </div>
+    }
+
+    <!-- ACCESOS RÁPIDOS -->
+    <div class="section-title quick-title">
+      <h2>Accesos Rápidos</h2>
+    </div>
+
+    <div class="quick-grid">
+      <div class="quick-card" [routerLink]="['/delegado/mi-qr']">
+        <div class="quick-icon qr-bg">
+          <ion-icon name="qr-code-outline"></ion-icon>
+        </div>
+        <span>Código QR</span>
+      </div>
+
+      <div class="quick-card" [routerLink]="['/delegado/seguimiento']">
+        <div class="quick-icon track-bg">
+          <ion-icon name="navigate-outline"></ion-icon>
+        </div>
+        <span>Ver Ruta</span>
+      </div>
+
+      <div class="quick-card" [routerLink]="['/delegado/perfil']">
+        <div class="quick-icon profile-bg">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <span>Mi Perfil</span>
+      </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <div class="footer-note">
+      <p>🛡️ Como delegado autorizado, estás registrado para entregar y/o recibir al estudiante ante el furgón escolar.</p>
+    </div>
+
+    }
+
+  </div>
+
+</ion-content>

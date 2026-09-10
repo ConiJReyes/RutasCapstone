@@ -1,0 +1,259 @@
+:host {
+  --verde-petroleo: #3f7d73;
+  --verde-petroleo-oscuro: #2d5a53;
+  --amarillo-escolar: #f4b52b;
+}
+
+.seguimiento-page {
+  min-height: 100%;
+  background: #f8fafc;
+  padding: 0 0 32px;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 24px;
+  left: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.back-button ion-icon {
+  font-size: 22px;
+}
+
+.header-banner {
+  background: linear-gradient(135deg, var(--verde-petroleo), var(--verde-petroleo-oscuro));
+  padding: 64px 24px 30px;
+  color: white;
+}
+
+.badge-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--amarillo-escolar);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.header-banner h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.header-banner p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.map-container {
+  margin: -16px 20px 20px;
+  height: 240px;
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+}
+
+.map-mock {
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+  background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+  position: relative;
+}
+
+.route-line {
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  right: 15%;
+  height: 6px;
+  background: var(--verde-petroleo);
+  border-radius: 3px;
+}
+
+.bus-marker {
+  position: absolute;
+  top: calc(50% - 22px);
+  left: 48%;
+  width: 44px;
+  height: 44px;
+  background: #f59e0b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.25);
+}
+
+.stop-marker {
+  position: absolute;
+  top: calc(50% - 18px);
+  font-size: 28px;
+}
+
+.home-stop {
+  left: 10%;
+}
+
+.school-stop {
+  right: 10%;
+}
+
+.live-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.details-card {
+  margin: 0 20px;
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.center-box {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+}
+
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.status-icon {
+  font-size: 32px;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-info h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.status-info p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.refresh-btn {
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #0f766e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.driver-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.driver-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.driver-info .label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.driver-info strong {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.driver-info .patente {
+  font-size: 11px;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.call-btn {
+  background: #0f766e;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.call-btn ion-icon {
+  font-size: 20px;
+}

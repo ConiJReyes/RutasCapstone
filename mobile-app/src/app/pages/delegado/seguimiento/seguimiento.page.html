@@ -1,0 +1,73 @@
+<ion-content [fullscreen]="true">
+
+  <div class="seguimiento-page">
+
+    <!-- BOTÓN VOLVER -->
+    <button class="back-button" type="button" (click)="volver()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
+    <!-- HEADER -->
+    <div class="header-banner">
+      <div class="badge-role">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <span>DELEGADO AUTORIZADO</span>
+      </div>
+      <h1>Seguimiento de Ruta Escolar</h1>
+      <p>Supervisa la ubicación en tiempo real del furgón escolar asignado</p>
+    </div>
+
+    <!-- MAPA INTERACTIVO / VISUALIZADOR -->
+    <div class="map-container">
+      <div class="map-mock">
+        <div class="route-line"></div>
+        <div class="bus-marker animate-pulse">
+          <ion-icon name="bus-outline"></ion-icon>
+        </div>
+        <div class="stop-marker home-stop">🏡</div>
+        <div class="stop-marker school-stop">🏫</div>
+      </div>
+      <div class="live-pill">
+        <span class="pulse-dot"></span> EN VIVO
+      </div>
+    </div>
+
+    <!-- DETALLES DE LA RUTA -->
+    <div class="details-card">
+      @if (cargando) {
+      <div class="center-box">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Obteniendo ubicación del vehículo...</p>
+      </div>
+      } @else {
+
+      <div class="status-box">
+        <div class="status-icon">🚌</div>
+        <div class="status-info">
+          <h3>{{ seguimiento?.ruta?.nombre || 'Ruta Escolar Principal' }}</h3>
+          <p>Estado: <strong>{{ seguimiento?.ruta?.estado === 'en_camino' ? 'En Recorrido' : 'Activo' }}</strong></p>
+        </div>
+        <button class="refresh-btn" (click)="cargarSeguimiento()" title="Actualizar">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-info">
+          <span class="label">Conductor a cargo:</span>
+          <strong>{{ seguimiento?.conductor?.nombre || 'Conductor asignado' }}</strong>
+          <span class="patente">Furgón Escolar Autorizado</span>
+        </div>
+        @if (seguimiento?.conductor?.telefono) {
+        <button class="call-btn" (click)="contactarConductor()">
+          <ion-icon name="call-outline"></ion-icon>
+        </button>
+        }
+      </div>
+
+      }
+    </div>
+
+  </div>
+
+</ion-content>

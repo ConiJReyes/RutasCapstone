@@ -1,0 +1,371 @@
+<ion-content [fullscreen]="true">
+
+  <div class="page-container">
+
+    <!-- =========================
+         ENCABEZADO
+    ========================== -->
+    <div class="header-section">
+
+      <div class="header-info">
+
+        <span class="section-label">IDENTIFICACIÓN DIGITAL</span>
+
+        <h1>Mi Código QR</h1>
+
+      </div>
+
+      <div class="header-actions">
+
+        <ion-menu-toggle menu="main-menu">
+
+          <button class="menu-button" type="button" title="Abrir menú">
+
+            <ion-icon name="menu-outline"></ion-icon>
+
+          </button>
+
+        </ion-menu-toggle>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         SELECTOR SEGMENT (APODERADO / ESTUDIANTE)
+    ========================== -->
+    <div class="segment-container">
+
+      <div class="custom-segment">
+
+        <button
+          type="button"
+          class="segment-btn"
+          [class.active]="modo === 'apoderado'"
+          (click)="cambiarModo('apoderado')">
+
+          <ion-icon name="person-outline"></ion-icon>
+
+          <span>Mi QR (Apoderado)</span>
+
+        </button>
+
+        <button
+          type="button"
+          class="segment-btn"
+          [class.active]="modo === 'estudiante'"
+          (click)="cambiarModo('estudiante')">
+
+          <ion-icon name="school-outline"></ion-icon>
+
+          <span>QR Estudiante</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         SELECCIÓN DE ESTUDIANTE (Si modo es estudiante)
+    ========================== -->
+    @if (modo === 'estudiante') {
+
+      <div class="student-select-card">
+
+        <div class="select-label">
+
+          <ion-icon name="people-outline"></ion-icon>
+
+          <span>Seleccionar Estudiante:</span>
+
+        </div>
+
+        @if (cargandoEstudiantes) {
+
+          <div class="mini-loading">
+
+            <ion-spinner name="crescent"></ion-spinner>
+
+            <span>Cargando estudiantes...</span>
+
+          </div>
+
+        } @else if (estudiantes.length === 0) {
+
+          <div class="empty-students">
+
+            <p>No tienes estudiantes registrados.</p>
+
+            <ion-button size="small" fill="outline" routerLink="/agregar-hijo">
+
+              + Agregar Hijo
+
+            </ion-button>
+
+          </div>
+
+        } @else {
+
+          <div class="student-chips">
+
+            @for (est of estudiantes; track est.id) {
+
+              <button
+                type="button"
+                class="chip-button"
+                [class.selected]="estudianteSeleccionado?.id === est.id"
+                (click)="seleccionarEstudianteDirecto(est)">
+
+                <span class="chip-avatar">🎓</span>
+
+                <span class="chip-name">{{ est.nombre }} {{ est.apellido }}</span>
+
+              </button>
+
+            }
+
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+
+    <!-- =========================
+         TARJETA DEL CÓDIGO QR
+    ========================== -->
+    <div class="qr-card" [class.expired]="!esValido">
+
+      <div class="qr-card-header">
+
+        <div class="qr-badge" [class.badge-expired]="!esValido">
+
+          <ion-icon [name]="esValido ? 'shield-checkmark-outline' : 'alert-circle-outline'"></ion-icon>
+
+          <span>{{ esValido ? 'CÓDIGO VERIFICADO' : 'CÓDIGO EXPIRADO' }}</span>
+
+        </div>
+
+        <!-- TEMPORIZADOR 15 MINUTOS -->
+        <div class="timer-badge" [class.timer-warning]="!esValido">
+
+          <ion-icon name="time-outline"></ion-icon>
+
+          <span>{{ esValido ? 'Válido: ' + tiempoRestanteTexto : 'Expirado' }}</span>
+
+        </div>
+
+      </div>
+
+
+      <!-- QR Display -->
+      <div class="qr-display-wrapper">
+
+        <div class="qr-code-frame" [class.blur-qr]="!esValido">
+
+          <!-- Dynamic SVG QR Code rendered locally -->
+          <div class="qr-svg-container" [innerHTML]="qrSvgSafe"></div>
+
+          <!-- Fallback img if needed -->
+          <img [src]="qrImageUrl" alt="Código QR" class="qr-fallback-img" />
+
+        </div>
+
+        @if (!esValido) {
+
+          <div class="expired-overlay">
+
+            <ion-icon name="alert-circle-outline"></ion-icon>
+
+            <p>QR Expirado (15 min)</p>
+
+            <button type="button" class="renew-btn" (click)="regenerarQR()">
+
+              Renovar QR
+
+            </button>
+
+          </div>
+
+        } @else {
+
+          <div class="scan-target-corners">
+            <span class="corner top-left"></span>
+            <span class="corner top-right"></span>
+            <span class="corner bottom-left"></span>
+            <span class="corner bottom-right"></span>
+          </div>
+
+        }
+
+      </div>
+
+
+      <!-- Info Subject Summary -->
+      <div class="qr-subject-info">
+
+        @if (modo === 'apoderado') {
+
+          <div class="subject-avatar apoderado">
+
+            👤
+
+          </div>
+
+          <div class="subject-details">
+
+            <h3>{{ usuario?.first_name || 'Apoderado' }} {{ usuario?.last_name || '' }}</h3>
+
+            <p>RUT: <strong>{{ usuario?.rut || 'Sin registrar' }}</strong></p>
+
+            <span class="role-pill">Apoderado Titular</span>
+
+          </div>
+
+        } @else {
+
+          <div class="subject-avatar estudiante">
+
+            🎓
+
+          </div>
+
+          <div class="subject-details">
+
+            <h3>{{ estudianteSeleccionado?.nombre || 'Estudiante' }} {{ estudianteSeleccionado?.apellido || '' }}</h3>
+
+            <p>RUT: <strong>{{ estudianteSeleccionado?.rut || 'N/A' }}</strong></p>
+
+            <span class="school-pill">{{ estudianteSeleccionado?.colegio || 'Colegio' }} &bull; {{ estudianteSeleccionado?.curso || 'Curso' }}</span>
+
+          </div>
+
+        }
+
+      </div>
+
+
+      <!-- Botones de Acción de Tarjeta -->
+      <div class="qr-actions">
+
+        <ion-button
+          fill="solid"
+          class="action-btn primary"
+          (click)="regenerarQR()">
+
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+
+          <span>Actualizar / Renovar QR</span>
+
+        </ion-button>
+
+        <ion-button
+          fill="outline"
+          class="action-btn secondary"
+          (click)="copiarPayload()">
+
+          <ion-icon slot="start" name="copy-outline"></ion-icon>
+
+          <span>Copiar Código</span>
+
+        </ion-button>
+
+        <ion-button
+          fill="outline"
+          class="action-btn secondary"
+          (click)="descargarQR()">
+
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+
+          <span>Guardar QR</span>
+
+        </ion-button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         CONSEJO Y MODO DE USO
+    ========================== -->
+    <div class="instructions-card">
+
+      <div class="instruction-header">
+
+        <div class="icon-circle">
+
+          <ion-icon name="flash-outline"></ion-icon>
+
+        </div>
+
+        <div class="instruction-title">
+
+          <h3>Instrucciones de Lectura</h3>
+
+          <p>Muestra este código al conductor o asistente al subir o bajar del furgón.</p>
+
+        </div>
+
+      </div>
+
+      <ul class="tips-list">
+
+        <li>
+
+          <span class="tip-bullet">⏳</span>
+
+          <p>Este código QR es dinámico y tiene una <strong>validez de 15 minutos</strong> por razones de seguridad.</p>
+
+        </li>
+
+        <li>
+
+          <span class="tip-bullet">💡</span>
+
+          <p><strong>Aumenta el brillo</strong> de la pantalla de tu teléfono para una lectura más rápida.</p>
+
+        </li>
+
+        <li>
+
+          <span class="tip-bullet">🔄</span>
+
+          <p>Puedes presionar <strong>"Actualizar / Renovar QR"</strong> para reiniciar el temporizador de 15 minutos en cualquier momento.</p>
+
+        </li>
+
+      </ul>
+
+    </div>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+    <div class="footer-message">
+
+      <span>🚌</span>
+
+      <p>Tu ruta escolar, más segura.</p>
+
+    </div>
+
+  </div>
+
+  <!-- Toast de Notificación -->
+  <ion-toast
+    [isOpen]="mostrarToast"
+    [message]="toastMensaje"
+    [duration]="2500"
+    [color]="toastColor"
+    (didDismiss)="mostrarToast = false">
+
+  </ion-toast>
+
+</ion-content>

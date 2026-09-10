@@ -1,0 +1,153 @@
+<ion-app>
+
+  @if (estaAutenticado) {
+    <ion-menu contentId="main-content" menuId="main-menu" type="overlay">
+
+      <ion-content>
+
+        <div class="sidebar-container">
+
+          <!-- Cabecera del Sidebar (Clickable a Perfil) -->
+          <ion-menu-toggle autoHide="false">
+            <div class="sidebar-header clickable-header" [routerLink]="usuario?.rol === 'conductor' ? ['/conductor/perfil'] : ['/apoderado/perfil']" title="Ver mi perfil">
+
+              <div class="user-avatar">
+                <span>👤</span>
+              </div>
+
+              <div class="user-info">
+                <span class="user-role">{{ usuario?.rol === 'conductor' ? 'Conductor' : 'Apoderado' }}</span>
+
+                <h3>{{ usuario?.first_name || 'Usuario' }} {{ usuario?.last_name || '' }}</h3>
+
+                <p>{{ usuario?.email || '' }}</p>
+              </div>
+
+            </div>
+          </ion-menu-toggle>
+
+
+          <!-- Menú de Navegación -->
+          <div class="menu-items">
+
+            @if (usuario?.rol === 'conductor') {
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/inicio']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🏠</span>
+                  <span class="item-text">Inicio Conductor</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/perfil']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👤</span>
+                  <span class="item-text">Mi Perfil</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/ruta-activa']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🚌</span>
+                  <span class="item-text">Ruta Activa</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/escanear-qr']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">📷</span>
+                  <span class="item-text">Escanear QR</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/escanear-facial']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🧑‍🎓</span>
+                  <span class="item-text">Escanear Rostro (FaceScanner)</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/conductor/emergencia']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">⚠️</span>
+                  <span class="item-text">Emergencia</span>
+                </a>
+              </ion-menu-toggle>
+
+            } @else {
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/inicio']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🏠</span>
+                  <span class="item-text">Inicio</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/perfil']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👤</span>
+                  <span class="item-text">Mi Perfil</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/mis-hijos']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">👧</span>
+                  <span class="item-text">Mis Hijos</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/agregar-hijo']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">➕</span>
+                  <span class="item-text">Agregar Hijo</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/mi-qr']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">📱</span>
+                  <span class="item-text">Mi QR</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/notificaciones']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🔔</span>
+                  <span class="item-text">Notificaciones</span>
+                  <span class="badge" *ngIf="(notificationService.unreadCount$ | async) as count" [class.show]="count > 0">{{ count }}</span>
+                </a>
+              </ion-menu-toggle>
+
+              <ion-menu-toggle autoHide="false">
+                <a [routerLink]="['/apoderado/seguimiento']" class="menu-item" routerLinkActive="active">
+                  <span class="item-icon">🚌</span>
+                  <span class="item-text">Seguimiento</span>
+                </a>
+              </ion-menu-toggle>
+
+            }
+
+          </div>
+
+
+          <!-- Pie del Sidebar (Cerrar Sesión) -->
+          <div class="sidebar-footer">
+
+            <button class="logout-btn" (click)="cerrarSesion()">
+              <span class="item-icon">🚪</span>
+              <span class="item-text">Cerrar sesión</span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </ion-content>
+
+    </ion-menu>
+  }
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+
+</ion-app>

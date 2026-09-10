@@ -1,0 +1,312 @@
+<ion-content [fullscreen]="true">
+
+  <div class="driver-page">
+
+    <!-- =================================
+         ENCABEZADO
+    ================================== -->
+    <section class="welcome-section">
+
+      <div class="welcome-content">
+        <span class="welcome-label">CONDUCTOR</span>
+
+        <h1>{{ saludo }}, {{ nombreMostrar }} 👋</h1>
+
+        <p>
+          Aquí tienes el resumen de tu jornada.
+        </p>
+      </div>
+
+      <!-- MENÚ -->
+      <ion-menu-toggle menu="main-menu">
+        <button class="menu-button" type="button" title="Abrir menú">
+          <ion-icon name="menu-outline"></ion-icon>
+        </button>
+      </ion-menu-toggle>
+
+    </section>
+
+
+    <!-- =================================
+         ESTADO DE LA RUTA
+    ================================== -->
+    <section class="route-status-card">
+
+      <div class="route-status-top">
+
+        <div class="route-icon">
+          <ion-icon name="bus-outline"></ion-icon>
+        </div>
+
+        <div class="route-status-info">
+          <span>ESTADO DEL SERVICIO</span>
+
+          <h2>Ruta no iniciada</h2>
+
+          <p>
+            Ruta asignada: {{ totalEstudiantes }} estudiante(s) a cargo
+          </p>
+        </div>
+
+        <span class="status-badge">
+          <span class="status-dot"></span>
+          Lista
+        </span>
+
+      </div>
+
+      <ion-button
+        expand="block"
+        class="start-route-button"
+        routerLink="/conductor/ruta-activa">
+
+        <ion-icon
+          slot="start"
+          name="play-circle-outline">
+        </ion-icon>
+
+        Iniciar ruta
+
+      </ion-button>
+
+      <!-- ACCESOS RÁPIDOS A ESCÁNERES -->
+      <div class="scanner-shortcuts">
+
+        <button type="button" class="shortcut-btn face-shortcut" routerLink="/conductor/escanear-facial">
+          <ion-icon name="scan-outline"></ion-icon>
+          <div>
+            <strong>Escanear Rostro</strong>
+            <small>FaceScanner Biométrico</small>
+          </div>
+        </button>
+
+        <button type="button" class="shortcut-btn qr-shortcut" routerLink="/conductor/escanear-qr">
+          <ion-icon name="qr-code-outline"></ion-icon>
+          <div>
+            <strong>Escanear QR</strong>
+            <small>Código de Seguridad</small>
+          </div>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         NIÑOS A CARGO (DINÁMICO)
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">01</span>
+          <h2>Niños a cargo</h2>
+        </div>
+
+        <span class="student-count">
+          {{ totalEstudiantes }} estudiantes
+        </span>
+
+      </div>
+
+
+      <!-- ESTADOS DE CARGA / VACÍO / LISTA -->
+      @if (cargandoEstudiantes) {
+
+        <div class="loading-box">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Cargando niños asignados a tu furgón...</p>
+        </div>
+
+      } @else if (errorEstudiantes) {
+
+        <div class="error-box">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>{{ errorEstudiantes }}</p>
+        </div>
+
+      } @else if (estudiantes.length === 0) {
+
+        <div class="empty-box">
+          <div class="empty-icon">🚌</div>
+          <h3>Sin estudiantes asignados</h3>
+          <p>
+            Aún no tienes niños asignados a tu ruta. El administrador los vinculará desde el Web Admin.
+          </p>
+        </div>
+
+      } @else {
+
+        <div class="students-list">
+
+          @for (estudiante of estudiantes; track estudiante.id) {
+
+            <article class="student-card">
+
+              <div class="student-avatar">
+                <ion-icon name="person-outline"></ion-icon>
+              </div>
+
+              <div class="student-info">
+
+                <h3>{{ estudiante.nombre }} {{ estudiante.apellido }}</h3>
+
+                <p>
+                  {{ estudiante.curso }} · {{ estudiante.colegio }}
+                </p>
+
+                @if (estudiante.apoderado_nombre) {
+                  <span class="parent-info">
+                    👤 Apoderado: {{ estudiante.apoderado_nombre }}
+                  </span>
+                }
+
+              </div>
+
+              <span class="student-status status-pending">
+                <span></span>
+                Pendiente
+              </span>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- =================================
+         PRÓXIMA PARADA (DINÁMICO)
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">02</span>
+          <h2>Próxima parada</h2>
+        </div>
+
+      </div>
+
+
+      @if (proximaParada) {
+
+        <div class="next-stop-card">
+
+          <div class="next-stop-icon">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+
+          <div class="next-stop-info">
+
+            <span>PRIMERA PARADA DEL RECORRIDO</span>
+
+            <h3>{{ proximaParada.nombre }} {{ proximaParada.apellido }}</h3>
+
+            <p>
+              <ion-icon name="location-outline"></ion-icon>
+              {{ proximaParada.direccion_principal || 'Dirección no registrada' }}
+            </p>
+
+            @if (proximaParada.persona_autorizada) {
+
+              <div class="receiver">
+
+                <ion-icon name="person-outline"></ion-icon>
+
+                <div>
+                  <span>RECIBE EN DOMICILIO</span>
+                  <strong>{{ proximaParada.persona_autorizada }} {{ proximaParada.rut_persona_autorizada ? '(' + proximaParada.rut_persona_autorizada + ')' : '' }}</strong>
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      } @else {
+
+        <div class="no-next-stop">
+          <p>No hay paradas programadas por el momento.</p>
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- =================================
+         AVISOS
+    ================================== -->
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <span class="section-number">03</span>
+          <h2>Avisos administrativos</h2>
+        </div>
+
+      </div>
+
+
+      <div class="notice-card">
+
+        <div class="notice-icon">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+
+        <div class="notice-content">
+
+          <h3>Recuerda revisar el tráfico</h3>
+
+          <p>
+            Verifica las condiciones de tránsito antes de iniciar tu recorrido.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="notice-card">
+
+        <div class="notice-icon">
+          <ion-icon name="information-circle-outline"></ion-icon>
+        </div>
+
+        <div class="notice-content">
+
+          <h3>Horarios de la ruta</h3>
+
+          <p>
+            Recuerda respetar los horarios establecidos para cada parada.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+         FOOTER
+    ================================== -->
+    <p class="footer-text">
+      Tu ruta escolar, más segura.
+    </p>
+
+  </div>
+
+</ion-content>

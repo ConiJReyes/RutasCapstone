@@ -1,0 +1,108 @@
+<div class="list-page fade-in">
+  <div class="list-header">
+    <div>
+      <h2>Gestión de Delegados Autorizados y Niños a Cargo</h2>
+      <p>Haz clic en cualquier delegado para desplegar los estudiantes autorizados a su cargo.</p>
+    </div>
+    <a routerLink="/delegados/nuevo" class="btn-primary">
+      <span>+ Nuevo Delegado</span>
+    </a>
+  </div>
+
+  <div class="table-card glass-panel">
+    @if (delegados.length === 0) {
+      <div class="empty-state">
+        <p>No hay delegados autorizados registrados.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th class="expand-col"></th>
+              <th>RUT</th>
+              <th>Nombre Completo</th>
+              <th>Teléfono</th>
+              <th>Usuario / Correo</th>
+              <th>Niños a Cargo</th>
+              <th class="actions-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (delegado of delegados; track delegado.id) {
+              <tr class="clickable-row" (click)="toggleExpand(delegado.id)">
+                <td class="expand-col">
+                  <span class="chevron" [class.open]="isExpanded(delegado.id)">▶</span>
+                </td>
+                <td class="font-bold">{{ delegado.rut }}</td>
+                <td>{{ delegado.nombre_completo }}</td>
+                <td>{{ delegado.telefono || 'Sin teléfono' }}</td>
+                <td><code>{{ delegado.usuario }}</code></td>
+                <td>
+                  <span class="badge-count">
+                    {{ delegado.estudiantes?.length || 0 }} {{ (delegado.estudiantes?.length === 1) ? 'estudiante' : 'estudiantes' }}
+                  </span>
+                </td>
+                <td class="actions-col" (click)="$event.stopPropagation()">
+                  <button type="button" class="btn-action edit" (click)="onEdit(delegado.id)" title="Editar">
+                    ✏️
+                  </button>
+                  <button type="button" class="btn-action delete" (click)="onDelete(delegado.id)" title="Eliminar">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+
+              @if (isExpanded(delegado.id)) {
+                <tr class="expanded-row">
+                  <td colspan="7">
+                    <div class="estudiantes-container">
+                      <h4>Niños a cargo de {{ delegado.nombre_completo }}:</h4>
+                      
+                      @if (!delegado.estudiantes || delegado.estudiantes.length === 0) {
+                        <p class="no-children">Este delegado no tiene estudiantes vinculados actualmente.</p>
+                      } @else {
+                        <table class="sub-table">
+                          <thead>
+                            <tr>
+                              <th>RUT Alumno</th>
+                              <th>Nombre Estudiante</th>
+                              <th>Curso</th>
+                              <th>Colegio</th>
+                              <th>Apoderado Titular</th>
+                              <th>Tel. Apoderado</th>
+                              <th>Conductor Asignado</th>
+                              <th class="actions-col">Desvincular</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (est of delegado.estudiantes; track est.id) {
+                              <tr>
+                                <td><strong>{{ est.rut }}</strong></td>
+                                <td>{{ est.nombre_completo }}</td>
+                                <td>{{ est.curso || 'Sin curso' }}</td>
+                                <td>{{ est.colegio || 'Escuela Bosques del Viento' }}</td>
+                                <td>{{ est.apoderado_nombre || 'No asignado' }}</td>
+                                <td>{{ est.apoderado_telefono || '-' }}</td>
+                                <td>{{ est.conductor_nombre || 'Sin conductor' }}</td>
+                                <td class="actions-col">
+                                  <button type="button" class="btn-unlink" (click)="onDesvincular(est.id, est.nombre_completo)" title="Desvincular alumno">
+                                    ❌ Desvincular
+                                  </button>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

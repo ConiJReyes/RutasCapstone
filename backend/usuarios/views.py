@@ -740,7 +740,7 @@ class SolicitarRecuperacionView(APIView):
 
         api_key = settings.RESEND_API_KEY
 
-        if not api_key:
+        if not api_key and not settings.DEBUG:
             return Response(
                 {
                     'message':
@@ -766,90 +766,93 @@ class SolicitarRecuperacionView(APIView):
         # Generar código de 6 dígitos
         codigo = f'{secrets.randbelow(1000000):06d}'
 
-        resend.api_key = api_key
+        if api_key:
+            resend.api_key = api_key
 
-        try:
+            try:
 
-            resend.Emails.send({
-                'from': 'onboarding@resend.dev',
-                'to': [usuario.email],
-                'subject':
-                    'Código para recuperar tu contraseña - Rutas Seguras',
+                resend.Emails.send({
+                    'from': 'onboarding@resend.dev',
+                    'to': [usuario.email],
+                    'subject':
+                        'Código para recuperar tu contraseña - Rutas Seguras',
 
-                'html': f'''
-                    <div style="
-                        font-family: Arial, sans-serif;
-                        max-width: 600px;
-                        margin: auto;
-                        padding: 30px;
-                    ">
-
-                        <h1 style="color: #0f766e;">
-                            Rutas Seguras
-                        </h1>
-
-                        <h2>
-                            Recuperar contraseña
-                        </h2>
-
-                        <p>
-                            Hola {usuario.first_name or ''},
-                        </p>
-
-                        <p>
-                            Recibimos una solicitud para
-                            recuperar tu contraseña.
-                        </p>
-
-                        <p>
-                            Tu código de recuperación es:
-                        </p>
-
+                    'html': f'''
                         <div style="
-                            font-size: 32px;
-                            font-weight: bold;
-                            letter-spacing: 8px;
-                            color: #173330;
-                            padding: 20px;
-                            text-align: center;
-                            background: #e8f5f3;
-                            border-radius: 12px;
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: auto;
+                            padding: 30px;
                         ">
-                            {codigo}
+
+                            <h1 style="color: #0f766e;">
+                                Rutas Seguras
+                            </h1>
+
+                            <h2>
+                                Recuperar contraseña
+                            </h2>
+
+                            <p>
+                                Hola {usuario.first_name or ''},
+                            </p>
+
+                            <p>
+                                Recibimos una solicitud para
+                                recuperar tu contraseña.
+                            </p>
+
+                            <p>
+                                Tu código de recuperación es:
+                            </p>
+
+                            <div style="
+                                font-size: 32px;
+                                font-weight: bold;
+                                letter-spacing: 8px;
+                                color: #173330;
+                                padding: 20px;
+                                text-align: center;
+                                background: #e8f5f3;
+                                border-radius: 12px;
+                            ">
+                                {codigo}
+                            </div>
+
+                            <p>
+                                Este código es válido durante
+                                <strong>10 minutos</strong>.
+                            </p>
+
+                            <p>
+                                Si tú no solicitaste este cambio,
+                                puedes ignorar este correo.
+                            </p>
+
+                            <p>
+                                Tu ruta escolar, más segura. 🚌
+                            </p>
+
                         </div>
+                    '''
+                })
 
-                        <p>
-                            Este código es válido durante
-                            <strong>10 minutos</strong>.
-                        </p>
+            except Exception as error:
 
-                        <p>
-                            Si tú no solicitaste este cambio,
-                            puedes ignorar este correo.
-                        </p>
+                print(
+                    'Error enviando correo de recuperación:',
+                    error
+                )
 
-                        <p>
-                            Tu ruta escolar, más segura. 🚌
-                        </p>
-
-                    </div>
-                '''
-            })
-
-        except Exception as error:
-
-            print(
-                'Error enviando correo de recuperación:',
-                error
-            )
-
-            return Response(
-                {
-                    'message':
-                        'No se pudo enviar el correo de recuperación.'
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                return Response(
+                    {
+                        'message':
+                            'No se pudo enviar el correo de recuperación.'
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            print(f'[MODO DEV] Código de recuperación para {usuario.email}: {codigo}')
 
         # Solo se invalida el código anterior cuando el correo se envió.
         CodigoRecuperacion.objects.filter(
@@ -1285,4 +1288,5 @@ class RutaDetailView(APIView):
         ruta = self.get_object(pk)
         ruta.delete()
         return Response({'message': 'Ruta eliminada.'}, status=status.HTTP_204_NO_CONTENT)
+
 

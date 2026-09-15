@@ -1,0 +1,315 @@
+:host {
+  display: block;
+
+  --rs-primary: #3f8178;
+  --rs-primary-dark: #2d655e;
+  --rs-primary-light: #e1efed;
+
+  --rs-text: #28534e;
+  --rs-text-dark: #234640;
+  --rs-muted: #718783;
+
+  --rs-background: #f5f9f8;
+  --rs-white: #ffffff;
+
+  --rs-border: #dce7e5;
+}
+
+
+/* =========================================
+   PÁGINA
+========================================= */
+
+.dashboard-page {
+  width: 100%;
+
+  padding: 4px 0;
+}
+
+
+/* =========================================
+   ANIMACIÓN
+========================================= */
+
+.fade-in {
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================
+   CABECERA
+========================================= */
+
+.dashboard-header {
+  margin-bottom: 32px;
+}
+
+.dashboard-header h2 {
+  margin: 0 0 8px !important;
+
+  color: var(--rs-text-dark) !important;
+
+  font-family: inherit;
+
+  font-size: 32px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+
+  letter-spacing: -0.7px;
+}
+
+.dashboard-header p {
+  margin: 0 !important;
+
+  color: var(--rs-muted) !important;
+
+  font-family: inherit;
+
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
+
+/* =========================================
+   GRID DE ESTADÍSTICAS
+========================================= */
+
+.stats-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 22px;
+}
+
+
+/* =========================================
+   TARJETA
+========================================= */
+
+.stat-card {
+  min-height: 145px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 25px;
+
+  /* IMPORTANTE:
+     pisa el glass-panel del proyecto anterior */
+  background: #ffffff !important;
+
+  border: 1px solid var(--rs-border) !important;
+
+  border-radius: 18px !important;
+
+  box-shadow:
+    0 7px 22px rgba(40, 83, 78, 0.07) !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.stat-card:hover {
+  transform: translateY(-3px);
+
+  border-color: rgba(63, 129, 120, 0.35) !important;
+
+  box-shadow:
+    0 12px 28px rgba(40, 83, 78, 0.11) !important;
+}
+
+
+/* =========================================
+   ICONO
+========================================= */
+
+.stat-icon-box {
+  width: 62px;
+  height: 62px;
+
+  flex: 0 0 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--rs-primary);
+
+  background: var(--rs-primary-light);
+
+  border-radius: 15px;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.stat-card:hover .stat-icon-box {
+  transform: scale(1.04);
+
+  background: #d5e9e6;
+}
+
+
+.stat-icon-box svg {
+  width: 30px;
+  height: 30px;
+
+  stroke: currentColor;
+}
+
+
+/* =========================================
+   ELIMINAR COLORES ANTIGUOS
+========================================= */
+
+/*
+  El HTML agrega clases como:
+
+  icon-blue
+  icon-green
+  icon-orange
+  icon-purple
+  etc.
+
+  Las sobrescribimos para mantener
+  la identidad visual de Rutas Seguras.
+*/
+
+.stat-icon-box.icon-blue,
+.stat-icon-box.icon-green,
+.stat-icon-box.icon-orange,
+.stat-icon-box.icon-purple,
+.stat-icon-box.icon-cyan,
+.stat-icon-box.icon-yellow,
+.stat-icon-box.icon-red {
+  color: var(--rs-primary) !important;
+
+  background: var(--rs-primary-light) !important;
+}
+
+
+/* =========================================
+   INFORMACIÓN
+========================================= */
+
+.stat-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+
+.stat-title {
+  color: var(--rs-muted) !important;
+
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+}
+
+
+.stat-count {
+  color: var(--rs-text-dark) !important;
+
+  font-size: 36px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+
+  letter-spacing: -1px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1050px) {
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .dashboard-page {
+    padding: 0;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 27px !important;
+  }
+
+  .dashboard-header p {
+    font-size: 14px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+
+    gap: 15px;
+  }
+
+  .stat-card {
+    min-height: 125px;
+
+    padding: 20px;
+  }
+
+  .stat-icon-box {
+    width: 55px;
+    height: 55px;
+
+    flex-basis: 55px;
+  }
+
+  .stat-icon-box svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  .stat-count {
+    font-size: 32px !important;
+  }
+
+}

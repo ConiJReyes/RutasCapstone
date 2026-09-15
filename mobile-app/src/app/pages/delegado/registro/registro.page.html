@@ -1,0 +1,128 @@
+<ion-content [fullscreen]="true">
+
+  <div class="registro-page">
+
+    <!-- Botón Volver -->
+    <button class="back-button" type="button" (click)="volver()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
+    <!-- HERO -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <span>DELEGADO AUTORIZADO</span>
+      </div>
+      <h1>Registro de Delegado</h1>
+      <p>Crea tu cuenta entregando tu RUT para verificar la autorización del apoderado</p>
+    </section>
+
+    <!-- FORMULARIO -->
+    <section class="registro-card">
+
+      <div class="info-alert">
+        <p><strong>Nota importante:</strong> Tu RUT debe haber sido ingresado previamente por el apoderado responsable en la ficha del estudiante.</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+
+        <!-- Nombre -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-input label="Nombre *" labelPlacement="floating" type="text" name="nombre" [(ngModel)]="nombre"
+              placeholder="Tu nombre" required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Apellido -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-input label="Apellido" labelPlacement="floating" type="text" name="apellido" [(ngModel)]="apellido"
+              placeholder="Tu apellido">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- RUT -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="card-outline"></ion-icon>
+            <ion-input label="RUT (con guión) *" labelPlacement="floating" type="text" name="rut" [(ngModel)]="rut"
+              placeholder="12.345.678-9" required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="call-outline"></ion-icon>
+            <ion-input label="Teléfono de contacto" labelPlacement="floating" type="tel" name="telefono" [(ngModel)]="telefono"
+              placeholder="+56 9 1234 5678">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Email -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="mail-outline"></ion-icon>
+            <ion-input label="Correo Electrónico *" labelPlacement="floating" type="email" name="email" [(ngModel)]="email"
+              placeholder="tu@email.com" required>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Password -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+            <ion-input label="Contraseña *" labelPlacement="floating" type="password" name="password"
+              [(ngModel)]="password" placeholder="Mínimo 6 caracteres" required>
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Confirmar Password -->
+        <div class="input-wrapper">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+            <ion-input label="Confirmar Contraseña *" labelPlacement="floating" type="password" name="confirmarPassword"
+              [(ngModel)]="confirmarPassword" placeholder="Repite tu contraseña" required>
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <!-- Mensaje de Error -->
+        @if (errorMensaje) {
+        <div class="error-message">
+          {{ errorMensaje }}
+        </div>
+        }
+
+        <!-- Botón Enviar -->
+        <ion-button expand="block" type="submit" class="submit-button" [disabled]="cargando">
+          @if (cargando) {
+          <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+          Verificar y Registrarme
+          }
+        </ion-button>
+
+        <div class="login-link">
+          ¿Ya tienes cuenta?
+          <a [routerLink]="['/login']" [queryParams]="{ rol: 'delegado' }">Inicia Sesión</a>
+        </div>
+
+      </form>
+
+    </section>
+
+  </div>
+
+</ion-content>

@@ -1,0 +1,54 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2>{{ isEditMode() ? 'Editar Furgón' : 'Registrar Nuevo Furgón' }}</h2>
+    <p>Ingresa los detalles técnicos y de asignación del vehículo escolar.</p>
+  </div>
+
+  <form [formGroup]="furgonForm" (ngSubmit)="onSubmit()" class="form-card">
+    <div class="form-group">
+      <label for="patente">Patente (Matrícula)</label>
+      <input id="patente" type="text" formControlName="patente" placeholder="Ej: AA-12-34" />
+      @if (furgonForm.get('patente')?.invalid && furgonForm.get('patente')?.touched) {
+        <span class="field-error">Ingresa una patente válida</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="marcaModelo">Marca y Modelo</label>
+      <input id="marcaModelo" type="text" formControlName="marcaModelo" placeholder="Ej: Mercedes-Benz Sprinter" />
+      @if (furgonForm.get('marcaModelo')?.invalid && furgonForm.get('marcaModelo')?.touched) {
+        <span class="field-error">La marca y modelo son obligatorios</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="capacidad">Capacidad (Pasajeros)</label>
+      <input id="capacidad" type="number" formControlName="capacidad" placeholder="Ej: 18" />
+      @if (furgonForm.get('capacidad')?.invalid && furgonForm.get('capacidad')?.touched) {
+        <span class="field-error">Ingresa una capacidad válida superior a 0</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="conductorAsignado">Conductor Asignado</label>
+      <input id="conductorAsignado" type="text" formControlName="conductorAsignado" placeholder="Nombre del conductor" />
+      @if (furgonForm.get('conductorAsignado')?.invalid && furgonForm.get('conductorAsignado')?.touched) {
+        <span class="field-error">El conductor asignado es obligatorio</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="estado">Estado Operativo</label>
+      <select id="estado" formControlName="estado">
+        <option value="disponible">Disponible</option>
+        <option value="en_ruta">En Ruta</option>
+        <option value="mantenimiento">Mantenimiento</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="btn-primary">{{ isEditMode() ? 'Actualizar' : 'Guardar' }}</button>
+    </div>
+  </form>
+</div>

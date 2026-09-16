@@ -82,6 +82,85 @@ label {
   margin-bottom: 16px;
 }
 
+.student-picker-field {
+  background: var(--fondo);
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+}
+
+.loading-students, .no-students-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #6b7c79;
+}
+
+.no-students-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.student-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.student-radio-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1.5px solid var(--borde);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #a3d0c9;
+  }
+
+  &.selected {
+    border-color: var(--verde);
+    background: var(--verde-suave);
+  }
+}
+
+.radio-icon {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  color: var(--verde);
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.student-details {
+  display: flex;
+  flex-direction: column;
+
+  .student-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--texto);
+  }
+
+  .student-rut {
+    font-size: 13px;
+    color: #5c6f6c;
+    margin-top: 2px;
+  }
+}
+
 input, select, textarea {
   width: 100%;
   border: 1px solid var(--borde);
@@ -108,4 +187,13 @@ input, select, textarea {
   background: var(--verde);
   color: #fff;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }

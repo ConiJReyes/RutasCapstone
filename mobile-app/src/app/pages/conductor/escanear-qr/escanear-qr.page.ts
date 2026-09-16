@@ -31,7 +31,10 @@ import {
   busOutline,
   createOutline,
   checkmarkDoneCircleOutline,
-  timeOutline
+  timeOutline,
+  checkboxOutline,
+  squareOutline,
+  peopleOutline
 } from 'ionicons/icons';
 
 addIcons({
@@ -51,11 +54,14 @@ addIcons({
   busOutline,
   createOutline,
   checkmarkDoneCircleOutline,
-  timeOutline
+  timeOutline,
+  checkboxOutline,
+  squareOutline,
+  peopleOutline
 });
 
 export interface QrDataEscaneado {
-  tipo: 'APODERADO' | 'ESTUDIANTE';
+  tipo: 'APODERADO' | 'ESTUDIANTE' | 'DELEGADO_AUTORIZADO';
   id_usuario?: number;
   id_estudiante?: number;
   rut?: string;
@@ -69,6 +75,23 @@ export interface QrDataEscaneado {
   ts: number;
   valido_hasta?: number;
   codigo_seguridad: string;
+}
+
+export interface EstudianteEntregaItem {
+  id: number;
+  nombre: string;
+  rut: string;
+  colegio?: string;
+  curso?: string;
+  estado?: string;
+  seleccionado: boolean;
+}
+
+export interface PersonaEntregaInfo {
+  id_usuario?: number;
+  rut: string;
+  nombre: string;
+  tipo: string;
 }
 
 @Component({
@@ -104,6 +127,12 @@ export class EscanearQrPage implements OnInit, OnDestroy {
 
   tipoAccion: 'RECEPCION' | 'ENTREGA' = 'RECEPCION';
   notaAdicional: string = '';
+
+  // Flujo entrega múltiple Apoderado / Delegado
+  modoEntregaMultiple: boolean = false;
+  cargandoConsultaEntrega: boolean = false;
+  personaEntrega: PersonaEntregaInfo | null = null;
+  estudiantesEntrega: EstudianteEntregaItem[] = [];
 
   confirmacionExitosa: boolean = false;
   mensajeToast: string = '';
@@ -175,6 +204,9 @@ export class EscanearQrPage implements OnInit, OnDestroy {
   procesarTextoQR(textoQR: string) {
     this.errorValidacion = '';
     this.qrEscaneado = null;
+    this.modoEntregaMultiple = false;
+    this.personaEntrega = null;
+    this.estudiantesEntrega = [];
 
     try {
       const data: QrDataEscaneado = JSON.parse(textoQR);
@@ -186,19 +218,73 @@ export class EscanearQrPage implements OnInit, OnDestroy {
       const ahora = Date.now();
       if (data.valido_hasta && ahora > data.valido_hasta) {
         this.qrEsValido = false;
-        this.errorValidacion = 'El código QR ha expirado (duración máxima: 15 min). Pídele al apoderado que lo renueve.';
+        this.errorValidacion = 'El código QR ha expirado (duración máxima: 5 min). Pídele a la persona que lo renueve.';
         this.qrEscaneado = data;
         return;
       }
 
-      this.qrEsValido = true;
       this.qrEscaneado = data;
-      this.lanzarToast('¡Código QR escaneado con éxito!', 'success');
+
+      // Si es Apoderado o Delegado, realizamos la consulta multi-estudiante al backend
+      if (data.tipo === 'APODERADO' || data.tipo === 'DELEGADO_AUTORIZADO') {
+        this.cargandoConsultaEntrega = true;
+        this.notificationService.consultarQREntrega(textoQR).subscribe({
+          next: (res: any) => {
+            this.cargandoConsultaEntrega = false;
+            if (res.valido) {
+              this.qrEsValido = true;
+              this.modoEntregaMultiple = true;
+              this.tipoAccion = 'ENTREGA';
+              this.personaEntrega = res.persona;
+              this.estudiantesEntrega = (res.estudiantes || []).map((e: any) => ({
+                ...e,
+                seleccionado: true
+              }));
+              this.lanzarToast('¡QR de Recepción validado correctamente!', 'success');
+            } else {
+              this.qrEsValido = false;
+              this.errorValidacion = res.error || 'Código QR no válido o expirado.';
+            }
+          },
+          error: (err: any) => {
+            this.cargandoConsultaEntrega = false;
+            console.warn('[EscanearQR] Error consultando QR en backend:', err);
+            const msgError = err.error?.error || 'No se pudo consultar el QR con el servidor.';
+            this.qrEsValido = false;
+            this.errorValidacion = msgError;
+          }
+        });
+      } else {
+        // Estudiante individual (Flujo Abordaje / Tradicional)
+        this.qrEsValido = true;
+        this.modoEntregaMultiple = false;
+        this.lanzarToast('¡Código QR escaneado con éxito!', 'success');
+      }
 
     } catch (e) {
       this.qrEsValido = false;
       this.errorValidacion = 'Código QR no reconocido. Asegúrate de escanear un código generado por Rutas Seguras.';
     }
+  }
+
+  toggleEstudianteEntrega(estId: number) {
+    const item = this.estudiantesEntrega.find(e => e.id === estId);
+    if (item) {
+      item.seleccionado = !item.seleccionado;
+    }
+  }
+
+  toggleTodosEstudiantes() {
+    const todosSeleccionados = this.estudiantesEntrega.every(e => e.seleccionado);
+    this.estudiantesEntrega.forEach(e => e.seleccionado = !todosSeleccionados);
+  }
+
+  get totalSeleccionadosCount(): number {
+    return this.estudiantesEntrega.filter(e => e.seleccionado).length;
+  }
+
+  get todosSeleccionadosState(): boolean {
+    return this.estudiantesEntrega.length > 0 && this.estudiantesEntrega.every(e => e.seleccionado);
   }
 
   // Métodos de simulación para pruebas del usuario
@@ -210,7 +296,7 @@ export class EscanearQrPage implements OnInit, OnDestroy {
       nombre: 'Carlos Pérez',
       email: 'carlos.perez@email.com',
       ts: Date.now(),
-      valido_hasta: Date.now() + (15 * 60 * 1000),
+      valido_hasta: Date.now() + (5 * 60 * 1000),
       codigo_seguridad: `APOD-0012-${Date.now().toString().slice(-4)}`
     };
     this.procesarTextoQR(JSON.stringify(demoPayload));
@@ -226,7 +312,7 @@ export class EscanearQrPage implements OnInit, OnDestroy {
       colegio: 'Colegio San José',
       curso: '3° Básico A',
       ts: Date.now(),
-      valido_hasta: Date.now() + (15 * 60 * 1000),
+      valido_hasta: Date.now() + (5 * 60 * 1000),
       codigo_seguridad: `EST-0045-${Date.now().toString().slice(-4)}`
     };
     this.procesarTextoQR(JSON.stringify(demoPayload));
@@ -234,16 +320,13 @@ export class EscanearQrPage implements OnInit, OnDestroy {
 
   simularEscaneoExpirado() {
     const demoPayload: QrDataEscaneado = {
-      tipo: 'ESTUDIANTE',
-      id_estudiante: 45,
-      rut_estudiante: '23.891.102-3',
-      nombre_estudiante: 'Lucía Pérez',
-      apoderado_nombre: 'Carlos Pérez',
-      colegio: 'Colegio San José',
-      curso: '3° Básico A',
+      tipo: 'APODERADO',
+      id_usuario: 12,
+      rut: '15.432.890-K',
+      nombre: 'Carlos Pérez',
       ts: Date.now() - (20 * 60 * 1000),
       valido_hasta: Date.now() - (5 * 60 * 1000), // Expirado hace 5 min
-      codigo_seguridad: `EST-EXPIRADO`
+      codigo_seguridad: `APOD-EXPIRADO`
     };
     this.procesarTextoQR(JSON.stringify(demoPayload));
   }
@@ -255,6 +338,11 @@ export class EscanearQrPage implements OnInit, OnDestroy {
 
   confirmarRecepcion() {
     if (!this.qrEscaneado || !this.qrEsValido) return;
+
+    if (this.modoEntregaMultiple) {
+      this.confirmarEntregaMultiple();
+      return;
+    }
 
     const accionBackend = this.tipoAccion === 'RECEPCION' ? 'abordar' : 'llegar';
     const estId = this.qrEscaneado.id_estudiante;
@@ -269,6 +357,31 @@ export class EscanearQrPage implements OnInit, OnDestroy {
     this.lanzarToast('¡Abordaje / Entrega registrado exitosamente!', 'success');
   }
 
+  confirmarEntregaMultiple() {
+    const seleccionados = this.estudiantesEntrega.filter(e => e.seleccionado);
+    if (seleccionados.length === 0) {
+      this.lanzarToast('Debes seleccionar al menos un estudiante para confirmar la entrega.', 'warning');
+      return;
+    }
+
+    const estIds = seleccionados.map(e => e.id);
+    const rutPersona = this.personaEntrega?.rut || this.qrEscaneado?.rut || '';
+    const nombrePersona = this.personaEntrega?.nombre || this.qrEscaneado?.nombre || '';
+
+    this.notificationService.confirmarEntregaMultiple(estIds, rutPersona, nombrePersona).subscribe({
+      next: (res: any) => {
+        console.log('[EscanearQR] Entrega múltiple confirmada:', res);
+        this.confirmacionExitosa = true;
+        this.lanzarToast(`¡Entrega de ${seleccionados.length} estudiante(s) confirmada exitosamente!`, 'success');
+      },
+      error: (err: any) => {
+        console.error('[EscanearQR] Error al confirmar entrega múltiple:', err);
+        const errorMsg = err.error?.error || 'Ocurrió un error al registrar la entrega.';
+        this.lanzarToast(errorMsg, 'danger');
+      }
+    });
+  }
+
   resetearEscaneo() {
     this.qrEscaneado = null;
     this.qrEsValido = false;
@@ -276,6 +389,10 @@ export class EscanearQrPage implements OnInit, OnDestroy {
     this.confirmacionExitosa = false;
     this.codigoManual = '';
     this.notaAdicional = '';
+    this.modoEntregaMultiple = false;
+    this.personaEntrega = null;
+    this.estudiantesEntrega = [];
+    this.cargandoConsultaEntrega = false;
   }
 
   volverARuta() {

@@ -57,9 +57,9 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
   qrSvgSafe: SafeHtml = '';
 
   timestampHash: number = Date.now();
-  duracionMinutos: number = 15;
+  duracionMinutos: number = 5;
   expiracionTs: number = 0;
-  tiempoRestanteTexto: string = '15:00';
+  tiempoRestanteTexto: string = '05:00';
   esValido: boolean = true;
   private timerInterval: any = null;
 
@@ -68,7 +68,7 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private location: Location,
     private toastController: ToastController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.usuario = this.authService.getUsuario();
@@ -101,7 +101,7 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
 
   regenerarQR() {
     this.generarQR();
-    this.mostrarToast('Código QR actualizado por 15 minutos', 'success');
+    this.mostrarToast('Código QR actualizado por 5 minutos', 'success');
   }
 
   async generarQR() {

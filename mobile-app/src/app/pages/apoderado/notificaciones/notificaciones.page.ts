@@ -25,7 +25,10 @@ import {
   arrowBackOutline,
   checkmarkDoneOutline,
   timeOutline,
-  mailUnreadOutline
+  mailUnreadOutline,
+  trashOutline,
+  trashBinOutline,
+  closeOutline
 } from 'ionicons/icons';
 
 import { NotificationService, NotificacionItem } from '../../../services/notification.service';
@@ -43,7 +46,10 @@ addIcons({
   arrowBackOutline,
   checkmarkDoneOutline,
   timeOutline,
-  mailUnreadOutline
+  mailUnreadOutline,
+  trashOutline,
+  trashBinOutline,
+  closeOutline
 });
 
 @Component({
@@ -131,6 +137,40 @@ export class NotificacionesPage implements OnInit, OnDestroy {
         this.notificaciones.forEach(n => n.leido = true);
         this.noLeidasCount = 0;
         await this.mostrarToast('Todas las notificaciones fueron marcadas como leídas.', 'success');
+      }
+    });
+  }
+
+  eliminarNotificacion(item: NotificacionItem, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    this.notificationService.eliminarNotificacion(item.id).subscribe({
+      next: async () => {
+        this.notificaciones = this.notificaciones.filter(n => n.id !== item.id);
+        if (!item.leido && this.noLeidasCount > 0) {
+          this.noLeidasCount--;
+        }
+        await this.mostrarToast('Notificación eliminada de tu bandeja.', 'warning');
+      },
+      error: (err) => {
+        console.error('Error eliminando notificación:', err);
+      }
+    });
+  }
+
+  eliminarTodasNotificaciones() {
+    if (this.notificaciones.length === 0) return;
+
+    this.notificationService.eliminarTodasNotificaciones().subscribe({
+      next: async () => {
+        this.notificaciones = [];
+        this.noLeidasCount = 0;
+        await this.mostrarToast('Todas las notificaciones fueron eliminadas de tu bandeja.', 'warning');
+      },
+      error: (err) => {
+        console.error('Error eliminando todas las notificaciones:', err);
       }
     });
   }

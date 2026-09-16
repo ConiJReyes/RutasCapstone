@@ -35,7 +35,7 @@
     <!-- =========================
          MODO ESCÁNER CÁMARA
     ========================== -->
-    @if (!qrEscaneado) {
+    @if (!qrEscaneado && !cargandoConsultaEntrega) {
 
       <div class="viewfinder-card">
 
@@ -93,7 +93,7 @@
 
             <ion-icon name="qr-code-outline"></ion-icon>
 
-            <span>Apunta la cámara al código QR del Apoderado</span>
+            <span>Apunta la cámara al código QR del Apoderado o Delegado</span>
 
           </div>
 
@@ -136,7 +136,7 @@
 
             <div class="sim-text">
 
-              <strong>Escanear Apoderado</strong>
+              <strong>Escanear QR Apoderado / Delegado</strong>
 
               <span>Carlos Pérez · RUT 15.432.890-K</span>
 
@@ -150,7 +150,7 @@
 
             <div class="sim-text">
 
-              <strong>Escanear Estudiante</strong>
+              <strong>Escanear QR Estudiante (Abordaje)</strong>
 
               <span>Lucía Pérez · Colegio San José</span>
 
@@ -166,7 +166,7 @@
 
               <strong>Probar QR Expirado</strong>
 
-              <span>Simula un QR vencido (+15 min)</span>
+              <span>Simula un QR vencido (+5 min)</span>
 
             </div>
 
@@ -205,9 +205,27 @@
 
 
     <!-- =========================
+         INDICADOR CARGANDO CONSULTA
+    ========================== -->
+    @if (cargandoConsultaEntrega) {
+
+      <div class="loading-consulting-card">
+
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+
+        <h3>Verificando QR y Consultando Ruta...</h3>
+
+        <p>Identificando a la persona y obteniendo los estudiantes autorizados en la ruta activa.</p>
+
+      </div>
+
+    }
+
+
+    <!-- =========================
          RESULTADO DEL ESCANEO / CONFIRMACIÓN
     ========================== -->
-    @if (qrEscaneado && !confirmacionExitosa) {
+    @if (qrEscaneado && !cargandoConsultaEntrega && !confirmacionExitosa) {
 
       <div class="result-card" [class.result-error]="!qrEsValido">
 
@@ -218,9 +236,9 @@
 
           <div>
 
-            <h2>{{ qrEsValido ? 'QR VÁLIDO Y VERIFICADO' : 'CÓDIGO QR NO VÁLIDO' }}</h2>
+            <h2>{{ qrEsValido ? (modoEntregaMultiple ? 'RECEPCIÓN DE ESTUDIANTES' : 'QR VÁLIDO Y VERIFICADO') : 'CÓDIGO QR NO VÁLIDO' }}</h2>
 
-            <p>{{ qrEsValido ? 'Detalles de la persona / estudiante recibida' : errorValidacion }}</p>
+            <p>{{ qrEsValido ? (modoEntregaMultiple ? 'Selecciona los estudiantes a entregar a la persona' : 'Detalles del estudiante escaneado') : errorValidacion }}</p>
 
           </div>
 
@@ -229,42 +247,201 @@
 
         @if (qrEsValido) {
 
-          <!-- Tarjeta de Detalles Escaneados -->
-          <div class="scanned-details">
+          <!-- =========================
+               FLUJO A: ENTREGA MÚLTIPLE (APODERADO / DELEGADO)
+          ========================== -->
+          @if (modoEntregaMultiple) {
 
-            <div class="details-type-badge">
+            <div class="scanned-details multi-delivery-container">
 
-              <ion-icon [name]="qrEscaneado.tipo === 'APODERADO' ? 'person-outline' : 'school-outline'"></ion-icon>
+              <!-- Badge Persona -->
+              <div class="details-type-badge persona-badge">
 
-              <span>{{ qrEscaneado.tipo === 'APODERADO' ? 'APODERADO TITULAR' : 'ESTUDIANTE' }}</span>
+                <ion-icon name="person-outline"></ion-icon>
 
-            </div>
-
-
-            <div class="detail-row main-subject">
-
-              <div class="subject-avatar">
-
-                {{ qrEscaneado.tipo === 'APODERADO' ? '👤' : '🎓' }}
+                <span>{{ personaEntrega?.tipo === 'DELEGADO_AUTORIZADO' ? 'DELEGADO AUTORIZADO' : 'APODERADO TITULAR' }}</span>
 
               </div>
 
-              <div class="subject-text">
 
-                <h3>{{ qrEscaneado.tipo === 'APODERADO' ? qrEscaneado.nombre : qrEscaneado.nombre_estudiante }}</h3>
+              <!-- Header Persona -->
+              <div class="detail-row main-subject persona-header">
 
-                <p>RUT: <strong>{{ qrEscaneado.tipo === 'APODERADO' ? qrEscaneado.rut : qrEscaneado.rut_estudiante }}</strong></p>
+                <div class="subject-avatar persona-avatar">
+
+                  👤
+
+                </div>
+
+                <div class="subject-text">
+
+                  <h3>{{ personaEntrega?.nombre || qrEscaneado.nombre }}</h3>
+
+                  <p>RUT Receptor: <strong>{{ personaEntrega?.rut || qrEscaneado.rut }}</strong></p>
+
+                </div>
 
               </div>
 
+
+              <!-- Checklist de Estudiantes Autorizados -->
+              <div class="checklist-section">
+
+                <div class="checklist-header">
+
+                  <div class="checklist-title">
+
+                    <ion-icon name="people-outline"></ion-icon>
+
+                    <h4>Estudiantes Autorizados</h4>
+
+                    <span class="count-badge">{{ estudiantesEntrega.length }}</span>
+
+                  </div>
+
+                  @if (estudiantesEntrega.length > 0) {
+
+                    <button type="button" class="select-all-btn" (click)="toggleTodosEstudiantes()">
+
+                      {{ todosSeleccionadosState ? 'Desmarcar todos' : 'Marcar todos' }}
+
+                    </button>
+
+                  }
+
+                </div>
+
+
+                @if (estudiantesEntrega.length === 0) {
+
+                  <div class="empty-students-msg">
+
+                    <ion-icon name="alert-circle-outline"></ion-icon>
+
+                    <p>No hay estudiantes asociados a esta persona que estén en la ruta activa actual.</p>
+
+                  </div>
+
+                } @else {
+
+                  <div class="student-checklist">
+
+                    @for (est of estudiantesEntrega; track est.id) {
+
+                      <div
+                        class="student-check-item"
+                        [class.checked]="est.seleccionado"
+                        (click)="toggleEstudianteEntrega(est.id)">
+
+                        <div class="checkbox-box">
+
+                          <ion-icon [name]="est.seleccionado ? 'checkbox-outline' : 'square-outline'"></ion-icon>
+
+                        </div>
+
+                        <div class="student-info">
+
+                          <div class="student-name-row">
+
+                            <strong>🎓 {{ est.nombre }}</strong>
+
+                            <span class="status-chip">{{ est.estado || 'EN_RUTA' }}</span>
+
+                          </div>
+
+                          <div class="student-sub-info">
+
+                            <span>RUT: {{ est.rut }}</span>
+
+                            @if (est.curso) {
+
+                              <span>· {{ est.curso }}</span>
+
+                            }
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    }
+
+                  </div>
+
+                }
+
+              </div>
+
+
+              <!-- Nota Opcional -->
+              <div class="note-input-container">
+
+                <label for="notaMulti">Observaciones o notas (Opcional):</label>
+
+                <input
+                  id="notaMulti"
+                  type="text"
+                  placeholder="Ej: Entregados a apoderado en parada..."
+                  [(ngModel)]="notaAdicional"
+                  class="note-field" />
+
+              </div>
+
+
+              <!-- Botón Confirmar Entrega Múltiple -->
+              <ion-button
+                expand="block"
+                class="confirm-button multi-confirm-btn"
+                [disabled]="totalSeleccionadosCount === 0"
+                (click)="confirmarEntregaMultiple()">
+
+                <ion-icon slot="start" name="checkmark-done-circle-outline"></ion-icon>
+
+                Confirmar Recepción ({{ totalSeleccionadosCount }} Estudiantes)
+
+              </ion-button>
+
             </div>
 
+          } @else {
 
-            @if (qrEscaneado.tipo === 'ESTUDIANTE') {
+            <!-- =========================
+                 FLUJO B: ESTUDIANTE INDIVIDUAL (ABORDAJE)
+            ========================== -->
+            <div class="scanned-details">
+
+              <div class="details-type-badge">
+
+                <ion-icon name="school-outline"></ion-icon>
+
+                <span>ESTUDIANTE</span>
+
+              </div>
+
+
+              <div class="detail-row main-subject">
+
+                <div class="subject-avatar">
+
+                  🎓
+
+                </div>
+
+                <div class="subject-text">
+
+                  <h3>{{ qrEscaneado.nombre_estudiante || qrEscaneado.nombre }}</h3>
+
+                  <p>RUT: <strong>{{ qrEscaneado.rut_estudiante || qrEscaneado.rut }}</strong></p>
+
+                </div>
+
+              </div>
+
 
               <div class="detail-grid">
 
-                <div class="grid-item">
+                <div class="grid-item" *ngIf="qrEscaneado.colegio">
 
                   <span class="item-lbl">Colegio:</span>
 
@@ -272,7 +449,7 @@
 
                 </div>
 
-                <div class="grid-item">
+                <div class="grid-item" *ngIf="qrEscaneado.curso">
 
                   <span class="item-lbl">Curso:</span>
 
@@ -280,7 +457,7 @@
 
                 </div>
 
-                <div class="grid-item full">
+                <div class="grid-item full" *ngIf="qrEscaneado.apoderado_nombre">
 
                   <span class="item-lbl">Apoderado Responsable:</span>
 
@@ -290,87 +467,73 @@
 
               </div>
 
-            } @else {
 
-              <div class="detail-grid">
+              <!-- Opciones de Registro -->
+              <div class="action-type-selector">
 
-                <div class="grid-item full">
+                <span class="selector-lbl">TIPO DE REGISTRO EN RUTA:</span>
 
-                  <span class="item-lbl">Email Apoderado:</span>
+                <div class="action-buttons-group">
 
-                  <strong>{{ qrEscaneado.email }}</strong>
+                  <button
+                    type="button"
+                    class="type-btn"
+                    [class.selected]="tipoAccion === 'RECEPCION'"
+                    (click)="tipoAccion = 'RECEPCION'">
+
+                    <ion-icon name="bus-outline"></ion-icon>
+
+                    <span>Abordaje (Subida)</span>
+
+                  </button>
+
+                  <button
+                    type="button"
+                    class="type-btn"
+                    [class.selected]="tipoAccion === 'ENTREGA'"
+                    (click)="tipoAccion = 'ENTREGA'">
+
+                    <ion-icon name="person-outline"></ion-icon>
+
+                    <span>Entrega (Bajada)</span>
+
+                  </button>
 
                 </div>
 
               </div>
 
-            }
 
+              <!-- Nota Opcional -->
+              <div class="note-input-container">
 
-            <!-- Opciones de Registro -->
-            <div class="action-type-selector">
+                <label for="notaSingle">Observaciones o notas (Opcional):</label>
 
-              <span class="selector-lbl">TIPO DE REGISTRO EN RUTA:</span>
-
-              <div class="action-buttons-group">
-
-                <button
-                  type="button"
-                  class="type-btn"
-                  [class.selected]="tipoAccion === 'RECEPCION'"
-                  (click)="tipoAccion = 'RECEPCION'">
-
-                  <ion-icon name="bus-outline"></ion-icon>
-
-                  <span>Abordaje (Subida)</span>
-
-                </button>
-
-                <button
-                  type="button"
-                  class="type-btn"
-                  [class.selected]="tipoAccion === 'ENTREGA'"
-                  (click)="tipoAccion = 'ENTREGA'">
-
-                  <ion-icon name="person-outline"></ion-icon>
-
-                  <span>Entrega (Bajada)</span>
-
-                </button>
+                <input
+                  id="notaSingle"
+                  type="text"
+                  placeholder="Ej: Recibido sin novedades..."
+                  [(ngModel)]="notaAdicional"
+                  class="note-field" />
 
               </div>
 
-            </div>
 
+              <!-- Botón Confirmar -->
+              <ion-button
+                expand="block"
+                class="confirm-button"
+                (click)="confirmarRecepcion()">
 
-            <!-- Nota Opcional -->
-            <div class="note-input-container">
+                <ion-icon slot="start" name="checkmark-done-circle-outline"></ion-icon>
 
-              <label for="nota">Observaciones o notas (Opcional):</label>
+                Confirmar Registro de {{ tipoAccion === 'RECEPCION' ? 'Abordaje' : 'Entrega' }}
 
-              <input
-                id="nota"
-                type="text"
-                placeholder="Ej: Recibido sin novedades..."
-                [(ngModel)]="notaAdicional"
-                class="note-field" />
+              </ion-button>
 
             </div>
 
-
-            <!-- Botón Confirmar -->
-            <ion-button
-              expand="block"
-              class="confirm-button"
-              (click)="confirmarRecepcion()">
-
-              <ion-icon slot="start" name="checkmark-done-circle-outline"></ion-icon>
-
-              Confirmar Registro de {{ tipoAccion === 'RECEPCION' ? 'Abordaje' : 'Entrega' }}
-
-            </ion-button>
-
-          </div>
+          }
 
         }
 
@@ -409,7 +572,7 @@
 
         <p class="success-subtitle">
 
-          El estado del estudiante ha sido actualizado en la ruta activa.
+          El estado de los estudiantes seleccionados ha sido actualizado en la ruta activa.
 
         </p>
 
@@ -420,17 +583,39 @@
 
             <span>Acción:</span>
 
-            <strong>{{ tipoAccion === 'RECEPCION' ? 'Abordaje al Furgón' : 'Entregado a Apoderado' }}</strong>
+            <strong>{{ modoEntregaMultiple ? 'Entrega Múltiple a Receptor' : (tipoAccion === 'RECEPCION' ? 'Abordaje al Furgón' : 'Entregado a Apoderado') }}</strong>
 
           </div>
 
-          <div class="summary-line">
+          @if (modoEntregaMultiple) {
 
-            <span>Nombre:</span>
+            <div class="summary-line">
 
-            <strong>{{ qrEscaneado?.tipo === 'APODERADO' ? qrEscaneado?.nombre : qrEscaneado?.nombre_estudiante }}</strong>
+              <span>Receptor:</span>
 
-          </div>
+              <strong>{{ personaEntrega?.nombre || qrEscaneado?.nombre }}</strong>
+
+            </div>
+
+            <div class="summary-line">
+
+              <span>Estudiantes Entregados:</span>
+
+              <strong>{{ totalSeleccionadosCount }} estudiante(s)</strong>
+
+            </div>
+
+          } @else {
+
+            <div class="summary-line">
+
+              <span>Nombre:</span>
+
+              <strong>{{ qrEscaneado?.nombre_estudiante || qrEscaneado?.nombre }}</strong>
+
+            </div>
+
+          }
 
           <div class="summary-line">
 
@@ -464,7 +649,7 @@
 
             <ion-icon slot="start" name="qr-code-outline"></ion-icon>
 
-            Escanear Otro Estudiante
+            Escanear Otro Código
 
           </ion-button>
 

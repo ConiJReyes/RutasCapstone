@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
@@ -21,6 +21,14 @@ export class PushNotificationService {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Authorization': token ? `Token ${token}` : '',
+      'Content-Type': 'application/json'
+    });
+  }
 
   /**
    * Inicializa los permisos y oyentes de Push Notifications en el dispositivo móvil.
@@ -84,13 +92,12 @@ export class PushNotificationService {
    * Envia el FCM Token actual al servidor Django.
    */
   enviarTokenAlBackend(fcmToken: string): Observable<any> {
-    const usuario = this.authService.getUsuario();
     const deviceName = Capacitor.getPlatform() === 'android' ? 'Android Device' : 'iOS Device';
 
     return this.http.post(`${this.apiUrl}/notificaciones/fcm-token/`, {
       token: fcmToken,
       device_name: deviceName
-    });
+    }, { headers: this.getAuthHeaders() });
   }
 
   getNuevaNotificacionSubject(): Observable<PushNotificationSchema | null> {

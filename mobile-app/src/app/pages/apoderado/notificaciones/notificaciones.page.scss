@@ -78,6 +78,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .unread-pill {
@@ -112,19 +114,45 @@
   }
 }
 
-.mark-all-button {
+.status-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-pill-button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: transparent;
-  border: none;
-  color: var(--verde-rutas);
+  border: 1px solid var(--borde);
+  padding: 5px 11px;
+  border-radius: 14px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
 
   ion-icon {
     font-size: 15px;
+  }
+
+  &.mark-all {
+    color: var(--verde-rutas);
+    border-color: rgba(15, 118, 110, 0.3);
+
+    &:hover {
+      background: var(--verde-suave);
+    }
+  }
+
+  &.delete-all {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.25);
+
+    &:hover {
+      background: #fee2e2;
+    }
   }
 }
 
@@ -231,6 +259,34 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 6px;
+}
+
+.top-right-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-item-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &:hover {
+    color: #ef4444;
+    background: #fee2e2;
+  }
 }
 
 .type-badge {

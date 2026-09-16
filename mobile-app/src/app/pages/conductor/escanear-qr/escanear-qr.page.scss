@@ -759,3 +759,197 @@
   }
 }
 
+/* =================================
+   CONSULTA Y ENTREGA MÚLTIPLE SCSS
+================================= */
+.loading-consulting-card {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 22px;
+  padding: 30px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(36, 70, 66, 0.05);
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--texto-principal);
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--texto-secundario);
+  }
+}
+
+.multi-delivery-container {
+  gap: 14px;
+}
+
+.persona-badge {
+  background: var(--amarillo-suave);
+  color: #b78103;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+.persona-header {
+  .persona-avatar {
+    background: #e3f2fd;
+  }
+}
+
+.checklist-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--fondo);
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid var(--borde);
+}
+
+.checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checklist-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--verde-rutas);
+  }
+
+  h4 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--texto-principal);
+  }
+
+  .count-badge {
+    background: var(--verde-rutas);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+}
+
+.select-all-btn {
+  background: transparent;
+  border: none;
+  color: var(--verde-rutas);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+
+  &:hover {
+    background: var(--verde-suave);
+  }
+}
+
+.student-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.student-check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--blanco);
+  border: 1.5px solid var(--borde);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  .checkbox-box {
+    ion-icon {
+      font-size: 24px;
+      color: var(--texto-secundario);
+    }
+  }
+
+  .student-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .student-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    strong {
+      font-size: 13.5px;
+      color: var(--texto-principal);
+    }
+
+    .status-chip {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: var(--verde-suave);
+      color: var(--verde-rutas);
+    }
+  }
+
+  .student-sub-info {
+    font-size: 11.5px;
+    color: var(--texto-secundario);
+  }
+
+  &.checked {
+    border-color: var(--verde-rutas);
+    background: var(--verde-suave);
+
+    .checkbox-box ion-icon {
+      color: var(--verde-rutas);
+    }
+  }
+}
+
+.empty-students-msg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--amarillo-suave);
+  border-radius: 12px;
+  color: #b78103;
+  font-size: 12px;
+
+  ion-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+

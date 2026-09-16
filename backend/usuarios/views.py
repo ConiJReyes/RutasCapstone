@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.http import FileResponse, Http404
 from django.conf import settings
-from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, PerfilDelegado, FCMToken, Notificacion, Furgon, Ruta
+from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, PerfilDelegado, FCMToken, Notificacion, Furgon, Ruta, Emergencia
 from .serializers import (
     RegistroApoderadoSerializer,
     RegistroConductorSerializer,
@@ -1015,10 +1015,19 @@ class NotificacionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({'message': 'Solo apoderados tienen bandeja de notificaciones.'}, status=status.HTTP_403_FORBIDDEN)
+        if hasattr(request.user, 'perfil_apoderado'):
+            notificaciones = Notificacion.objects.filter(apoderado=request.user.perfil_apoderado)
+        elif hasattr(request.user, 'perfil_delegado'):
+            del_rut = request.user.perfil_delegado.rut or ''
+            rut_clean = del_rut.replace('.', '').replace('-', '').upper()
+            est_ids = [
+                est.id for est in Estudiante.objects.all()
+                if est.rut_persona_autorizada and est.rut_persona_autorizada.replace('.', '').replace('-', '').upper() == rut_clean
+            ]
+            notificaciones = Notificacion.objects.filter(estudiante_id__in=est_ids)
+        else:
+            return Response({'no_leidas_count': 0, 'notificaciones': []}, status=status.HTTP_200_OK)
 
-        notificaciones = Notificacion.objects.filter(apoderado=request.user.perfil_apoderado)
         no_leidas_count = notificaciones.filter(leido=False).count()
         serializer = NotificacionSerializer(notificaciones, many=True)
 
@@ -1032,34 +1041,98 @@ class MarcarNotificacionLeidaView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, notificacion_id):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({'message': 'Permiso denegado.'}, status=status.HTTP_403_FORBIDDEN)
-
         try:
-            notificacion = Notificacion.objects.get(
-                id=notificacion_id,
-                apoderado=request.user.perfil_apoderado
-            )
+            if hasattr(request.user, 'perfil_apoderado'):
+                notificacion = Notificacion.objects.get(
+                    id=notificacion_id,
+                    apoderado=request.user.perfil_apoderado
+                )
+            else:
+                notificacion = Notificacion.objects.get(id=notificacion_id)
+
             notificacion.leido = True
             notificacion.save(update_fields=['leido'])
             return Response({'message': 'Notificación marcada como leída.'}, status=status.HTTP_200_OK)
         except Notificacion.DoesNotExist:
-            raise Http404
+            return Response({'message': 'Notificación no encontrada.'}, status=status.HTTP_200_OK)
 
 
 class MarcarTodasNotificacionesLeidasView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({'message': 'Permiso denegado.'}, status=status.HTTP_403_FORBIDDEN)
-
-        Notificacion.objects.filter(
-            apoderado=request.user.perfil_apoderado,
-            leido=False
-        ).update(leido=True)
+        if hasattr(request.user, 'perfil_apoderado'):
+            Notificacion.objects.filter(
+                apoderado=request.user.perfil_apoderado,
+                leido=False
+            ).update(leido=True)
+        elif hasattr(request.user, 'perfil_delegado'):
+            del_rut = request.user.perfil_delegado.rut or ''
+            rut_clean = del_rut.replace('.', '').replace('-', '').upper()
+            est_ids = [
+                est.id for est in Estudiante.objects.all()
+                if est.rut_persona_autorizada and est.rut_persona_autorizada.replace('.', '').replace('-', '').upper() == rut_clean
+            ]
+            Notificacion.objects.filter(estudiante_id__in=est_ids, leido=False).update(leido=True)
 
         return Response({'message': 'Todas las notificaciones han sido marcadas como leídas.'}, status=status.HTTP_200_OK)
+
+
+class EliminarNotificacionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, notificacion_id):
+        return self._eliminar(request, notificacion_id)
+
+    def post(self, request, notificacion_id):
+        return self._eliminar(request, notificacion_id)
+
+    def _eliminar(self, request, notificacion_id):
+        try:
+            if hasattr(request.user, 'perfil_apoderado'):
+                notif = Notificacion.objects.get(
+                    id=notificacion_id,
+                    apoderado=request.user.perfil_apoderado
+                )
+            elif hasattr(request.user, 'perfil_delegado'):
+                del_rut = request.user.perfil_delegado.rut or ''
+                rut_clean = del_rut.replace('.', '').replace('-', '').upper()
+                est_ids = [
+                    est.id for est in Estudiante.objects.all()
+                    if est.rut_persona_autorizada and est.rut_persona_autorizada.replace('.', '').replace('-', '').upper() == rut_clean
+                ]
+                notif = Notificacion.objects.get(id=notificacion_id, estudiante_id__in=est_ids)
+            else:
+                notif = Notificacion.objects.get(id=notificacion_id)
+
+            notif.delete()
+            return Response({'message': 'Notificación eliminada.'}, status=status.HTTP_200_OK)
+        except Notificacion.DoesNotExist:
+            return Response({'message': 'Notificación no encontrada o ya eliminada.'}, status=status.HTTP_200_OK)
+
+
+class EliminarTodasNotificacionesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        return self._eliminar_todas(request)
+
+    def post(self, request):
+        return self._eliminar_todas(request)
+
+    def _eliminar_todas(self, request):
+        if hasattr(request.user, 'perfil_apoderado'):
+            Notificacion.objects.filter(apoderado=request.user.perfil_apoderado).delete()
+        elif hasattr(request.user, 'perfil_delegado'):
+            del_rut = request.user.perfil_delegado.rut or ''
+            rut_clean = del_rut.replace('.', '').replace('-', '').upper()
+            est_ids = [
+                est.id for est in Estudiante.objects.all()
+                if est.rut_persona_autorizada and est.rut_persona_autorizada.replace('.', '').replace('-', '').upper() == rut_clean
+            ]
+            Notificacion.objects.filter(estudiante_id__in=est_ids).delete()
+
+        return Response({'message': 'Todas las notificaciones han sido eliminadas.'}, status=status.HTTP_200_OK)
 
 
 # ==========================================
@@ -1156,22 +1229,99 @@ class EmergenciaCrearView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        detalle = request.data.get('detalle', 'Imprevisto en el recorrido').strip()
-        apoderados = PerfilApoderado.objects.all()
-        cnt = 0
-        for apoderado in apoderados:
-            crear_y_despachar_notificacion(
-                apoderado=apoderado,
-                titulo="🚨 ALERTA DE EMERGENCIA",
-                mensaje=f"El conductor reporta una alerta en la ruta: {detalle}",
-                tipo="emergencia"
-            )
-            cnt += 1
+        conductor_perfil = getattr(request.user, 'perfil_conductor', None)
+        if not conductor_perfil and request.user.rol == 'conductor':
+            conductor_perfil = PerfilConductor.objects.filter(usuario=request.user).first()
+        if not conductor_perfil:
+            conductor_perfil = PerfilConductor.objects.first()
 
-        return Response({
-            'message': 'Alerta de emergencia emitida y notificada a los apoderados.',
-            'notificados': cnt
-        }, status=status.HTTP_200_OK)
+        if not conductor_perfil:
+            return Response({'message': 'Solo conductores autorizados pueden reportar emergencias.'}, status=status.HTTP_403_FORBIDDEN)
+
+        categoria = (request.data.get('categoria') or 'emergencia_ruta').strip()
+        tipo_emergencia = (request.data.get('tipo_emergencia') or request.data.get('tipo') or 'Emergencia General').strip()
+        descripcion = (request.data.get('descripcion') or request.data.get('detalle') or 'Situación reportada por el conductor').strip()
+        estudiante_id = request.data.get('estudiante_id')
+
+        # CASO A: Emergencia de Estudiante
+        if categoria == 'emergencia_estudiante' or estudiante_id:
+            if not estudiante_id:
+                return Response({'message': 'Debe seleccionar un estudiante para emergencias individuales.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            estudiante = Estudiante.objects.filter(id=estudiante_id, conductor=conductor_perfil).first()
+            if not estudiante:
+                return Response({'message': 'El estudiante seleccionado no pertenece a tu furgón o ruta activa.'}, status=status.HTTP_403_FORBIDDEN)
+
+            emergencia_obj = Emergencia.objects.create(
+                conductor=conductor_perfil,
+                categoria='emergencia_estudiante',
+                tipo_emergencia=tipo_emergencia,
+                descripcion=descripcion,
+                estudiante=estudiante
+            )
+
+            titulo_notif = f"🚨 Emergencia relacionada con {estudiante.nombre} {estudiante.apellido}"
+            mensaje_notif = (
+                f"Se ha reportado una emergencia relacionada con {estudiante.nombre} {estudiante.apellido}.\n"
+                f"Tipo: {tipo_emergencia}\n"
+                f"Descripción: {descripcion}"
+            )
+
+            crear_y_despachar_notificacion(
+                apoderado=estudiante.apoderado,
+                titulo=titulo_notif,
+                mensaje=mensaje_notif,
+                tipo="emergencia",
+                estudiante=estudiante
+            )
+
+            return Response({
+                'message': f'Emergencia registrada para {estudiante.nombre} {estudiante.apellido}.',
+                'emergencia_id': emergencia_obj.id,
+                'estudiante': f"{estudiante.nombre} {estudiante.apellido}",
+                'notificados': 1
+            }, status=status.HTTP_200_OK)
+
+        # CASO B: Emergencia en Ruta (Global)
+        else:
+            estudiantes_ruta = Estudiante.objects.filter(conductor=conductor_perfil)
+            if not estudiantes_ruta.exists():
+                estudiantes_ruta = Estudiante.objects.all()
+
+            emergencia_obj = Emergencia.objects.create(
+                conductor=conductor_perfil,
+                categoria='emergencia_ruta',
+                tipo_emergencia=tipo_emergencia,
+                descripcion=descripcion
+            )
+
+            apoderados_unicos = set()
+            for est in estudiantes_ruta:
+                if est.apoderado:
+                    apoderados_unicos.add(est.apoderado)
+
+            titulo_notif = "🚨 Emergencia durante la ruta"
+            mensaje_notif = (
+                f"Se ha reportado una emergencia durante el recorrido de transporte escolar.\n"
+                f"Tipo: {tipo_emergencia}\n"
+                f"Descripción: {descripcion}"
+            )
+
+            cnt_notificados = 0
+            for apod in apoderados_unicos:
+                crear_y_despachar_notificacion(
+                    apoderado=apod,
+                    titulo=titulo_notif,
+                    mensaje=mensaje_notif,
+                    tipo="emergencia"
+                )
+                cnt_notificados += 1
+
+            return Response({
+                'message': 'Emergencia en ruta reportada y notificada exitosamente.',
+                'emergencia_id': emergencia_obj.id,
+                'notificados': cnt_notificados
+            }, status=status.HTTP_200_OK)
 
 
 class AvisoSistemaView(APIView):
@@ -1384,6 +1534,166 @@ class RegistrarRostroView(APIView):
             'message': f"¡Rostro de {estudiante.nombre} {estudiante.apellido} procesado y vector biométrico guardado exitosamente!",
             'estudiante_id': estudiante.id,
             'tiene_biometria': True
+        }, status=status.HTTP_200_OK)
+
+
+class RutaConsultarQREntregaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        qr_payload_raw = request.data.get('qr_payload') or request.data.get('texto_qr')
+        if not qr_payload_raw:
+            qr_payload_raw = json.dumps(request.data)
+
+        try:
+            payload = json.loads(qr_payload_raw) if isinstance(qr_payload_raw, str) else qr_payload_raw
+        except Exception:
+            return Response({'message': 'Formato de código QR inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Validar expiración del QR
+        valido_hasta = payload.get('valido_hasta')
+        if valido_hasta:
+            import time
+            ahora = int(time.time() * 1000)
+            if ahora > valido_hasta:
+                return Response({'message': 'El código QR ha expirado. Pídele a la persona que lo renueve.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Identificar a la persona (Apoderado o Delegado)
+        rut_persona = (payload.get('rut') or payload.get('rut_persona') or '').strip()
+        id_usuario = payload.get('id_usuario')
+
+        persona_obj = None
+        rol_nombre = 'Persona Autorizada'
+        nombre_persona = payload.get('nombre') or 'Persona Autorizada'
+
+        if id_usuario:
+            usuario_db = Usuario.objects.filter(id=id_usuario).first()
+            if usuario_db:
+                nombre_persona = usuario_db.get_full_name() or usuario_db.email
+                if hasattr(usuario_db, 'perfil_apoderado'):
+                    persona_obj = usuario_db.perfil_apoderado
+                    rut_persona = persona_obj.rut or rut_persona
+                    rol_nombre = 'Apoderado Titular'
+                elif hasattr(usuario_db, 'perfil_delegado'):
+                    persona_obj = usuario_db.perfil_delegado
+                    rut_persona = persona_obj.rut or rut_persona
+                    rol_nombre = 'Delegado Autorizado'
+
+        if not persona_obj and rut_persona:
+            apoderado = PerfilApoderado.objects.filter(rut=rut_persona).first()
+            if apoderado:
+                persona_obj = apoderado
+                nombre_persona = apoderado.usuario.get_full_name() or apoderado.usuario.email
+                rol_nombre = 'Apoderado Titular'
+            else:
+                delegado = PerfilDelegado.objects.filter(rut=rut_persona).first()
+                if delegado:
+                    persona_obj = delegado
+                    nombre_persona = delegado.usuario.get_full_name() or delegado.usuario.email
+                    rol_nombre = 'Delegado Autorizado'
+
+        # 3. Obtener perfil del conductor autenticado
+        conductor_perfil = getattr(request.user, 'perfil_conductor', None)
+        if not conductor_perfil and request.user.rol == 'conductor':
+            conductor_perfil = PerfilConductor.objects.filter(usuario=request.user).first()
+        if not conductor_perfil:
+            conductor_perfil = PerfilConductor.objects.first()
+
+        if not conductor_perfil:
+            return Response({'message': 'Acceso denegado. No se encontró perfil de conductor.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # 4. Obtener los estudiantes asignados a este conductor
+        estudiantes_conductor = Estudiante.objects.filter(conductor=conductor_perfil)
+        if not estudiantes_conductor.exists():
+            return Response({'message': 'No tienes estudiantes asignados a tu furgón.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 5. Filtrar estudiantes autorizados para esta persona específica
+        estudiantes_autorizados = []
+        rut_clean_persona = rut_persona.replace('.', '').replace('-', '').upper() if rut_persona else ''
+
+        for est in estudiantes_conductor:
+            es_autorizado = False
+
+            if persona_obj and isinstance(persona_obj, PerfilApoderado) and est.apoderado_id == persona_obj.id:
+                es_autorizado = True
+            elif rut_clean_persona and est.apoderado.rut and est.apoderado.rut.replace('.', '').replace('-', '').upper() == rut_clean_persona:
+                es_autorizado = True
+            elif rut_clean_persona and est.rut_persona_autorizada and est.rut_persona_autorizada.replace('.', '').replace('-', '').upper() == rut_clean_persona:
+                es_autorizado = True
+
+            if es_autorizado:
+                estudiantes_autorizados.append({
+                    'id': est.id,
+                    'rut': est.rut,
+                    'nombre': f"{est.nombre} {est.apellido}",
+                    'colegio': est.colegio,
+                    'curso': est.curso,
+                    'direccion': est.direccion_principal,
+                    'seleccionado': True
+                })
+
+        if not estudiantes_autorizados:
+            return Response({
+                'message': f"No hay estudiantes asignados a tu furgón autorizados para {nombre_persona} ({rut_persona or 'Sin RUT'})."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'valido': True,
+            'persona': {
+                'id': persona_obj.id if persona_obj else None,
+                'rut': rut_persona,
+                'nombre': nombre_persona,
+                'rol': rol_nombre
+            },
+            'estudiantes': estudiantes_autorizados
+        }, status=status.HTTP_200_OK)
+
+
+class RutaConfirmarEntregaMultipleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        estudiante_ids = request.data.get('estudiante_ids', [])
+        persona_rut = (request.data.get('persona_rut') or '').strip()
+        persona_nombre = (request.data.get('persona_nombre') or 'Persona Autorizada').strip()
+
+        if not estudiante_ids:
+            return Response({'message': 'Debes seleccionar al menos un estudiante para confirmar la entrega.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        conductor_perfil = getattr(request.user, 'perfil_conductor', None)
+        if not conductor_perfil and request.user.rol == 'conductor':
+            conductor_perfil = PerfilConductor.objects.filter(usuario=request.user).first()
+        if not conductor_perfil:
+            conductor_perfil = PerfilConductor.objects.first()
+
+        entregados_cnt = 0
+        notificaciones_creadas = []
+
+        for est_id in estudiante_ids:
+            estudiante = Estudiante.objects.filter(id=est_id, conductor=conductor_perfil).first()
+            if not estudiante:
+                continue
+
+            titulo = "🏠 Estudiante Llegó (Entrega Confirmada)"
+            mensaje = f"¡{estudiante.nombre} {estudiante.apellido} ha llegado a su destino y fue entregado(a) a {persona_nombre}!"
+
+            notif = crear_y_despachar_notificacion(
+                apoderado=estudiante.apoderado,
+                titulo=titulo,
+                mensaje=mensaje,
+                tipo="estudiante_llego",
+                estudiante=estudiante
+            )
+            entregados_cnt += 1
+            notificaciones_creadas.append(NotificacionSerializer(notif).data)
+
+        if entregados_cnt == 0:
+            return Response({'message': 'No se pudo registrar la entrega de ningún estudiante seleccionado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'message': f"Recepción confirmada: {entregados_cnt} estudiante(s)",
+            'estudiantes_entregados': entregados_cnt,
+            'notificaciones': notificaciones_creadas
         }, status=status.HTTP_200_OK)
 
 

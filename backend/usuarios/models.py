@@ -261,4 +261,34 @@ class Ruta(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.nombre} ({self.colegio})"
+        return f"{self.nombre} ({self.colegio})"
+
+
+class Emergencia(models.Model):
+    CATEGORIAS = (
+        ('emergencia_ruta', 'Emergencia en Ruta'),
+        ('emergencia_estudiante', 'Emergencia de Estudiante'),
+    )
+
+    conductor = models.ForeignKey(
+        PerfilConductor,
+        on_delete=models.CASCADE,
+        related_name='emergencias_reportadas'
+    )
+    categoria = models.CharField(max_length=30, choices=CATEGORIAS, default='emergencia_ruta')
+    tipo_emergencia = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    estudiante = models.ForeignKey(
+        Estudiante,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='emergencias'
+    )
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f"[{self.get_categoria_display()}] {self.conductor.usuario.email} - {self.tipo_emergencia}"

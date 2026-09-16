@@ -6,30 +6,54 @@ logger = logging.getLogger(__name__)
 
 
 def crear_y_despachar_notificacion(
-    apoderado: PerfilApoderado,
+    apoderado: Optional[PerfilApoderado],
     titulo: str,
     mensaje: str,
     tipo: str,
     estudiante: Optional[Estudiante] = None
-) -> Notificacion:
+) -> Optional[Notificacion]:
     """
-    1. Registra la notificación en la base de datos de Django.
-    2. Busca los FCMTokens activos del usuario apoderado (soporte multidispositivo).
-    3. Despacha la notificación Push nativa a cada token activo.
-    4. Si un token responde como expirado/inválido, lo desmarca (is_active=False).
+    1. Registra la notificación en la base de datos de Django para el apoderado (si existe).
+    2. Si el estudiante tiene un apoderado no pasado explícitamente, lo recupera de estudiante.apoderado.
+    3. Notifica a los FCMTokens del apoderado y también a la persona delegada autorizada si existe.
+    4. Maneja excepciones para evitar que errores en notificaciones rompan la acción del conductor.
     """
-    notificacion = Notificacion.objects.create(
-        apoderado=apoderado,
-        estudiante=estudiante,
-        titulo=titulo,
-        mensaje=mensaje,
-        tipo=tipo
-    )
+    if not apoderado and estudiante and hasattr(estudiante, 'apoderado'):
+        apoderado = estudiante.apoderado
 
-    fcm_tokens = FCMToken.objects.filter(usuario=apoderado.usuario, is_active=True)
+    notificacion = None
+    if apoderado:
+        try:
+            notificacion = Notificacion.objects.create(
+                apoderado=apoderado,
+                estudiante=estudiante,
+                titulo=titulo,
+                mensaje=mensaje,
+                tipo=tipo
+            )
+        except Exception as e:
+            logger.error(f"Error registrando Notificacion en BD: {e}")
 
-    for token_obj in fcm_tokens:
-        despachar_fcm_push(token_obj, titulo, mensaje, tipo, notificacion.id)
+        try:
+            fcm_tokens = FCMToken.objects.filter(usuario=apoderado.usuario, is_active=True)
+            for token_obj in fcm_tokens:
+                despachar_fcm_push(token_obj, titulo, mensaje, tipo, notificacion.id if notificacion else 0)
+        except Exception as e:
+            logger.error(f"Error despachando FCM Tokens para apoderado: {e}")
+
+    # Notificar también a la persona autorizada (Delegado) si está registrada en el sistema
+    if estudiante and estudiante.rut_persona_autorizada:
+        try:
+            rut_clean = estudiante.rut_persona_autorizada.replace('.', '').replace('-', '').upper()
+            from .models import PerfilDelegado
+            delegados = PerfilDelegado.objects.filter(rut__isnull=False)
+            for del_obj in delegados:
+                if del_obj.rut and del_obj.rut.replace('.', '').replace('-', '').upper() == rut_clean:
+                    del_tokens = FCMToken.objects.filter(usuario=del_obj.usuario, is_active=True)
+                    for t in del_tokens:
+                        despachar_fcm_push(t, titulo, mensaje, tipo, notificacion.id if notificacion else 0)
+        except Exception as e:
+            logger.error(f"Error despachando notificación a delegado: {e}")
 
     return notificacion
 

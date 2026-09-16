@@ -53,17 +53,34 @@
 
       </div>
 
-      <button
-        class="mark-all-button"
-        type="button"
-        *ngIf="noLeidasCount > 0"
-        (click)="marcarTodasComoLeidas()">
+      <div class="status-actions-group">
 
-        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <button
+          class="action-pill-button mark-all"
+          type="button"
+          *ngIf="noLeidasCount > 0"
+          (click)="marcarTodasComoLeidas()">
 
-        Marcar todas como leídas
+          <ion-icon name="checkmark-done-outline"></ion-icon>
 
-      </button>
+          Marcar leídas
+
+        </button>
+
+        <button
+          class="action-pill-button delete-all"
+          type="button"
+          *ngIf="notificaciones.length > 0"
+          (click)="eliminarTodasNotificaciones()"
+          title="Eliminar todas las notificaciones">
+
+          <ion-icon name="trash-outline"></ion-icon>
+
+          Borrar todas
+
+        </button>
+
+      </div>
 
     </div>
 
@@ -105,13 +122,27 @@
 
             </span>
 
-            <span class="timestamp">
+            <div class="top-right-meta">
 
-              <ion-icon name="time-outline"></ion-icon>
+              <span class="timestamp">
 
-              {{ item.creado_en | date:'dd/MM HH:mm' }}
+                <ion-icon name="time-outline"></ion-icon>
 
-            </span>
+                {{ item.creado_en | date:'dd/MM HH:mm' }}
+
+              </span>
+
+              <button
+                type="button"
+                class="delete-item-btn"
+                title="Eliminar notificación"
+                (click)="eliminarNotificacion(item, $event)">
+
+                <ion-icon name="trash-outline"></ion-icon>
+
+              </button>
+
+            </div>
 
           </div>
 

@@ -78,4 +78,26 @@ cargarApoderados(): void {
       });
     }
   }
+
+  subirBiometriaEstudiante(estudianteId: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.cargando = true;
+
+    this.apoderadoService.registrarBiometriaEstudiante(estudianteId, file).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        alert(res.message || 'Rostro procesado y biometría guardada exitosamente.');
+        this.cargarApoderados();
+      },
+      error: (err) => {
+        this.cargando = false;
+        const msg = err.error?.message || 'Error al procesar la imagen biométrica.';
+        alert(`❌ Error: ${msg}`);
+        this.cdr.markForCheck();
+      }
+    });
+  }
 }

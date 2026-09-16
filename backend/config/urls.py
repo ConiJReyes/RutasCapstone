@@ -25,6 +25,8 @@ from usuarios.views import (
     MarcarTodasNotificacionesLeidasView,
     RutaIniciarView,
     RutaEscanearQRView,
+    RutaEscaneoFacialView,
+    RegistrarRostroView,
     RutaFinalizarView,
     EmergenciaCrearView,
     AvisoSistemaView,
@@ -41,6 +43,7 @@ urlpatterns = [
     path('api/estudiantes/sin-asignar/', EstudianteSinAsignarListView.as_view(), name='estudiantes-sin-asignar'),
     path('api/estudiantes/<int:estudiante_id>/', EstudianteDetailView.as_view(), name='estudiante-detail'),
     path('api/estudiantes/<int:estudiante_id>/foto/', EstudianteFotoView.as_view(), name='estudiante-foto'),
+    path('api/estudiantes/<int:estudiante_id>/registrar-rostro/', RegistrarRostroView.as_view(), name='estudiante-registrar-rostro'),
     path('api/conductores/', ConductorListCreateView.as_view(), name='conductores-list-create'),
     path('api/conductores/<int:conductor_id>/', ConductorDetailView.as_view(), name='conductor-detail'),
     path('api/conductores/<int:conductor_id>/estudiantes/', ConductorEstudiantesListView.as_view(), name='conductor-estudiantes-list'),
@@ -72,6 +75,7 @@ urlpatterns = [
     # Acciones de Ruta & Emergencias (Generan Push automáticamente)
     path('api/rutas/iniciar/', RutaIniciarView.as_view(), name='rutas-iniciar'),
     path('api/rutas/escanear-qr/', RutaEscanearQRView.as_view(), name='rutas-escanear-qr'),
+    path('api/rutas/escaneo-facial/', RutaEscaneoFacialView.as_view(), name='rutas-escaneo-facial'),
     path('api/rutas/finalizar/', RutaFinalizarView.as_view(), name='rutas-finalizar'),
     path('api/emergencias/', EmergenciaCrearView.as_view(), name='emergencias-crear'),
 ]

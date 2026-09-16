@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import * as QRCode from 'qrcode';
 
 import {
   IonContent,
@@ -103,7 +104,7 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
     this.mostrarToast('Código QR actualizado por 15 minutos', 'success');
   }
 
-  generarQR() {
+  async generarQR() {
     this.timestampHash = Date.now();
     this.expiracionTs = this.timestampHash + (this.duracionMinutos * 60 * 1000);
     this.esValido = true;
@@ -121,8 +122,17 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
     };
 
     this.qrPayload = JSON.stringify(payloadObj);
-    const svgMarkup = this.buildSvgQr(this.qrPayload);
-    this.qrSvgSafe = this.sanitizer.bypassSecurityTrustHtml(svgMarkup);
+
+    try {
+      const svgMarkup = await QRCode.toString(this.qrPayload, {
+        type: 'svg',
+        margin: 2,
+        color: { dark: '#3f7d73', light: '#ffffff' }
+      });
+      this.qrSvgSafe = this.sanitizer.bypassSecurityTrustHtml(svgMarkup);
+    } catch (err) {
+      console.error('[MiQrDelegado] Error al generar código QR real:', err);
+    }
 
     this.iniciarTimer();
   }
@@ -169,85 +179,5 @@ export class MiQrDelegadoPage implements OnInit, OnDestroy {
       position: 'bottom'
     });
     await toast.present();
-  }
-
-  private buildSvgQr(text: string): string {
-    const modules = this.generateQrMatrix(text);
-    const size = modules.length;
-    const margin = 2;
-    const totalSize = size + margin * 2;
-    const cellSize = 10;
-    const pixelDim = totalSize * cellSize;
-
-    let paths = '';
-
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        if (modules[r][c]) {
-          const x = (c + margin) * cellSize;
-          const y = (r + margin) * cellSize;
-          paths += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="1.5" ry="1.5" fill="#3f7d73" />`;
-        }
-      }
-    }
-
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${pixelDim} ${pixelDim}" style="width:100%; height:auto;">
-      <rect width="100%" height="100%" fill="#ffffff" rx="16" />
-      ${paths}
-    </svg>`;
-  }
-
-  private generateQrMatrix(text: string): boolean[][] {
-    const N = text.length > 80 ? 33 : 25;
-    const matrix: boolean[][] = Array.from({ length: N }, () => Array(N).fill(false));
-
-    const drawFinder = (top: number, left: number) => {
-      for (let r = 0; r < 7; r++) {
-        for (let c = 0; c < 7; c++) {
-          const isOuter = (r === 0 || r === 6 || c === 0 || c === 6);
-          const isInner = (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-          matrix[top + r][left + c] = isOuter || isInner;
-        }
-      }
-    };
-
-    drawFinder(0, 0);
-    drawFinder(0, N - 7);
-    drawFinder(N - 7, 0);
-
-    for (let i = 8; i < N - 8; i++) {
-      matrix[6][i] = (i % 2 === 0);
-      matrix[i][6] = (i % 2 === 0);
-    }
-
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      hash = ((hash << 5) - hash) + text.charCodeAt(i);
-      hash |= 0;
-    }
-
-    let seed = Math.abs(hash);
-    const rng = () => {
-      seed = (seed * 9301 + 49297) % 233280;
-      return seed / 233280;
-    };
-
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        const inTopLeft = (r < 8 && c < 8);
-        const inTopRight = (r < 8 && c >= N - 8);
-        const inBottomLeft = (r >= N - 8 && c < 8);
-        const isTiming = (r === 6 || c === 6);
-
-        if (!inTopLeft && !inTopRight && !inBottomLeft && !isTiming) {
-          const bitIndex = (r * N + c) % text.length;
-          const charCode = text.charCodeAt(bitIndex);
-          const randomVal = rng();
-          matrix[r][c] = ((charCode ^ Math.floor(randomVal * 255)) % 2 === 0);
-        }
-      }
-    }
-
-    return matrix;
   }
 }

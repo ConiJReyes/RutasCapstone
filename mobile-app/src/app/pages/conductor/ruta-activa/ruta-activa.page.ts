@@ -20,6 +20,7 @@ import {
   personOutline,
   checkmarkCircleOutline,
   qrCodeOutline,
+  scanOutline,
   warningOutline,
   flagOutline,
   timeOutline,
@@ -39,6 +40,7 @@ addIcons({
   personOutline,
   checkmarkCircleOutline,
   qrCodeOutline,
+  scanOutline,
   warningOutline,
   flagOutline,
   timeOutline,
@@ -226,6 +228,10 @@ export class RutaActivaPage implements OnInit, OnDestroy {
 
   irAEscanearQR(): void {
     this.router.navigate(['/conductor/escanear-qr']);
+  }
+
+  irAEscaneoFacial(): void {
+    this.router.navigate(['/conductor/escaneo-facial']);
   }
 
   irAEmergencia(): void {

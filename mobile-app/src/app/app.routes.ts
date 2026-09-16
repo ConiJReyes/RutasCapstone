@@ -167,6 +167,15 @@ export const routes: Routes = [
   },
 
   {
+    path: 'conductor/escaneo-facial',
+    canActivate: [authGuard],
+    data: { rol: 'conductor' },
+    loadComponent: () =>
+      import('./pages/conductor/escaneo-facial/escaneo-facial.page')
+        .then((m) => m.EscaneoFacialPage),
+  },
+
+  {
     path: 'conductor/perfil',
     canActivate: [authGuard],
     data: { rol: 'conductor' },

@@ -327,13 +327,14 @@ class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
     direccion_retiro = serializers.CharField(source='direccion_principal', read_only=True)
     estado_matricula = serializers.SerializerMethodField()
     conductor_nombre = serializers.SerializerMethodField()
+    tiene_biometria = serializers.SerializerMethodField()
 
     class Meta:
         model = Estudiante
         fields = [
             'id', 'rut', 'nombre', 'apellido', 'nombre_completo',
             'fecha_nacimiento', 'curso', 'colegio', 'direccion_retiro',
-            'estado_matricula', 'conductor', 'conductor_nombre'
+            'estado_matricula', 'conductor', 'conductor_nombre', 'tiene_biometria'
         ]
 
     def get_nombre_completo(self, obj):
@@ -346,6 +347,9 @@ class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
         if obj.conductor:
             return obj.conductor.usuario.get_full_name() or obj.conductor.usuario.email
         return None
+
+    def get_tiene_biometria(self, obj):
+        return bool(obj.embedding_facial and len(obj.embedding_facial) == 128)
 
 
 class ApoderadoSerializer(serializers.ModelSerializer):

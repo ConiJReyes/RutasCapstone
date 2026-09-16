@@ -71,7 +71,8 @@
                               <th>Curso</th>
                               <th>Colegio</th>
                               <th>Dirección Retiro</th>
-                              <th>Estado Matrícula</th>
+                              <th>Biometría Facial</th>
+                              <th>Acción Biométrica</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -82,7 +83,17 @@
                                 <td>{{ est.curso }}</td>
                                 <td>{{ est.colegio }}</td>
                                 <td>{{ est.direccion_retiro }}</td>
-                                <td><span class="badge-status">{{ est.estado_matricula }}</span></td>
+                                <td>
+                                  <span class="badge-status" [style.background]="est.tiene_biometria ? 'rgba(34, 197, 94, 0.15)' : 'rgba(148, 163, 184, 0.15)'" [style.color]="est.tiene_biometria ? '#22c55e' : '#94a3b8'">
+                                    {{ est.tiene_biometria ? '🟢 Registrada' : '⚪ Sin Biometría' }}
+                                  </span>
+                                </td>
+                                <td>
+                                  <input type="file" #fileInput (change)="subirBiometriaEstudiante(est.id!, $event)" accept="image/*" style="display: none;">
+                                  <button type="button" class="btn-action edit" (click)="fileInput.click()" title="Subir o actualizar foto biométrica del estudiante">
+                                    📸 {{ est.tiene_biometria ? 'Actualizar Rostro' : 'Cargar Rostro' }}
+                                  </button>
+                                </td>
                               </tr>
                             }
                           </tbody>

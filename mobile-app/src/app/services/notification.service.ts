@@ -84,6 +84,14 @@ export class NotificationService {
     });
   }
 
+  escaneoFacial(imagenBase64: string, modo: 'abordar' | 'entregar' = 'abordar', confirmar: boolean = false): Observable<any> {
+    return this.http.post(`${this.apiUrl}/rutas/escaneo-facial/`, {
+      imagen: imagenBase64,
+      modo: modo,
+      confirmar: confirmar
+    });
+  }
+
   finalizarRuta(): Observable<any> {
     return this.http.post(`${this.apiUrl}/rutas/finalizar/`, {});
   }

@@ -39,10 +39,7 @@
 
       <div class="custom-segment">
 
-        <button
-          type="button"
-          class="segment-btn"
-          [class.active]="modo === 'apoderado'"
+        <button type="button" class="segment-btn" [class.active]="modo === 'apoderado'"
           (click)="cambiarModo('apoderado')">
 
           <ion-icon name="person-outline"></ion-icon>
@@ -51,10 +48,7 @@
 
         </button>
 
-        <button
-          type="button"
-          class="segment-btn"
-          [class.active]="modo === 'estudiante'"
+        <button type="button" class="segment-btn" [class.active]="modo === 'estudiante'"
           (click)="cambiarModo('estudiante')">
 
           <ion-icon name="school-outline"></ion-icon>
@@ -73,65 +67,62 @@
     ========================== -->
     @if (modo === 'estudiante') {
 
-      <div class="student-select-card">
+    <div class="student-select-card">
 
-        <div class="select-label">
+      <div class="select-label">
 
-          <ion-icon name="people-outline"></ion-icon>
+        <ion-icon name="people-outline"></ion-icon>
 
-          <span>Seleccionar Estudiante:</span>
+        <span>Seleccionar Estudiante:</span>
 
-        </div>
+      </div>
 
-        @if (cargandoEstudiantes) {
+      @if (cargandoEstudiantes) {
 
-          <div class="mini-loading">
+      <div class="mini-loading">
 
-            <ion-spinner name="crescent"></ion-spinner>
+        <ion-spinner name="crescent"></ion-spinner>
 
-            <span>Cargando estudiantes...</span>
+        <span>Cargando estudiantes...</span>
 
-          </div>
+      </div>
 
-        } @else if (estudiantes.length === 0) {
+      } @else if (estudiantes.length === 0) {
 
-          <div class="empty-students">
+      <div class="empty-students">
 
-            <p>No tienes estudiantes registrados.</p>
+        <p>No tienes estudiantes registrados.</p>
 
-            <ion-button size="small" fill="outline" routerLink="/agregar-hijo">
+        <ion-button size="small" fill="outline" routerLink="/agregar-hijo">
 
-              + Agregar Hijo
+          + Agregar Hijo
 
-            </ion-button>
+        </ion-button>
 
-          </div>
+      </div>
 
-        } @else {
+      } @else {
 
-          <div class="student-chips">
+      <div class="student-chips">
 
-            @for (est of estudiantes; track est.id) {
+        @for (est of estudiantes; track est.id) {
 
-              <button
-                type="button"
-                class="chip-button"
-                [class.selected]="estudianteSeleccionado?.id === est.id"
-                (click)="seleccionarEstudianteDirecto(est)">
+        <button type="button" class="chip-button" [class.selected]="estudianteSeleccionado?.id === est.id"
+          (click)="seleccionarEstudianteDirecto(est)">
 
-                <span class="chip-avatar">🎓</span>
+          <span class="chip-avatar">🎓</span>
 
-                <span class="chip-name">{{ est.nombre }} {{ est.apellido }}</span>
+          <span class="chip-name">{{ est.nombre }} {{ est.apellido }}</span>
 
-              </button>
-
-            }
-
-          </div>
+        </button>
 
         }
 
       </div>
+
+      }
+
+    </div>
 
     }
 
@@ -151,7 +142,7 @@
 
         </div>
 
-        <!-- TEMPORIZADOR 15 MINUTOS -->
+        <!-- TEMPORIZADOR 5 MINUTOS -->
         <div class="timer-badge" [class.timer-warning]="!esValido">
 
           <ion-icon name="time-outline"></ion-icon>
@@ -178,28 +169,28 @@
 
         @if (!esValido) {
 
-          <div class="expired-overlay">
+        <div class="expired-overlay">
 
-            <ion-icon name="alert-circle-outline"></ion-icon>
+          <ion-icon name="alert-circle-outline"></ion-icon>
 
-            <p>QR Expirado (15 min)</p>
+          <p>QR Expirado (5 min)</p>
 
-            <button type="button" class="renew-btn" (click)="regenerarQR()">
+          <button type="button" class="renew-btn" (click)="regenerarQR()">
 
-              Renovar QR
+            Renovar QR
 
-            </button>
+          </button>
 
-          </div>
+        </div>
 
         } @else {
 
-          <div class="scan-target-corners">
-            <span class="corner top-left"></span>
-            <span class="corner top-right"></span>
-            <span class="corner bottom-left"></span>
-            <span class="corner bottom-right"></span>
-          </div>
+        <div class="scan-target-corners">
+          <span class="corner top-left"></span>
+          <span class="corner top-right"></span>
+          <span class="corner bottom-left"></span>
+          <span class="corner bottom-right"></span>
+        </div>
 
         }
 
@@ -211,39 +202,40 @@
 
         @if (modo === 'apoderado') {
 
-          <div class="subject-avatar apoderado">
+        <div class="subject-avatar apoderado">
 
-            👤
+          👤
 
-          </div>
+        </div>
 
-          <div class="subject-details">
+        <div class="subject-details">
 
-            <h3>{{ usuario?.first_name || 'Apoderado' }} {{ usuario?.last_name || '' }}</h3>
+          <h3>{{ usuario?.first_name || 'Apoderado' }} {{ usuario?.last_name || '' }}</h3>
 
-            <p>RUT: <strong>{{ usuario?.rut || 'Sin registrar' }}</strong></p>
+          <p>RUT: <strong>{{ usuario?.rut || 'Sin registrar' }}</strong></p>
 
-            <span class="role-pill">Apoderado Titular</span>
+          <span class="role-pill">Apoderado Titular</span>
 
-          </div>
+        </div>
 
         } @else {
 
-          <div class="subject-avatar estudiante">
+        <div class="subject-avatar estudiante">
 
-            🎓
+          🎓
 
-          </div>
+        </div>
 
-          <div class="subject-details">
+        <div class="subject-details">
 
-            <h3>{{ estudianteSeleccionado?.nombre || 'Estudiante' }} {{ estudianteSeleccionado?.apellido || '' }}</h3>
+          <h3>{{ estudianteSeleccionado?.nombre || 'Estudiante' }} {{ estudianteSeleccionado?.apellido || '' }}</h3>
 
-            <p>RUT: <strong>{{ estudianteSeleccionado?.rut || 'N/A' }}</strong></p>
+          <p>RUT: <strong>{{ estudianteSeleccionado?.rut || 'N/A' }}</strong></p>
 
-            <span class="school-pill">{{ estudianteSeleccionado?.colegio || 'Colegio' }} &bull; {{ estudianteSeleccionado?.curso || 'Curso' }}</span>
+          <span class="school-pill">{{ estudianteSeleccionado?.colegio || 'Colegio' }} &bull; {{
+            estudianteSeleccionado?.curso || 'Curso' }}</span>
 
-          </div>
+        </div>
 
         }
 
@@ -253,10 +245,7 @@
       <!-- Botones de Acción de Tarjeta -->
       <div class="qr-actions">
 
-        <ion-button
-          fill="solid"
-          class="action-btn primary"
-          (click)="regenerarQR()">
+        <ion-button fill="solid" class="action-btn primary" (click)="regenerarQR()">
 
           <ion-icon slot="start" name="refresh-outline"></ion-icon>
 
@@ -264,10 +253,7 @@
 
         </ion-button>
 
-        <ion-button
-          fill="outline"
-          class="action-btn secondary"
-          (click)="copiarPayload()">
+        <ion-button fill="outline" class="action-btn secondary" (click)="copiarPayload()">
 
           <ion-icon slot="start" name="copy-outline"></ion-icon>
 
@@ -275,10 +261,7 @@
 
         </ion-button>
 
-        <ion-button
-          fill="outline"
-          class="action-btn secondary"
-          (click)="descargarQR()">
+        <ion-button fill="outline" class="action-btn secondary" (click)="descargarQR()">
 
           <ion-icon slot="start" name="download-outline"></ion-icon>
 
@@ -320,7 +303,7 @@
 
           <span class="tip-bullet">⏳</span>
 
-          <p>Este código QR es dinámico y tiene una <strong>validez de 15 minutos</strong> por razones de seguridad.</p>
+          <p>Este código QR es dinámico y tiene una <strong>validez de 5 minutos</strong> por razones de seguridad.</p>
 
         </li>
 
@@ -336,7 +319,8 @@
 
           <span class="tip-bullet">🔄</span>
 
-          <p>Puedes presionar <strong>"Actualizar / Renovar QR"</strong> para reiniciar el temporizador de 15 minutos en cualquier momento.</p>
+          <p>Puedes presionar <strong>"Actualizar / Renovar QR"</strong> para reiniciar el temporizador de 5 minutos en
+            cualquier momento.</p>
 
         </li>
 
@@ -359,11 +343,7 @@
   </div>
 
   <!-- Toast de Notificación -->
-  <ion-toast
-    [isOpen]="mostrarToast"
-    [message]="toastMensaje"
-    [duration]="2500"
-    [color]="toastColor"
+  <ion-toast [isOpen]="mostrarToast" [message]="toastMensaje" [duration]="2500" [color]="toastColor"
     (didDismiss)="mostrarToast = false">
 
   </ion-toast>

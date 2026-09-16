@@ -7,6 +7,12 @@ def foto_estudiante_upload_to(instance, filename):
     """Genera un nombre no predecible para el archivo privado."""
     return f"fotos_estudiantes/{uuid4().hex}.jpg"
 
+def foto_apoderado_upload_to(instance, filename):
+    return f"fotos_apoderados/{uuid4().hex}.jpg"
+
+def foto_delegado_upload_to(instance, filename):
+    return f"fotos_delegados/{uuid4().hex}.jpg"
+
 class Usuario(AbstractUser):
     ROLES = (
         ('apoderado', 'Apoderado'),
@@ -38,6 +44,16 @@ class PerfilApoderado(models.Model):
     )
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
+    foto = models.ImageField(
+        upload_to=foto_apoderado_upload_to,
+        null=True,
+        blank=True
+    )
+    embedding_facial = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='Vector de características faciales SFace (128 floats)'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -69,6 +85,16 @@ class PerfilDelegado(models.Model):
     )
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
+    foto = models.ImageField(
+        upload_to=foto_delegado_upload_to,
+        null=True,
+        blank=True
+    )
+    embedding_facial = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='Vector de características faciales SFace (128 floats)'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -105,6 +131,11 @@ class Estudiante(models.Model):
         null=True,
         blank=True,
         help_text='Foto privada del estudiante; nunca se publica como archivo estático.'
+    )
+    embedding_facial = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='Vector de características faciales SFace (128 floats)'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

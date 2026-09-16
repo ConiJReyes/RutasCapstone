@@ -17,6 +17,7 @@ export interface Estudiante {
   dato_biometrico_huella?: string;
   estado_matricula?: 'pendiente' | 'aprobado' | 'rechazado';
   activo?: boolean;
+  tiene_biometria?: boolean;
 }
 
 export interface Apoderado {
@@ -37,6 +38,7 @@ export interface Apoderado {
 })
 export class ApoderadoService {
   private readonly apiUrl = 'http://127.0.0.1:8000/api/apoderados/';
+  private readonly baseUrl = 'http://127.0.0.1:8000/api/';
 
   constructor(private http: HttpClient) {}
 
@@ -64,5 +66,11 @@ export class ApoderadoService {
 
   deleteApoderado(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}${id}/`);
+  }
+
+  registrarBiometriaEstudiante(estudianteId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('foto', file);
+    return this.http.post<any>(`${this.baseUrl}estudiantes/${estudianteId}/registrar-rostro/`, formData);
   }
 }

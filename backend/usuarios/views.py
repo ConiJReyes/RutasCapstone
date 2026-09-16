@@ -1290,3 +1290,101 @@ class RutaDetailView(APIView):
         return Response({'message': 'Ruta eliminada.'}, status=status.HTTP_204_NO_CONTENT)
 
 
+class RutaEscaneoFacialView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        imagen_raw = request.data.get('imagen') or request.data.get('imagen_base64')
+        modo = request.data.get('modo', 'abordar')
+        confirmar = request.data.get('confirmar', False)
+
+        if not imagen_raw:
+            return Response({'message': 'Se requiere una imagen para procesar el escaneo facial.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        conductor_perfil = getattr(request.user, 'perfil_conductor', None)
+        if not conductor_perfil and request.user.rol == 'conductor':
+            conductor_perfil = PerfilConductor.objects.filter(usuario=request.user).first()
+
+        if not conductor_perfil:
+            conductor_perfil = PerfilConductor.objects.first()
+
+        if not conductor_perfil:
+            return Response({'message': 'Acceso denegado. No se encontró perfil de conductor asociado.'}, status=status.HTTP_403_FORBIDDEN)
+
+        from .face_recognition_service import procesar_identificacion_facial
+        resultado = procesar_identificacion_facial(conductor_perfil, imagen_raw, modo=modo)
+
+        if not resultado['coincidencia']:
+            return Response(resultado, status=status.HTTP_200_OK)
+
+        if confirmar:
+            estudiante_id = resultado.get('estudiante_id')
+            estudiante = Estudiante.objects.filter(id=estudiante_id).first()
+
+            if estudiante:
+                if modo == 'abordar':
+                    titulo = "🎒 Estudiante Abordó (Verificación Facial)"
+                    mensaje = f"¡{estudiante.nombre} {estudiante.apellido} ha abordado el furgón mediante reconocimiento facial!"
+                    tipo = "estudiante_abordo"
+                else:
+                    persona_recibe = resultado.get('nombre_identificado', 'Persona Autorizada')
+                    titulo = "🏠 Estudiante Llegó (Entrega Facial)"
+                    mensaje = f"¡{estudiante.nombre} {estudiante.apellido} fue entregado(a) a {persona_recibe} mediante reconocimiento facial!"
+                    tipo = "estudiante_llego"
+
+                notificacion = crear_y_despachar_notificacion(
+                    apoderado=estudiante.apoderado,
+                    titulo=titulo,
+                    mensaje=mensaje,
+                    tipo=tipo,
+                    estudiante=estudiante
+                )
+                resultado['evento_registrado'] = True
+                resultado['notificacion'] = NotificacionSerializer(notificacion).data
+
+        return Response(resultado, status=status.HTTP_200_OK)
+
+
+class RegistrarRostroView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, estudiante_id):
+        # 1. Obtener los bytes de la imagen (vía archivo subido multipart o string base64)
+        imagen_bytes = None
+
+        if 'foto' in request.FILES:
+            imagen_bytes = request.FILES['foto'].read()
+        elif 'imagen' in request.FILES:
+            imagen_bytes = request.FILES['imagen'].read()
+        else:
+            imagen_bytes = request.data.get('imagen') or request.data.get('foto')
+
+        if not imagen_bytes:
+            return Response(
+                {'message': 'Se requiere seleccionar una fotografía para generar el registro biométrico.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        estudiante = Estudiante.objects.filter(id=estudiante_id).first()
+        if not estudiante:
+            return Response({'message': 'Estudiante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from .face_recognition_service import FaceRecognitionEngine
+        engine = FaceRecognitionEngine()
+        exito, resultado = engine.procesar_foto_estudiante(imagen_bytes)
+
+        if not exito:
+            return Response({'message': resultado}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Guardar/Reemplazar el embedding (evitando duplicados)
+        estudiante.embedding_facial = resultado
+        estudiante.save(update_fields=['embedding_facial'])
+
+        return Response({
+            'message': f"¡Rostro de {estudiante.nombre} {estudiante.apellido} procesado y vector biométrico guardado exitosamente!",
+            'estudiante_id': estudiante.id,
+            'tiene_biometria': True
+        }, status=status.HTTP_200_OK)
+
+
+

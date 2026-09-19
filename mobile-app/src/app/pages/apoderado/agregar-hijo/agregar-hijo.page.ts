@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,8 @@ import {
   IonTextarea,
   IonSpinner,
   IonIcon,
+  IonSelect,
+  IonSelectOption,
   ToastController,
   IonMenuToggle
 } from '@ionic/angular/standalone';
@@ -26,7 +28,9 @@ import {
 
 import {
   EstudianteService,
-  Estudiante
+  Estudiante,
+  ColegioItem,
+  SedeItem
 } from '../../../services/estudiante.service';
 
 addIcons({
@@ -51,17 +55,23 @@ addIcons({
     IonTextarea,
     IonSpinner,
     IonIcon,
+    IonSelect,
+    IonSelectOption,
     IonMenuToggle
   ]
 })
-export class AgregarHijoPage {
+export class AgregarHijoPage implements OnInit {
 
   nombre = '';
   apellido = '';
   rut = '';
   fechaNacimiento = '';
-  colegio = 'Escuela Bosques del Viento';
+  colegioId?: number;
+  sedeId?: number;
   curso = '';
+
+  colegiosList: ColegioItem[] = [];
+  sedesList: SedeItem[] = [];
 
   direccionPrincipal = '';
   direccionAlternativa = '';
@@ -70,6 +80,8 @@ export class AgregarHijoPage {
   rutPersonaAutorizada = '';
 
   cargando = false;
+  cargandoColegios = false;
+  cargandoSedes = false;
   errorMensaje = '';
   fotoSeleccionada?: File;
   vistaPreviaFoto = '';
@@ -79,7 +91,47 @@ export class AgregarHijoPage {
     private estudianteService: EstudianteService,
     private toastController: ToastController
   ) {
-      addIcons({menuOutline,alertCircleOutline});}
+    addIcons({ menuOutline, alertCircleOutline, cameraOutline, closeOutline });
+  }
+
+  ngOnInit() {
+    this.cargarColegios();
+  }
+
+  cargarColegios() {
+    this.cargandoColegios = true;
+    this.estudianteService.obtenerColegiosActivos().subscribe({
+      next: (data) => {
+        this.colegiosList = data || [];
+        this.cargandoColegios = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar colegios:', err);
+        this.cargandoColegios = false;
+      }
+    });
+  }
+
+  onColegioChange(event: any) {
+    const val = event.detail.value;
+    this.colegioId = val ? Number(val) : undefined;
+    this.sedeId = undefined;
+    this.sedesList = [];
+
+    if (this.colegioId) {
+      this.cargandoSedes = true;
+      this.estudianteService.obtenerSedesActivas(this.colegioId).subscribe({
+        next: (data) => {
+          this.sedesList = data || [];
+          this.cargandoSedes = false;
+        },
+        error: (err) => {
+          console.error('Error al cargar sedes:', err);
+          this.cargandoSedes = false;
+        }
+      });
+    }
+  }
 
   async guardarEstudiante() {
 
@@ -90,13 +142,13 @@ export class AgregarHijoPage {
       !this.apellido.trim() ||
       !this.rut.trim() ||
       !this.fechaNacimiento ||
-      !this.colegio.trim() ||
+      !this.colegioId ||
       !this.curso.trim() ||
       !this.direccionPrincipal.trim()
     ) {
 
       this.errorMensaje =
-        'Completa todos los campos obligatorios.';
+        'Completa todos los campos obligatorios (incluyendo la selección de Colegio).';
 
       await this.mostrarToast(
         this.errorMensaje,
@@ -118,7 +170,13 @@ export class AgregarHijoPage {
 
       fecha_nacimiento: this.fechaNacimiento,
 
-      colegio: this.colegio.trim(),
+      colegio: this.colegioId,
+
+      colegio_id: this.colegioId,
+
+      sede: this.sedeId,
+
+      sede_id: this.sedeId,
 
       curso: this.curso.trim(),
 
@@ -254,7 +312,6 @@ export class AgregarHijoPage {
       this.vistaPreviaFoto = '';
     }
   }
-
 
   private async mostrarToast(
     mensaje: string,

@@ -4,13 +4,32 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
+export interface ColegioItem {
+  id: number;
+  nombre: string;
+  rbd?: string;
+  activo?: boolean;
+}
+
+export interface SedeItem {
+  id: number;
+  colegio: number;
+  nombre: string;
+  activa?: boolean;
+}
+
 export interface Estudiante {
   id?: number;
   nombre: string;
   apellido: string;
   rut: string;
   fecha_nacimiento: string;
-  colegio: string;
+  colegio?: string | number;
+  colegio_id?: number;
+  colegio_nombre?: string;
+  sede?: number;
+  sede_id?: number;
+  sede_nombre?: string;
   curso: string;
   direccion_principal: string;
   direccion_alternativa?: string;
@@ -56,6 +75,20 @@ export class EstudianteService {
       headers = headers.set('Content-Type', 'application/json');
     }
     return headers;
+  }
+
+  obtenerColegiosActivos(): Observable<ColegioItem[]> {
+    return this.http.get<ColegioItem[]>(
+      `${this.apiUrl}/colegios/`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  obtenerSedesActivas(colegioId: number): Observable<SedeItem[]> {
+    return this.http.get<SedeItem[]>(
+      `${this.apiUrl}/colegios/${colegioId}/sedes/`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   obtenerEstudiantes(): Observable<Estudiante[]> {

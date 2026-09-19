@@ -152,12 +152,12 @@ export class DetalleHijoPage implements OnInit {
     if (!this.estudiante) {
       return;
     }
-    this.datosEdicion = { ...this.estudiante, colegio: 'Escuela Bosques del Viento' };
+    this.datosEdicion = { ...this.estudiante };
     this.modoEdicion = true;
   }
 
   cancelarEdicion() {
-    this.datosEdicion = this.estudiante ? { ...this.estudiante, colegio: 'Escuela Bosques del Viento' } : undefined;
+    this.datosEdicion = this.estudiante ? { ...this.estudiante } : undefined;
     this.modoEdicion = false;
   }
 
@@ -166,9 +166,8 @@ export class DetalleHijoPage implements OnInit {
       return;
     }
 
-    this.datosEdicion.colegio = 'Escuela Bosques del Viento';
     this.guardando = true;
-    const { id, rut, tiene_foto, created_at, updated_at, ...datos } = this.datosEdicion;
+    const { id, rut, tiene_foto, created_at, updated_at, colegio_nombre, sede_nombre, ...datos } = this.datosEdicion;
 
     this.estudianteService.actualizarEstudiante(this.estudiante.id, datos).subscribe({
       next: async (respuesta) => {

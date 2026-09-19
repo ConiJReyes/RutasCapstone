@@ -7,7 +7,9 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'CONDUCTOR' | 'APODERADO';
+  role: 'ADMIN_PLATAFORMA' | 'ADMIN_COLEGIO' | 'CONDUCTOR' | 'APODERADO' | 'ADMIN';
+  colegioId?: number | null;
+  colegioNombre?: string | null;
   permissions: string[];
 }
 
@@ -20,6 +22,8 @@ export interface BackendAuthResponse {
     first_name: string;
     last_name: string;
     rol: string;
+    colegio_id?: number | null;
+    colegio_nombre?: string | null;
     rut?: string;
     telefono?: string;
   };
@@ -48,7 +52,11 @@ export class AuthService {
     try {
       const storedData = localStorage.getItem(this.STORAGE_KEY);
       if (storedData) {
-        return JSON.parse(storedData);
+        const user: UserProfile = JSON.parse(storedData);
+        if (['ADMIN_PLATAFORMA', 'ADMIN_COLEGIO'].includes(user.role)) {
+          return user;
+        }
+        this.logout();
       }
     } catch (error) {
       console.error('Error al recuperar sesión guardada:', error);
@@ -62,7 +70,7 @@ export class AuthService {
 
     try {
       const response = await firstValueFrom(
-        this.http.post<BackendAuthResponse>(`${this.apiUrl}/auth/login/`, {
+        this.http.post<BackendAuthResponse>(`${this.apiUrl}/auth/login-admin/`, {
           email: cleanEmail,
           password: cleanPassword
         })
@@ -70,11 +78,20 @@ export class AuthService {
 
       if (response && response.token && response.usuario) {
         const u = response.usuario;
+
+        if (!['admin_plataforma', 'admin_colegio'].includes(u.rol)) {
+          throw new Error('Acceso denegado. Este portal es exclusivo para usuarios administrativos.');
+        }
+
+        const mappedRole: 'ADMIN_PLATAFORMA' | 'ADMIN_COLEGIO' = u.rol === 'admin_colegio' ? 'ADMIN_COLEGIO' : 'ADMIN_PLATAFORMA';
+
         const mappedUser: UserProfile = {
           id: String(u.id),
           name: `${u.first_name} ${u.last_name}`.trim() || u.email,
           email: u.email,
-          role: u.rol.toUpperCase() as 'ADMIN' | 'CONDUCTOR' | 'APODERADO',
+          role: mappedRole,
+          colegioId: u.colegio_id || null,
+          colegioNombre: u.colegio_nombre || null,
           permissions: [
             'MANAGE_ALL',
             'CRUD_APODERADOS',
@@ -92,28 +109,7 @@ export class AuthService {
       }
       throw new Error('Respuesta del servidor inválida');
     } catch (error: any) {
-      // Fallback local en caso de credencial admin por defecto o error de red
-      if (cleanEmail === 'admin@rutas-seguras.cl' && cleanPassword === 'admin1234') {
-        const adminUser: UserProfile = {
-          id: 'admin-001',
-          name: 'Administrador Sistema',
-          email: cleanEmail,
-          role: 'ADMIN',
-          permissions: [
-            'MANAGE_ALL',
-            'CRUD_APODERADOS',
-            'CRUD_CONDUCTORES',
-            'CRUD_FURGONES',
-            'CRUD_RUTAS',
-            'CRUD_ESTUDIANTES'
-          ]
-        };
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(adminUser));
-        this.currentUserSignal.set(adminUser);
-        return true;
-      }
-
-      const mensaje = error?.error?.message || error?.error?.errors?.non_field_errors?.[0] || 'Credenciales incorrectas o servidor no disponible.';
+      const mensaje = error?.error?.message || error?.message || 'Credenciales incorrectas o acceso restringido a administradores.';
       throw new Error(mensaje);
     }
   }

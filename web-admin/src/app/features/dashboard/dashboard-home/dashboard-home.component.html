@@ -9,10 +9,20 @@
   <!-- Rejilla de tarjetas de resumen (Métricas) -->
   <div class="stats-grid">
     @for (stat of stats(); track stat.title) {
-      <div class="stat-card glass-panel">
+      <div class="stat-card glass-panel clickable" [routerLink]="stat.route" title="Ver {{ stat.title }}">
         <!-- Icono representativo con color de acento -->
         <div class="stat-icon-box" [class]="'icon-' + stat.colorClass">
           @switch (stat.icon) {
+            @case ('building') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                <path d="M6 12H4a2 2 0 0 0-2 2v8h20v-8a2 2 0 0 0-2-2h-2"></path>
+                <path d="M10 6h4"></path>
+                <path d="M10 10h4"></path>
+                <path d="M10 14h4"></path>
+                <path d="M10 18h4"></path>
+              </svg>
+            }
             @case ('graduation-cap') {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>

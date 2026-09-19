@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
 from usuarios.views import (
+    ColegioListCreateView,
+    ColegioDetailView,
+    ColegioAdministradoresView,
+    SedeListCreateView,
+    SedeDetailView,
     EstudianteListCreateView,
     EstudianteDetailView,
     EstudianteFotoView,
@@ -37,12 +42,23 @@ from usuarios.views import (
     FurgonListCreateView,
     FurgonDetailView,
     RutaListCreateView,
-    RutaDetailView
+    RutaDetailView,
+    SeguimientoView
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('usuarios.urls')),
+
+    # Seguimiento GPS & En tiempo real
+    path('api/seguimiento/', SeguimientoView.as_view(), name='seguimiento'),
+
+    # Colegios & Sedes
+    path('api/colegios/', ColegioListCreateView.as_view(), name='colegios-list-create'),
+    path('api/colegios/<int:pk>/', ColegioDetailView.as_view(), name='colegio-detail'),
+    path('api/colegios/<int:colegio_id>/administradores/', ColegioAdministradoresView.as_view(), name='colegio-administradores'),
+    path('api/colegios/<int:colegio_id>/sedes/', SedeListCreateView.as_view(), name='sedes-list-create'),
+    path('api/sedes/<int:pk>/', SedeDetailView.as_view(), name='sede-detail'),
     path('api/estudiantes/', EstudianteListCreateView.as_view(), name='estudiantes-list-create'),
     path('api/estudiantes/sin-asignar/', EstudianteSinAsignarListView.as_view(), name='estudiantes-sin-asignar'),
     path('api/estudiantes/<int:estudiante_id>/', EstudianteDetailView.as_view(), name='estudiante-detail'),

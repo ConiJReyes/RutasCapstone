@@ -1,0 +1,138 @@
+<div class="page-container">
+  <!-- Cabecera de la sección -->
+  <div class="page-header">
+    <div class="header-info">
+      <h1>Gestión de Colegios</h1>
+      <p class="subtitle">Administra las instituciones educativas y sus sedes asociadas en la plataforma</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/colegios/nuevo" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Nuevo Colegio</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filter-card">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar por nombre, RBD o dirección..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Tabla o Estado de Carga -->
+  <div class="content-card">
+    @if (cargando()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando colegios...</p>
+      </div>
+    } @else if (colegiosFiltrados().length === 0) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <h3>No se encontraron colegios</h3>
+        <p>Intenta con otra búsqueda o registra un nuevo colegio.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Colegio</th>
+              <th>RBD</th>
+              <th>Sedes</th>
+              <th>Estudiantes</th>
+              <th>Conductores</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (colegio of colegiosFiltrados(); track colegio.id) {
+              <tr>
+                <td class="cell-id">#{{ colegio.id }}</td>
+                <td class="cell-main">
+                  <div class="colegio-name-box">
+                    <span class="colegio-name">{{ colegio.nombre }}</span>
+                    @if (colegio.direccion) {
+                      <span class="colegio-sub">{{ colegio.direccion }}</span>
+                    }
+                  </div>
+                </td>
+                <td>{{ colegio.rbd || '-' }}</td>
+                <td>
+                  <button class="badge-button" (click)="abrirModalSedes(colegio)">
+                    🏢 {{ colegio.total_sedes || 0 }} sedes
+                  </button>
+                </td>
+                <td><span class="metric-pill">🎒 {{ colegio.total_estudiantes || 0 }}</span></td>
+                <td><span class="metric-pill">🚌 {{ colegio.total_conductores || 0 }}</span></td>
+                <td>
+                  <span class="status-badge" [class.active]="colegio.activo" [class.inactive]="!colegio.activo">
+                    {{ colegio.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="cell-actions">
+                  <div class="action-buttons">
+                    <button
+                      class="btn-icon context-btn"
+                      (click)="seleccionarColegioContexto(colegio)"
+                      title="Administrar información de este colegio"
+                    >
+                      👁️ Admin
+                    </button>
+                    <button
+                      class="btn-icon edit-btn"
+                      (click)="abrirModalAdmins(colegio)"
+                      title="Administrar usuarios administradores de este colegio"
+                    >
+                      🔑 Admins
+                    </button>
+                    <a [routerLink]="['/colegios/editar', colegio.id]" class="btn-icon edit-btn" title="Editar Colegio">
+                      ✏️
+                    </a>
+                    <button class="btn-icon delete-btn" (click)="eliminarColegio(colegio)" title="Eliminar Colegio">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal para gestionar sedes -->
+@if (colegioParaSedes()) {
+  <app-sedes-modal
+    [colegio]="colegioParaSedes()!"
+    (alCerrar)="cerrarModalSedes()"
+  ></app-sedes-modal>
+}
+
+<!-- Modal para gestionar usuarios administradores de colegio -->
+@if (colegioParaAdmins()) {
+  <app-admin-colegio-modal
+    [colegio]="colegioParaAdmins()!"
+    (alCerrar)="cerrarModalAdmins()"
+  ></app-admin-colegio-modal>
+}

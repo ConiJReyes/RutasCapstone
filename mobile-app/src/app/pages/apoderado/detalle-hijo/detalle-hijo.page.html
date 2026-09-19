@@ -196,10 +196,10 @@
                 <span>Colegio</span>
 
                 @if (modoEdicion && datosEdicion) {
-                  <ion-input aria-label="Colegio" [(ngModel)]="datosEdicion.colegio" [readonly]="true"></ion-input>
+                  <ion-input aria-label="Colegio" [ngModel]="estudiante.colegio_nombre || 'Colegio no disponible'" [readonly]="true"></ion-input>
                 } @else {
                   <strong>
-                  {{ estudiante.colegio }}
+                  {{ estudiante.colegio_nombre || 'Colegio no disponible' }}
                   </strong>
                 }
               </div>

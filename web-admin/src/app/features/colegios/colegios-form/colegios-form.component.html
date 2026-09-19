@@ -1,0 +1,90 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>{{ esEdicion() ? 'Editar Colegio' : 'Nuevo Colegio' }}</h1>
+      <p class="subtitle">{{ esEdicion() ? 'Modifica los datos del establecimiento' : 'Registra una nueva institución educativa en la plataforma' }}</p>
+    </div>
+    <a routerLink="/colegios" class="btn btn-secondary">← Volver al listado</a>
+  </div>
+
+  <div class="form-card">
+    <form (ngSubmit)="guardar()">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre del Colegio *</label>
+          <input
+            type="text"
+            placeholder="ej: Colegio San Agustín"
+            required
+            [ngModel]="formData().nombre"
+            (ngModelChange)="formData.update(f => ({ ...f, nombre: $event }))"
+            name="nombre"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>RBD / Registro Oficial</label>
+          <input
+            type="text"
+            placeholder="ej: 12345-6"
+            [ngModel]="formData().rbd"
+            (ngModelChange)="formData.update(f => ({ ...f, rbd: $event }))"
+            name="rbd"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono Institucional</label>
+          <input
+            type="text"
+            placeholder="+56 2 2233 4455"
+            [ngModel]="formData().telefono"
+            (ngModelChange)="formData.update(f => ({ ...f, telefono: $event }))"
+            name="telefono"
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Dirección</label>
+          <input
+            type="text"
+            placeholder="Av. Providencia 1234, Santiago"
+            [ngModel]="formData().direccion"
+            (ngModelChange)="formData.update(f => ({ ...f, direccion: $event }))"
+            name="direccion"
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Correo Electrónico de Contacto</label>
+          <input
+            type="email"
+            placeholder="contacto@colegiosanagustin.cl"
+            [ngModel]="formData().email_contacto"
+            (ngModelChange)="formData.update(f => ({ ...f, email_contacto: $event }))"
+            name="email_contacto"
+          />
+        </div>
+
+        <div class="form-group full-width checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [ngModel]="formData().activo"
+              (ngModelChange)="formData.update(f => ({ ...f, activo: $event }))"
+              name="activo"
+            />
+            <span>Establecimiento Activo</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : (esEdicion() ? 'Guardar Cambios' : 'Crear Colegio') }}
+        </button>
+        <a routerLink="/colegios" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>

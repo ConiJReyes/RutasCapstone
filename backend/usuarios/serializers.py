@@ -5,23 +5,75 @@ from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework import serializers
 
-from .models import Usuario, PerfilApoderado, PerfilConductor, PerfilDelegado, Estudiante, FCMToken, Notificacion, Furgon, Ruta
+from .models import Usuario, PerfilApoderado, PerfilConductor, PerfilDelegado, Estudiante, FCMToken, Notificacion, Furgon, Ruta, Colegio, Sede
+
+
+class ColegioSerializer(serializers.ModelSerializer):
+    total_estudiantes = serializers.SerializerMethodField()
+    total_conductores = serializers.SerializerMethodField()
+    total_sedes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Colegio
+        fields = [
+            'id', 'nombre', 'rbd', 'direccion', 'telefono',
+            'email_contacto', 'activo', 'total_estudiantes',
+            'total_conductores', 'total_sedes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_total_estudiantes(self, obj):
+        return obj.estudiantes.count()
+
+    def get_total_conductores(self, obj):
+        return obj.conductores.count()
+
+    def get_total_sedes(self, obj):
+        return obj.sedes.count()
+
+
+class SedeSerializer(serializers.ModelSerializer):
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
+
+    class Meta:
+        model = Sede
+        fields = [
+            'id', 'colegio', 'colegio_nombre', 'nombre',
+            'direccion', 'telefono', 'activa', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
 
 class FurgonSerializer(serializers.ModelSerializer):
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
+    sede_nombre = serializers.ReadOnlyField(source='sede.nombre')
+
     class Meta:
         model = Furgon
-        fields = ['id', 'patente', 'marca_modelo', 'capacidad', 'conductor_asignado', 'estado', 'created_at']
+        fields = [
+            'id', 'patente', 'marca_modelo', 'capacidad',
+            'conductor_asignado', 'estado', 'colegio', 'colegio_nombre',
+            'sede', 'sede_nombre', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
 
 
 class RutaSerializer(serializers.ModelSerializer):
+    colegio_nombre = serializers.SerializerMethodField()
+    sede_nombre = serializers.ReadOnlyField(source='sede.nombre')
+
     class Meta:
         model = Ruta
-        fields = ['id', 'nombre', 'conductor', 'colegio', 'estudiantes_count', 'estado', 'created_at']
+        fields = [
+            'id', 'nombre', 'conductor', 'colegio', 'colegio_nombre',
+            'sede', 'sede_nombre', 'estudiantes_count', 'estado', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
-        extra_kwargs = {
-            'colegio': {'default': 'Escuela Bosques del Viento'}
-        }
+
+    def get_colegio_nombre(self, obj):
+        if obj.colegio:
+            return obj.colegio.nombre
+        return obj.colegio_texto_legacy or ''
 
 
 class RegistroApoderadoSerializer(serializers.Serializer):
@@ -31,6 +83,7 @@ class RegistroApoderadoSerializer(serializers.Serializer):
     email = serializers.EmailField()
     telefono = serializers.CharField(max_length=20, required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, min_length=6)
+    colegio_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_email(self, value):
         normalized_email = value.lower().strip()
@@ -45,12 +98,21 @@ class RegistroApoderadoSerializer(serializers.Serializer):
         return cleaned_rut
 
     def create(self, validated_data):
+        colegio_id = validated_data.pop('colegio_id', None)
+        colegio_obj = Colegio.objects.filter(id=colegio_id).first() if colegio_id else None
+
         usuario = Usuario.objects.create_user(
             username=validated_data['email'], email=validated_data['email'],
             password=validated_data['password'], first_name=validated_data['nombre'],
-            last_name=validated_data['apellido'], rol='apoderado'
+            last_name=validated_data['apellido'], rol='apoderado',
+            colegio=colegio_obj
         )
-        PerfilApoderado.objects.create(usuario=usuario, rut=validated_data['rut'], telefono=validated_data.get('telefono', ''))
+        PerfilApoderado.objects.create(
+            usuario=usuario,
+            rut=validated_data['rut'],
+            telefono=validated_data.get('telefono', ''),
+            colegio=colegio_obj
+        )
         return usuario
 
 
@@ -62,6 +124,7 @@ class RegistroConductorSerializer(serializers.Serializer):
     telefono = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     licencia_conducir = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True, min_length=6)
+    colegio_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_email(self, value):
         normalized_email = value.lower().strip()
@@ -76,19 +139,24 @@ class RegistroConductorSerializer(serializers.Serializer):
         return cleaned_rut
 
     def create(self, validated_data):
+        colegio_id = validated_data.pop('colegio_id', None)
+        colegio_obj = Colegio.objects.filter(id=colegio_id).first() if colegio_id else None
+
         usuario = Usuario.objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data['nombre'],
             last_name=validated_data.get('apellido', ''),
-            rol='conductor'
+            rol='conductor',
+            colegio=colegio_obj
         )
         PerfilConductor.objects.create(
             usuario=usuario,
             rut=validated_data['rut'],
             telefono=validated_data.get('telefono', ''),
-            licencia_conducir=validated_data.get('licencia_conducir', '')
+            licencia_conducir=validated_data.get('licencia_conducir', ''),
+            colegio=colegio_obj
         )
         return usuario
 
@@ -100,6 +168,7 @@ class RegistroDelegadoSerializer(serializers.Serializer):
     email = serializers.EmailField()
     telefono = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True, min_length=6)
+    colegio_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_email(self, value):
         normalized_email = value.lower().strip()
@@ -132,18 +201,23 @@ class RegistroDelegadoSerializer(serializers.Serializer):
         return cleaned_rut
 
     def create(self, validated_data):
+        colegio_id = validated_data.pop('colegio_id', None)
+        colegio_obj = Colegio.objects.filter(id=colegio_id).first() if colegio_id else None
+
         usuario = Usuario.objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data['nombre'],
             last_name=validated_data.get('apellido', ''),
-            rol='delegado'
+            rol='delegado',
+            colegio=colegio_obj
         )
         PerfilDelegado.objects.create(
             usuario=usuario,
             rut=validated_data['rut'],
-            telefono=validated_data.get('telefono', '')
+            telefono=validated_data.get('telefono', ''),
+            colegio=colegio_obj
         )
         return usuario
 
@@ -177,10 +251,12 @@ class UsuarioResponseSerializer(serializers.ModelSerializer):
     rut = serializers.SerializerMethodField()
     telefono = serializers.SerializerMethodField()
     licencia_conducir = serializers.SerializerMethodField()
+    colegio_id = serializers.ReadOnlyField(source='colegio.id')
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
 
     class Meta:
         model = Usuario
-        fields = ['id', 'email', 'first_name', 'last_name', 'rol', 'rut', 'telefono', 'licencia_conducir']
+        fields = ['id', 'email', 'first_name', 'last_name', 'rol', 'colegio_id', 'colegio_nombre', 'rut', 'telefono', 'licencia_conducir']
 
     def get_rut(self, obj):
         if hasattr(obj, 'perfil_apoderado'):
@@ -253,12 +329,14 @@ class DelegadoSerializer(serializers.ModelSerializer):
     telefono = serializers.SerializerMethodField()
     usuario = serializers.CharField(source='email', read_only=True)
     estudiantes = serializers.SerializerMethodField()
+    colegio_id = serializers.ReadOnlyField(source='colegio.id')
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
-            'nombre_completo', 'rut', 'telefono', 'rol', 'estudiantes'
+            'nombre_completo', 'rut', 'telefono', 'rol', 'colegio_id', 'colegio_nombre', 'estudiantes'
         ]
 
     def get_nombre_completo(self, obj):
@@ -285,8 +363,6 @@ class DelegadoSerializer(serializers.ModelSerializer):
         return []
 
 
-
-
 class ConductorSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField()
     rut = serializers.SerializerMethodField()
@@ -294,13 +370,15 @@ class ConductorSerializer(serializers.ModelSerializer):
     licencia_conducir = serializers.SerializerMethodField()
     usuario = serializers.CharField(source='email', read_only=True)
     total_estudiantes = serializers.SerializerMethodField()
+    colegio_id = serializers.ReadOnlyField(source='colegio.id')
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
             'nombre_completo', 'rut', 'telefono', 'licencia_conducir', 'rol',
-            'total_estudiantes'
+            'colegio_id', 'colegio_nombre', 'total_estudiantes'
         ]
 
     def get_nombre_completo(self, obj):
@@ -328,12 +406,13 @@ class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
     estado_matricula = serializers.SerializerMethodField()
     conductor_nombre = serializers.SerializerMethodField()
     tiene_biometria = serializers.SerializerMethodField()
+    colegio_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = Estudiante
         fields = [
             'id', 'rut', 'nombre', 'apellido', 'nombre_completo',
-            'fecha_nacimiento', 'curso', 'colegio', 'direccion_retiro',
+            'fecha_nacimiento', 'curso', 'colegio', 'colegio_nombre', 'direccion_retiro',
             'estado_matricula', 'conductor', 'conductor_nombre', 'tiene_biometria'
         ]
 
@@ -351,6 +430,11 @@ class ApoderadoEstudianteSerializer(serializers.ModelSerializer):
     def get_tiene_biometria(self, obj):
         return bool(obj.embedding_facial and len(obj.embedding_facial) == 128)
 
+    def get_colegio_nombre(self, obj):
+        if obj.colegio:
+            return obj.colegio.nombre
+        return obj.colegio_texto_legacy or ''
+
 
 class ApoderadoSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField()
@@ -358,12 +442,14 @@ class ApoderadoSerializer(serializers.ModelSerializer):
     telefono = serializers.SerializerMethodField()
     usuario = serializers.CharField(source='email', read_only=True)
     estudiantes = serializers.SerializerMethodField()
+    colegio_id = serializers.ReadOnlyField(source='colegio.id')
+    colegio_nombre = serializers.ReadOnlyField(source='colegio.nombre')
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'usuario', 'email', 'first_name', 'last_name',
-            'nombre_completo', 'rut', 'telefono', 'rol', 'estudiantes'
+            'nombre_completo', 'rut', 'telefono', 'rol', 'colegio_id', 'colegio_nombre', 'estudiantes'
         ]
 
     def get_nombre_completo(self, obj):
@@ -383,7 +469,6 @@ class ApoderadoSerializer(serializers.ModelSerializer):
         return []
 
 
-
 class EstudianteSerializer(serializers.ModelSerializer):
     tiene_foto = serializers.SerializerMethodField(read_only=True)
     nombre_completo = serializers.SerializerMethodField(read_only=True)
@@ -391,6 +476,8 @@ class EstudianteSerializer(serializers.ModelSerializer):
     apoderado_telefono = serializers.SerializerMethodField(read_only=True)
     conductor_id = serializers.SerializerMethodField(read_only=True)
     conductor_nombre = serializers.SerializerMethodField(read_only=True)
+    colegio_nombre = serializers.SerializerMethodField(read_only=True)
+    sede_nombre = serializers.ReadOnlyField(source='sede.nombre')
 
     MAX_FOTO_BYTES = 5 * 1024 * 1024
     MAX_FOTO_PIXELS = 20_000_000
@@ -399,7 +486,8 @@ class EstudianteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Estudiante
         fields = [
-            'id', 'nombre', 'apellido', 'nombre_completo', 'rut', 'fecha_nacimiento', 'colegio', 'curso',
+            'id', 'nombre', 'apellido', 'nombre_completo', 'rut', 'fecha_nacimiento',
+            'colegio', 'colegio_nombre', 'sede', 'sede_nombre', 'curso',
             'direccion_principal', 'direccion_alternativa', 'persona_autorizada',
             'rut_persona_autorizada', 'foto', 'tiene_foto',
             'apoderado', 'apoderado_nombre', 'apoderado_telefono',
@@ -407,7 +495,15 @@ class EstudianteSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'tiene_foto', 'created_at', 'updated_at']
-        extra_kwargs = {'foto': {'write_only': True, 'required': False, 'allow_null': True}}
+        extra_kwargs = {
+            'foto': {'write_only': True, 'required': False, 'allow_null': True},
+            'apoderado': {'required': False, 'allow_null': True}
+        }
+
+    def get_colegio_nombre(self, obj):
+        if obj.colegio:
+            return obj.colegio.nombre
+        return obj.colegio_texto_legacy or ''
 
     def get_tiene_foto(self, obj):
         return bool(obj.foto)

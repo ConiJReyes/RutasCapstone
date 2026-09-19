@@ -4,6 +4,7 @@ from .views import (
     RegistroApoderadoView,
     RegistroDelegadoView,
     LoginView,
+    AdminLoginView,
     SolicitarRecuperacionView,
     ConfirmarRecuperacionView,
 )
@@ -26,6 +27,12 @@ urlpatterns = [
         'login/',
         LoginView.as_view(),
         name='login'
+    ),
+
+    path(
+        'login-admin/',
+        AdminLoginView.as_view(),
+        name='login-admin'
     ),
 
     path(

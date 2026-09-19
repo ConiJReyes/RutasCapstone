@@ -1,0 +1,103 @@
+<div class="modal-backdrop" (click)="cerrar()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Header Modal -->
+    <div class="modal-header">
+      <div>
+        <h2>Sedes — {{ colegio.nombre }}</h2>
+        <p class="subtitle">Gestiona los anexos o sedes institucionales de este colegio</p>
+      </div>
+      <button class="close-btn" (click)="cerrar()" title="Cerrar">✕</button>
+    </div>
+
+    <!-- Contenido Modal -->
+    <div class="modal-body">
+      <!-- Formulario para agregar/editar Sede -->
+      <div class="form-section">
+        <h3>{{ modoEdicion() ? 'Editar Sede' : 'Agregar Nueva Sede' }}</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre de Sede *</label>
+            <input
+              type="text"
+              placeholder="ej: Campus Norte, Anexo Primaria"
+              [ngModel]="sedeForm().nombre"
+              (ngModelChange)="sedeForm.update(f => ({ ...f, nombre: $event }))"
+            />
+          </div>
+          <div class="form-group">
+            <label>Dirección</label>
+            <input
+              type="text"
+              placeholder="Av. Los Leones 123"
+              [ngModel]="sedeForm().direccion"
+              (ngModelChange)="sedeForm.update(f => ({ ...f, direccion: $event }))"
+            />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono Contacto</label>
+            <input
+              type="text"
+              placeholder="+56 9 1234 5678"
+              [ngModel]="sedeForm().telefono"
+              (ngModelChange)="sedeForm.update(f => ({ ...f, telefono: $event }))"
+            />
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [ngModel]="sedeForm().activa"
+                (ngModelChange)="sedeForm.update(f => ({ ...f, activa: $event }))"
+              />
+              <span>Sede Activa</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-save" [disabled]="guardando()" (click)="guardarSede()">
+            {{ guardando() ? 'Guardando...' : (modoEdicion() ? 'Actualizar Sede' : 'Guardar Sede') }}
+          </button>
+          @if (modoEdicion()) {
+            <button type="button" class="btn btn-cancel" (click)="resetForm()">Cancelar Edición</button>
+          }
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Listado de Sedes -->
+      <div class="sedes-list-section">
+        <h3>Sedes Registradas ({{ sedes().length }})</h3>
+
+        @if (cargando()) {
+          <p class="loading-text">Cargando sedes...</p>
+        } @else if (sedes().length === 0) {
+          <p class="empty-text">No hay sedes registradas para este colegio todavía.</p>
+        } @else {
+          <div class="sedes-grid">
+            @for (sede of sedes(); track sede.id) {
+              <div class="sede-card">
+                <div class="sede-info">
+                  <span class="sede-title">🏢 {{ sede.nombre }}</span>
+                  @if (sede.direccion) {
+                    <span class="sede-sub">📍 {{ sede.direccion }}</span>
+                  }
+                  @if (sede.telefono) {
+                    <span class="sede-sub">📞 {{ sede.telefono }}</span>
+                  }
+                </div>
+                <div class="sede-actions">
+                  <button class="btn-sm edit-sm" (click)="editarSede(sede)" title="Editar">✏️</button>
+                  <button class="btn-sm delete-sm" (click)="eliminarSede(sede)" title="Eliminar">🗑️</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

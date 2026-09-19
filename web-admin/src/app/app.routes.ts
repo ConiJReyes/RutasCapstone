@@ -25,6 +25,14 @@ import { FurgonesFormComponent } from './features/furgones/furgones-form/furgone
 import { RutasListaComponent } from './features/rutas/rutas-lista/rutas-lista.component';
 import { RutasFormComponent } from './features/rutas/rutas-form/rutas-form.component';
 
+// Colegios
+import { ColegiosListaComponent } from './features/colegios/colegios-lista/colegios-lista.component';
+import { ColegiosFormComponent } from './features/colegios/colegios-form/colegios-form.component';
+
+// Estudiantes
+import { EstudiantesListaComponent } from './features/estudiantes/estudiantes-lista/estudiantes-lista.component';
+import { EstudiantesFormComponent } from './features/estudiantes/estudiantes-form/estudiantes-form.component';
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -44,6 +52,16 @@ export const routes: Routes = [
         path: 'dashboard',
         component: DashboardHomeComponent
       },
+      // Colegios (Solo Administrador de Plataforma)
+      { path: 'colegios', component: ColegiosListaComponent },
+      { path: 'colegios/nuevo', component: ColegiosFormComponent },
+      { path: 'colegios/editar/:id', component: ColegiosFormComponent },
+
+      // Estudiantes
+      { path: 'estudiantes', component: EstudiantesListaComponent },
+      { path: 'estudiantes/nuevo', component: EstudiantesFormComponent },
+      { path: 'estudiantes/editar/:id', component: EstudiantesFormComponent },
+
       // Conductores
       { path: 'conductores', component: ConductorListaComponent },
       { path: 'conductores/nuevo', component: ConductorFormComponent },
@@ -67,10 +85,7 @@ export const routes: Routes = [
       // Rutas
       { path: 'rutas', component: RutasListaComponent },
       { path: 'rutas/nuevo', component: RutasFormComponent },
-      { path: 'rutas/editar/:id', component: RutasFormComponent },
-
-      // Otros
-      { path: 'estudiantes', component: ModulePlaceholderComponent }
+      { path: 'rutas/editar/:id', component: RutasFormComponent }
     ]
   },
   {

@@ -1,0 +1,171 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode ? 'Editar Estudiante' : 'Nuevo Estudiante' }}</h1>
+      <p class="subtitle">{{ isEditMode ? 'Modifica los datos del estudiante' : 'Registra un nuevo estudiante en el sistema' }}</p>
+    </div>
+    <a routerLink="/estudiantes" class="btn btn-secondary">← Volver al listado</a>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
+
+  <div class="form-card">
+    <form [formGroup]="estudianteForm" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre">Nombres del Estudiante *</label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            placeholder="ej: Oliver"
+            [class.invalid]="isFieldInvalid('nombre')"
+          />
+          @if (isFieldInvalid('nombre')) {
+            <span class="error-text">El nombre es obligatorio (mínimo 2 caracteres).</span>
+          }
+        </div>
+
+        <!-- Apellido -->
+        <div class="form-group">
+          <label for="apellido">Apellidos del Estudiante *</label>
+          <input
+            id="apellido"
+            type="text"
+            formControlName="apellido"
+            placeholder="ej: Reyes"
+            [class.invalid]="isFieldInvalid('apellido')"
+          />
+          @if (isFieldInvalid('apellido')) {
+            <span class="error-text">El apellido es obligatorio (mínimo 2 caracteres).</span>
+          }
+        </div>
+
+        <!-- RUT -->
+        <div class="form-group">
+          <label for="rut">RUT del Estudiante *</label>
+          <input
+            id="rut"
+            type="text"
+            formControlName="rut"
+            placeholder="ej: 23.456.789-0"
+            [class.invalid]="isFieldInvalid('rut')"
+          />
+          @if (isFieldInvalid('rut')) {
+            <span class="error-text">El RUT es obligatorio.</span>
+          }
+        </div>
+
+        <!-- Fecha Nacimiento -->
+        <div class="form-group">
+          <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+          <input
+            id="fecha_nacimiento"
+            type="date"
+            formControlName="fecha_nacimiento"
+          />
+        </div>
+
+        <!-- Colegio (Solo Admin Plataforma) -->
+        @if (esAdminPlataforma()) {
+          <div class="form-group">
+            <label for="colegio">Establecimiento Educativo (Colegio)</label>
+            <select id="colegio" formControlName="colegio" (change)="onColegioChange($event)">
+              <option [ngValue]="null">-- Seleccionar Colegio --</option>
+              @for (col of colegios(); track col.id) {
+                <option [ngValue]="col.id">{{ col.nombre }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Sede -->
+        <div class="form-group">
+          <label for="sede">Sede Institucional</label>
+          <select id="sede" formControlName="sede">
+            <option [ngValue]="null">-- Sede Principal / Sin especificar --</option>
+            @for (s of sedes(); track s.id) {
+              <option [ngValue]="s.id">{{ s.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Curso -->
+        <div class="form-group">
+          <label for="curso">Curso / Nivel</label>
+          <input
+            id="curso"
+            type="text"
+            formControlName="curso"
+            placeholder="ej: 4° Básico A"
+          />
+        </div>
+
+        <!-- Apoderado Tutor -->
+        <div class="form-group">
+          <label for="apoderado">Apoderado / Tutor Responsable</label>
+          <select id="apoderado" formControlName="apoderado">
+            <option [ngValue]="null">-- Seleccionar Apoderado --</option>
+            @for (apod of apoderados(); track apod.id) {
+              <option [ngValue]="apod.id">{{ apod.nombre_completo || apod.usuario }} ({{ apod.rut || apod.email }})</option>
+            }
+          </select>
+        </div>
+
+        <!-- Dirección Principal -->
+        <div class="form-group full-width">
+          <label for="direccion_principal">Dirección Principal</label>
+          <input
+            id="direccion_principal"
+            type="text"
+            formControlName="direccion_principal"
+            placeholder="Av. Las Condes 1234, Dpto 502"
+          />
+        </div>
+
+        <!-- Dirección Alternativa -->
+        <div class="form-group full-width">
+          <label for="direccion_alternativa">Dirección Alternativa / Retiro</label>
+          <input
+            id="direccion_alternativa"
+            type="text"
+            formControlName="direccion_alternativa"
+            placeholder="Casa de los abuelos / Otra dirección"
+          />
+        </div>
+
+        <!-- Persona Autorizada -->
+        <div class="form-group">
+          <label for="persona_autorizada">Persona Autorizada para Retiro</label>
+          <input
+            id="persona_autorizada"
+            type="text"
+            formControlName="persona_autorizada"
+            placeholder="Nombre de la persona autorizada"
+          />
+        </div>
+
+        <!-- RUT Persona Autorizada -->
+        <div class="form-group">
+          <label for="rut_persona_autorizada">RUT Persona Autorizada</label>
+          <input
+            id="rut_persona_autorizada"
+            type="text"
+            formControlName="rut_persona_autorizada"
+            placeholder="RUT de la persona autorizada"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Guardar Cambios' : 'Registrar Estudiante') }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>

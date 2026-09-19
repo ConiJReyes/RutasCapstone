@@ -8,15 +8,18 @@ import { AuthService } from '../services/auth.service';
  * Si el usuario no ha iniciado sesión válida, lo redirige a la pantalla de /login.
  */
 export const authGuard: CanActivateFn = (route, state) => {
-  // Inyección de dependencias en formato funcional (Angular moderno)
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Si el usuario está autenticado, permite el acceso
-  if (authService.isAuthenticated()) {
+  const user = authService.currentUser();
+  if (authService.isAuthenticated() && user && ['ADMIN_PLATAFORMA', 'ADMIN_COLEGIO'].includes(user.role)) {
+    // Restricción: ADMIN_COLEGIO no puede acceder a las rutas de gestión de colegios
+    if (user.role === 'ADMIN_COLEGIO' && state.url.startsWith('/colegios')) {
+      return router.createUrlTree(['/dashboard']);
+    }
     return true;
   }
 
-  // Si no está autenticado, redirigir automáticamente a /login
+  // Redirigir a /login si no está autenticado o no es rol administrativo
   return router.createUrlTree(['/login']);
 };

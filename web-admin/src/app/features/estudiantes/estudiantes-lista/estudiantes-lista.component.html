@@ -1,0 +1,139 @@
+<div class="page-container">
+  <!-- Cabecera -->
+  <div class="page-header">
+    <div class="header-info">
+      <h1>Gestión de Estudiantes</h1>
+      <p class="subtitle">Administra a los estudiantes matriculados, tutores apoderados y asignación de transporte</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/estudiantes/nuevo" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Nuevo Estudiante</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtro y búsqueda -->
+  <div class="filter-card">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar por nombre, RUT, curso, apoderado o colegio..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Contenido Tabla -->
+  <div class="content-card">
+    @if (cargando()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando estudiantes...</p>
+      </div>
+    } @else if (estudiantesFiltrados().length === 0) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+        </svg>
+        <h3>No se encontraron estudiantes</h3>
+        <p>Intenta con otros términos de búsqueda o registra un nuevo estudiante.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Estudiante</th>
+              <th>Colegio & Sede</th>
+              <th>Curso</th>
+              <th>Apoderado / Tutor</th>
+              <th>Transporte Asignado</th>
+              <th>Biometría</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (est of estudiantesFiltrados(); track est.id) {
+              <tr>
+                <td class="cell-id">#{{ est.id }}</td>
+                <td class="cell-main">
+                  <div class="student-name-box">
+                    <span class="student-name">{{ est.nombre }} {{ est.apellido }}</span>
+                    <span class="student-rut">RUT: {{ est.rut }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="colegio-info">
+                    <span class="colegio-title">🏫 {{ est.colegio_nombre || 'Sin colegio' }}</span>
+                    @if (est.sede_nombre) {
+                      <span class="sede-sub">🏢 {{ est.sede_nombre }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="curso-pill">{{ est.curso || '-' }}</span>
+                </td>
+                <td>
+                  @if (est.apoderado_nombre) {
+                    <div class="apoderado-box">
+                      <span class="apoderado-name">👨‍👩‍👧 {{ est.apoderado_nombre }}</span>
+                      @if (est.apoderado_telefono) {
+                        <span class="apoderado-phone">📞 {{ est.apoderado_telefono }}</span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="muted-text">Sin apoderado</span>
+                  }
+                </td>
+                <td>
+                  @if (est.conductor_nombre) {
+                    <span class="conductor-pill">🚌 {{ est.conductor_nombre }}</span>
+                  } @else {
+                    <span class="unassigned-pill">Sin conductor</span>
+                  }
+                </td>
+                <td>
+                  <span class="biometria-badge" [class.active]="est.tiene_foto" [class.pending]="!est.tiene_foto">
+                    {{ est.tiene_foto ? '✓ Registrada' : 'Pending' }}
+                  </span>
+                </td>
+                <td class="cell-actions">
+                  <div class="action-buttons">
+                    <button class="btn-icon view-btn" (click)="abrirFicha(est)" title="Ver Ficha Técnica">
+                      👁️ Ficha
+                    </button>
+                    <a [routerLink]="['/estudiantes/editar', est.id]" class="btn-icon edit-btn" title="Editar Estudiante">
+                      ✏️
+                    </a>
+                    <button class="btn-icon delete-btn" (click)="eliminarEstudiante(est)" title="Eliminar Estudiante">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Ficha Técnica -->
+@if (estudianteParaModal()) {
+  <app-estudiante-detalle-modal
+    [estudiante]="estudianteParaModal()!"
+    (alCerrar)="cerrarFicha()"
+  ></app-estudiante-detalle-modal>
+}

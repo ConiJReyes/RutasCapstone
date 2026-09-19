@@ -35,7 +35,7 @@
     <!-- Navegación: Botones del Side Menu -->
     <div class="sidebar-nav-container">
       <nav class="sidebar-nav">
-        @for (item of navItems; track item.route) {
+        @for (item of navItems(); track item.route) {
           <a
             [routerLink]="item.route"
             routerLinkActive="active"
@@ -52,6 +52,22 @@
                       <rect x="14" y="3" width="7" height="5"></rect>
                       <rect x="14" y="12" width="7" height="9"></rect>
                       <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                  }
+                  @case ('building') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                      <path d="M6 12H4a2 2 0 0 0-2 2v8h20v-8a2 2 0 0 0-2-2h-2"></path>
+                      <path d="M10 6h4"></path>
+                      <path d="M10 10h4"></path>
+                      <path d="M10 14h4"></path>
+                      <path d="M10 18h4"></path>
+                    </svg>
+                  }
+                  @case ('graduation-cap') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                      <path d="M6 12v5c0 2 2 2.5 6 2.5s6-.5 6-2.5v-5"></path>
                     </svg>
                   }
                   @case ('users') {
@@ -102,10 +118,9 @@
       </nav>
     </div>
 
-    <!-- Pie del Sidebar: Perfil Default del Administrador y Cierre de Sesión -->
+    <!-- Pie del Sidebar -->
     <div class="sidebar-footer">
       <div class="user-card">
-        <!-- Avatar default genérico con icono SVG -->
         <div class="user-avatar-default">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -113,8 +128,16 @@
           </svg>
         </div>
         <div class="user-details">
-          <span class="user-name">Administrador</span>
-          <span class="user-role">admin&#64;rutas-seguras.cl</span>
+          <span class="user-name">{{ user()?.name || 'Administrador' }}</span>
+          <span class="user-role">
+            @if (esAdminPlataforma()) {
+              Admin Plataforma
+            } @else if (user()?.role === 'ADMIN_COLEGIO') {
+              {{ user()?.colegioNombre || 'Admin Colegio' }}
+            } @else {
+              {{ user()?.email }}
+            }
+          </span>
         </div>
       </div>
 
@@ -132,10 +155,9 @@
 
   <!-- ÁREA PRINCIPAL DE CONTENIDO -->
   <div class="main-wrapper">
-    <!-- Cabecera Superior Simple -->
+    <!-- Cabecera Superior Adaptativa por Rol -->
     <header class="top-header">
       <div class="header-left">
-        <!-- Botón toggle de menú para móviles -->
         <button class="mobile-menu-btn" (click)="toggleSidebar()" title="Abrir menú">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -146,8 +168,30 @@
         <span class="header-title">Sistema de Transporte Escolar</span>
       </div>
 
-      <!-- Perfil default en la esquina derecha -->
       <div class="header-right">
+        <!-- Selector Global de Colegio (SOLO VISIBLE PARA ADMINISTRADOR DE PLATAFORMA) -->
+        @if (esAdminPlataforma()) {
+          <div class="colegio-selector-wrapper">
+            <label for="colegio-context-select" class="selector-label">🏫 Colegio Contexto:</label>
+            <select
+              id="colegio-context-select"
+              class="colegio-select"
+              [ngModel]="colegioService.selectedColegioId()"
+              (change)="onColegioChange($event)"
+            >
+              <option [value]="null">🏢 Todos los Colegios (Global)</option>
+              @for (col of colegioService.colegiosList(); track col.id) {
+                <option [value]="col.id">🏫 {{ col.nombre }}</option>
+              }
+            </select>
+          </div>
+        } @else if (user()?.role === 'ADMIN_COLEGIO') {
+          <!-- Badge estático para Administrador de Colegio (SIN SELECTOR) -->
+          <div class="colegio-badge-wrapper">
+            <span class="colegio-badge">🏫 Colegio: <strong>{{ user()?.colegioNombre || 'Mi Colegio' }}</strong></span>
+          </div>
+        }
+
         <div class="header-user">
           <div class="header-user-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -155,7 +199,7 @@
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          <span>Administrador</span>
+          <span>{{ user()?.name || 'Administrador' }}</span>
         </div>
       </div>
     </header>

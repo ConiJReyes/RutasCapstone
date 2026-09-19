@@ -13,8 +13,37 @@ def foto_apoderado_upload_to(instance, filename):
 def foto_delegado_upload_to(instance, filename):
     return f"fotos_delegados/{uuid4().hex}.jpg"
 
+class Colegio(models.Model):
+    nombre = models.CharField(max_length=200, unique=True)
+    rbd = models.CharField(max_length=50, null=True, blank=True)
+    direccion = models.CharField(max_length=255, null=True, blank=True)
+    telefono = models.CharField(max_length=50, null=True, blank=True)
+    email_contacto = models.EmailField(null=True, blank=True)
+    activo = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class Sede(models.Model):
+    colegio = models.ForeignKey(Colegio, on_delete=models.CASCADE, related_name='sedes')
+    nombre = models.CharField(max_length=150)
+    direccion = models.CharField(max_length=255, null=True, blank=True)
+    telefono = models.CharField(max_length=50, null=True, blank=True)
+    activa = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.colegio.nombre} - {self.nombre}"
+
+
 class Usuario(AbstractUser):
     ROLES = (
+        ('admin_plataforma', 'Administrador de Plataforma'),
+        ('admin_colegio', 'Administrador de Colegio'),
         ('apoderado', 'Apoderado'),
         ('conductor', 'Conductor'),
         ('admin', 'Administrador'),
@@ -22,7 +51,14 @@ class Usuario(AbstractUser):
     )
 
     email = models.EmailField(unique=True)
-    rol = models.CharField(max_length=20, choices=ROLES, default='apoderado')
+    rol = models.CharField(max_length=30, choices=ROLES, default='apoderado')
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='usuarios'
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -41,6 +77,13 @@ class PerfilApoderado(models.Model):
         Usuario,
         on_delete=models.CASCADE,
         related_name='perfil_apoderado'
+    )
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='apoderados'
     )
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
@@ -67,6 +110,13 @@ class PerfilConductor(models.Model):
         on_delete=models.CASCADE,
         related_name='perfil_conductor'
     )
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='conductores'
+    )
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
     licencia_conducir = models.CharField(max_length=50, null=True, blank=True)
@@ -82,6 +132,13 @@ class PerfilDelegado(models.Model):
         Usuario,
         on_delete=models.CASCADE,
         related_name='perfil_delegado'
+    )
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='delegados'
     )
     rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
@@ -102,7 +159,6 @@ class PerfilDelegado(models.Model):
         return f"Delegado: {self.usuario.get_full_name()} ({self.rut})"
 
 
-
 class Estudiante(models.Model):
     apoderado = models.ForeignKey(
         PerfilApoderado,
@@ -120,7 +176,21 @@ class Estudiante(models.Model):
     apellido = models.CharField(max_length=150)
     rut = models.CharField(max_length=12, unique=True)
     fecha_nacimiento = models.DateField()
-    colegio = models.CharField(max_length=200)
+    colegio_texto_legacy = models.CharField(max_length=200, null=True, blank=True)
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='estudiantes'
+    )
+    sede = models.ForeignKey(
+        Sede,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='estudiantes'
+    )
     curso = models.CharField(max_length=100)
     direccion_principal = models.CharField(max_length=255)
     direccion_alternativa = models.CharField(max_length=255, null=True, blank=True)
@@ -142,9 +212,6 @@ class Estudiante(models.Model):
 
     def __str__(self):
         return f"Estudiante: {self.nombre} {self.apellido} ({self.rut})"
-
-
-
 
 
 from django.utils import timezone
@@ -235,6 +302,20 @@ class Furgon(models.Model):
         ('en_ruta', 'En Ruta'),
         ('mantenimiento', 'Mantenimiento'),
     )
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='furgones'
+    )
+    sede = models.ForeignKey(
+        Sede,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='furgones'
+    )
     patente = models.CharField(max_length=20, unique=True)
     marca_modelo = models.CharField(max_length=100)
     capacidad = models.IntegerField(default=15)
@@ -254,14 +335,28 @@ class Ruta(models.Model):
     )
     nombre = models.CharField(max_length=150)
     conductor = models.CharField(max_length=150, blank=True, default='')
-    colegio = models.CharField(max_length=200, default='Escuela Bosques del Viento')
+    colegio_texto_legacy = models.CharField(max_length=200, null=True, blank=True, default='')
+    colegio = models.ForeignKey(
+        Colegio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rutas'
+    )
+    sede = models.ForeignKey(
+        Sede,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rutas'
+    )
     estudiantes_count = models.IntegerField(default=0)
     estado = models.CharField(max_length=20, choices=ESTADOS, default='activa')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.nombre} ({self.colegio})"
+        return f"{self.nombre} ({self.colegio.nombre if self.colegio else 'Sin Colegio'})"
 
 
 class Emergencia(models.Model):

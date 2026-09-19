@@ -163,22 +163,32 @@
       </ion-item>
 
 
-      <ion-item
-        lines="none"
-        class="input-item">
-
-        <ion-input
-          label="Colegio"
+      <ion-item lines="none" class="input-item">
+        <ion-select
+          label="Colegio *"
           labelPlacement="floating"
-          type="text"
-          [readonly]="true"
-          [(ngModel)]="colegio">
-        </ion-input>
-
+          placeholder="Selecciona un colegio"
+          [(ngModel)]="colegioId"
+          (ionChange)="onColegioChange($event)">
+          @for (col of colegiosList; track col.id) {
+            <ion-select-option [value]="col.id">{{ col.nombre }}</ion-select-option>
+          }
+        </ion-select>
       </ion-item>
-      <p style="margin: -6px 0 12px 12px; font-size: 0.75rem; color: #64748b;">
-        Colegio único asignado para el proyecto: Escuela Bosques del Viento
-      </p>
+
+      @if (colegioId) {
+        <ion-item lines="none" class="input-item">
+          <ion-select
+            label="Sede (opcional)"
+            labelPlacement="floating"
+            placeholder="Selecciona una sede"
+            [(ngModel)]="sedeId">
+            @for (sd of sedesList; track sd.id) {
+              <ion-select-option [value]="sd.id">{{ sd.nombre }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      }
 
 
       <ion-item

@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.http import FileResponse, Http404
 from django.conf import settings
-from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, PerfilDelegado, FCMToken, Notificacion, Furgon, Ruta, Emergencia
+from .models import Estudiante, Usuario, CodigoRecuperacion, PerfilConductor, PerfilApoderado, PerfilDelegado, FCMToken, Notificacion, Furgon, Ruta, Emergencia, Colegio, Sede
 from .serializers import (
     RegistroApoderadoSerializer,
     RegistroConductorSerializer,
@@ -21,17 +21,205 @@ from .serializers import (
     FCMTokenSerializer,
     NotificacionSerializer,
     FurgonSerializer,
-    RutaSerializer
+    RutaSerializer,
+    ColegioSerializer,
+    SedeSerializer
 )
 from .push_service import crear_y_despachar_notificacion, notificar_apoderados_de_estudiantes
 
 import secrets
-
 import resend
-
 from datetime import timedelta
-
 from django.utils import timezone
+
+
+def get_colegio_id_for_request(request):
+    """
+    Determina el colegio_id para filtrar o asociar datos según las reglas de seguridad:
+    - Para 'admin_colegio': OBLIGATORIAMENTE se usa request.user.colegio_id.
+    - Para 'admin_plataforma': Se usa el colegio_id especificado en X-Colegio-ID header o query param 'colegio_id' (si existe).
+    - Para otros usuarios: Se usa request.user.colegio_id si existe.
+    """
+    user = getattr(request, 'user', None)
+    if not user or not user.is_authenticated:
+        return None
+
+    if user.rol == 'admin_colegio':
+        return user.colegio_id
+
+    if user.rol == 'admin_plataforma' or user.is_superuser:
+        header_val = request.headers.get('X-Colegio-ID') or request.META.get('HTTP_X_COLEGIO_ID')
+        param_val = request.query_params.get('colegio_id')
+        val = header_val or param_val
+        if val:
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                pass
+        return None
+
+    return user.colegio_id
+
+
+class ColegioListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.rol in ['admin_plataforma'] or request.user.is_superuser:
+            colegios = Colegio.objects.all().order_by('-id')
+        elif request.user.rol == 'admin_colegio':
+            colegios = Colegio.objects.filter(id=request.user.colegio_id)
+        elif request.user.rol in ['apoderado', 'conductor', 'delegado']:
+            colegios = Colegio.objects.filter(activo=True).order_by('nombre')
+        else:
+            return Response({'message': 'No tiene permisos para ver la lista de colegios.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ColegioSerializer(colegios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        if request.user.rol not in ['admin_plataforma'] and not request.user.is_superuser:
+            return Response({'message': 'Solo los Administradores de Plataforma pueden crear colegios.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ColegioSerializer(data=request.data)
+        if serializer.is_valid():
+            colegio = serializer.save()
+            return Response(ColegioSerializer(colegio).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ColegioDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, request, pk):
+        if request.user.rol == 'admin_colegio' and request.user.colegio_id != pk:
+            raise Http404
+        try:
+            return Colegio.objects.get(pk=pk)
+        except Colegio.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        colegio = self.get_object(request, pk)
+        return Response(ColegioSerializer(colegio).data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        colegio = self.get_object(request, pk)
+        if request.user.rol not in ['admin_plataforma'] and not request.user.is_superuser and request.user.colegio_id != pk:
+            return Response({'message': 'No tiene permisos para modificar este colegio.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ColegioSerializer(colegio, data=request.data, partial=True)
+        if serializer.is_valid():
+            colegio_updated = serializer.save()
+            return Response(ColegioSerializer(colegio_updated).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        if request.user.rol not in ['admin_plataforma'] and not request.user.is_superuser:
+            return Response({'message': 'Solo los Administradores de Plataforma pueden eliminar colegios.'}, status=status.HTTP_403_FORBIDDEN)
+
+        colegio = self.get_object(request, pk)
+        colegio.delete()
+        return Response({'message': 'Colegio eliminado exitosamente.'}, status=status.HTTP_200_OK)
+
+
+class ColegioAdministradoresView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, colegio_id):
+        if request.user.rol == 'admin_colegio' and request.user.colegio_id != colegio_id:
+            return Response({'message': 'No tiene permisos para ver administradores de otro colegio.'}, status=status.HTTP_403_FORBIDDEN)
+        if request.user.rol not in ['admin_plataforma', 'admin_colegio'] and not request.user.is_superuser and not request.user.is_staff:
+            return Response({'message': 'No tiene permisos para realizar esta acción.'}, status=status.HTTP_403_FORBIDDEN)
+
+        admins = Usuario.objects.filter(rol='admin_colegio', colegio_id=colegio_id).order_by('-id')
+        serializer = UsuarioResponseSerializer(admins, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, colegio_id):
+        if request.user.rol not in ['admin_plataforma'] and not request.user.is_superuser:
+            return Response({'message': 'Solo el Administrador de Plataforma puede crear administradores de colegio.'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            colegio_obj = Colegio.objects.get(pk=colegio_id)
+        except Colegio.DoesNotExist:
+            raise Http404
+
+        email = request.data.get('email', '').lower().strip()
+        password = request.data.get('password', '')
+        nombre = request.data.get('nombre', '').strip()
+        apellido = request.data.get('apellido', '').strip()
+
+        if not email or not password or not nombre:
+            return Response({'message': 'Debe ingresar nombre, correo electrónico y contraseña.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Usuario.objects.filter(email=email).exists():
+            return Response({'message': 'El correo electrónico ya se encuentra registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        usuario = Usuario.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=nombre,
+            last_name=apellido,
+            rol='admin_colegio',
+            colegio=colegio_obj
+        )
+
+        return Response({
+            'message': f'Administrador para {colegio_obj.nombre} creado exitosamente.',
+            'usuario': UsuarioResponseSerializer(usuario).data
+        }, status=status.HTTP_201_CREATED)
+
+
+class SedeListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, colegio_id):
+        if request.user.rol == 'admin_colegio' and request.user.colegio_id != colegio_id:
+            return Response({'message': 'No tiene acceso a las sedes de otro colegio.'}, status=status.HTTP_403_FORBIDDEN)
+
+        sedes = Sede.objects.filter(colegio_id=colegio_id, activa=True).order_by('nombre')
+        serializer = SedeSerializer(sedes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, colegio_id):
+        if request.user.rol == 'admin_colegio' and request.user.colegio_id != colegio_id:
+            return Response({'message': 'No puede crear sedes en otro colegio.'}, status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data.copy()
+        data['colegio'] = colegio_id
+        serializer = SedeSerializer(data=data)
+        if serializer.is_valid():
+            sede = serializer.save()
+            return Response(SedeSerializer(sede).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SedeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, request, pk):
+        try:
+            sede = Sede.objects.get(pk=pk)
+            if request.user.rol == 'admin_colegio' and request.user.colegio_id != sede.colegio_id:
+                raise Http404
+            return sede
+        except Sede.DoesNotExist:
+            raise Http404
+
+    def patch(self, request, pk):
+        sede = self.get_object(request, pk)
+        serializer = SedeSerializer(sede, data=request.data, partial=True)
+        if serializer.is_valid():
+            sede_updated = serializer.save()
+            return Response(SedeSerializer(sede_updated).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        sede = self.get_object(request, pk)
+        sede.delete()
+        return Response({'message': 'Sede eliminada exitosamente.'}, status=status.HTTP_200_OK)
 
 
 class RegistroApoderadoView(APIView):
@@ -88,7 +276,10 @@ class DelegadoEstudiantesListView(APIView):
 
         estudiantes = []
         if rut_clean:
-            for est in Estudiante.objects.all():
+            qs = Estudiante.objects.all()
+            if request.user.colegio_id:
+                qs = qs.filter(colegio_id=request.user.colegio_id)
+            for est in qs:
                 if est.rut_persona_autorizada:
                     est_rut_clean = est.rut_persona_autorizada.replace('.', '').replace('-', '').upper().strip()
                     if rut_clean in est_rut_clean or est_rut_clean in rut_clean:
@@ -135,12 +326,20 @@ class DelegadoAdminListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        delegados = Usuario.objects.filter(rol='delegado').order_by('-id')
+        colegio_id = get_colegio_id_for_request(request)
+        delegados = Usuario.objects.filter(rol='delegado')
+        if colegio_id:
+            delegados = delegados.filter(colegio_id=colegio_id)
+        delegados = delegados.order_by('-id')
         serializer = DelegadoSerializer(delegados, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data.copy()
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio_id'] = target_colegio_id
+
         if 'nombre_completo' in data and not data.get('nombre'):
             parts = data['nombre_completo'].strip().split(' ', 1)
             data['nombre'] = parts[0]
@@ -168,15 +367,23 @@ class DelegadoAdminDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, delegado_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            delegado = Usuario.objects.get(id=delegado_id, rol='delegado')
+            qs = Usuario.objects.filter(id=delegado_id, rol='delegado')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            delegado = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
         return Response(DelegadoSerializer(delegado).data, status=status.HTTP_200_OK)
 
     def patch(self, request, delegado_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            delegado = Usuario.objects.get(id=delegado_id, rol='delegado')
+            qs = Usuario.objects.filter(id=delegado_id, rol='delegado')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            delegado = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
 
@@ -205,6 +412,9 @@ class DelegadoAdminDetailView(APIView):
         if password:
             delegado.set_password(password)
 
+        if 'colegio_id' in request.data and (request.user.rol in ['admin_plataforma'] or request.user.is_superuser):
+            delegado.colegio_id = request.data['colegio_id']
+
         delegado.save()
 
         if hasattr(delegado, 'perfil_delegado'):
@@ -213,6 +423,8 @@ class DelegadoAdminDetailView(APIView):
                 perfil.rut = request.data['rut'].strip()
             if 'telefono' in request.data:
                 perfil.telefono = request.data['telefono'].strip()
+            if delegado.colegio_id:
+                perfil.colegio_id = delegado.colegio_id
             perfil.save()
 
         return Response({
@@ -221,8 +433,12 @@ class DelegadoAdminDetailView(APIView):
         }, status=status.HTTP_200_OK)
 
     def delete(self, request, delegado_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            delegado = Usuario.objects.get(id=delegado_id, rol='delegado')
+            qs = Usuario.objects.filter(id=delegado_id, rol='delegado')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            delegado = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
 
@@ -252,37 +468,58 @@ class DelegadoDesvincularEstudianteView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-
-
 class DashboardStatsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        estudiantes_count = Estudiante.objects.count()
-        conductores_count = Usuario.objects.filter(rol='conductor').count()
-        apoderados_count = Usuario.objects.filter(rol='apoderado',is_superuser=False,is_staff=False).count()
-        furgones_count = Furgon.objects.count()
-        rutas_count = Ruta.objects.count()
-        return Response({
-            'estudiantes': estudiantes_count,
-            'conductores': conductores_count,
-            'apoderados': apoderados_count,
-            'furgones': furgones_count,
-            'rutas': rutas_count
-        }, status=status.HTTP_200_OK)
+        colegio_id = get_colegio_id_for_request(request)
 
+        estudiantes_qs = Estudiante.objects.all()
+        conductores_qs = Usuario.objects.filter(rol='conductor')
+        apoderados_qs = Usuario.objects.filter(rol='apoderado', is_superuser=False, is_staff=False)
+        furgones_qs = Furgon.objects.all()
+        rutas_qs = Ruta.objects.all()
+
+        if colegio_id:
+            estudiantes_qs = estudiantes_qs.filter(colegio_id=colegio_id)
+            conductores_qs = conductores_qs.filter(colegio_id=colegio_id)
+            apoderados_qs = apoderados_qs.filter(colegio_id=colegio_id)
+            furgones_qs = furgones_qs.filter(colegio_id=colegio_id)
+            rutas_qs = rutas_qs.filter(colegio_id=colegio_id)
+
+        data = {
+            'estudiantes': estudiantes_qs.count(),
+            'conductores': conductores_qs.count(),
+            'apoderados': apoderados_qs.count(),
+            'furgones': furgones_qs.count(),
+            'rutas': rutas_qs.count()
+        }
+
+        # En modo global (sin colegio_id), incluir conteo total de colegios registrados
+        if not colegio_id:
+            data['colegios'] = Colegio.objects.count()
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class ApoderadoListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        apoderados = Usuario.objects.filter(rol='apoderado', is_superuser=False, is_staff=False).order_by('-id')
+        colegio_id = get_colegio_id_for_request(request)
+        apoderados = Usuario.objects.filter(rol='apoderado', is_superuser=False, is_staff=False)
+        if colegio_id:
+            apoderados = apoderados.filter(colegio_id=colegio_id)
+        apoderados = apoderados.order_by('-id')
         serializer = ApoderadoSerializer(apoderados, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data.copy()
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio_id'] = target_colegio_id
+
         if 'nombre_completo' in data and not data.get('nombre'):
             parts = data['nombre_completo'].strip().split(' ', 1)
             data['nombre'] = parts[0]
@@ -310,7 +547,10 @@ class EstudianteSinAsignarListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        colegio_id = get_colegio_id_for_request(request)
         estudiantes = Estudiante.objects.filter(conductor__isnull=True)
+        if colegio_id:
+            estudiantes = estudiantes.filter(colegio_id=colegio_id)
         serializer = EstudianteSerializer(estudiantes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -343,6 +583,14 @@ class ConductorAsignarEstudiantesView(APIView):
         estudiante_ids = request.data.get('estudiante_ids', [])
         if not isinstance(estudiante_ids, list):
             return Response({'message': 'El formato de estudiante_ids debe ser una lista.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validación estricta de aislamiento por colegio
+        if perfil_conductor.colegio_id:
+            estudiantes_otro_colegio = Estudiante.objects.filter(id__in=estudiante_ids).exclude(colegio_id=perfil_conductor.colegio_id)
+            if estudiantes_otro_colegio.exists():
+                return Response({
+                    'message': 'No es posible asignar estudiantes pertenecientes a otro colegio.'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         estudiantes_a_asignar = list(Estudiante.objects.filter(id__in=estudiante_ids).select_related('apoderado__usuario'))
         estudiantes_actualizados = Estudiante.objects.filter(id__in=estudiante_ids).update(conductor=perfil_conductor)
@@ -510,12 +758,21 @@ class ConductorListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        conductores = Usuario.objects.filter(rol='conductor').order_by('-id')
+        colegio_id = get_colegio_id_for_request(request)
+        conductores = Usuario.objects.filter(rol='conductor')
+        if colegio_id:
+            conductores = conductores.filter(colegio_id=colegio_id)
+        conductores = conductores.order_by('-id')
         serializer = ConductorSerializer(conductores, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = RegistroConductorSerializer(data=request.data)
+        data = request.data.copy()
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio_id'] = target_colegio_id
+
+        serializer = RegistroConductorSerializer(data=data)
         if serializer.is_valid():
             usuario = serializer.save()
             user_data = ConductorSerializer(usuario).data
@@ -533,15 +790,23 @@ class ConductorDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, conductor_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            conductor = Usuario.objects.get(id=conductor_id, rol='conductor')
+            qs = Usuario.objects.filter(id=conductor_id, rol='conductor')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            conductor = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
         return Response(ConductorSerializer(conductor).data, status=status.HTTP_200_OK)
 
     def patch(self, request, conductor_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            conductor = Usuario.objects.get(id=conductor_id, rol='conductor')
+            qs = Usuario.objects.filter(id=conductor_id, rol='conductor')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            conductor = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
 
@@ -563,6 +828,9 @@ class ConductorDetailView(APIView):
         if password:
             conductor.set_password(password)
 
+        if 'colegio_id' in request.data and (request.user.rol in ['admin_plataforma'] or request.user.is_superuser):
+            conductor.colegio_id = request.data['colegio_id']
+
         conductor.save()
 
         if hasattr(conductor, 'perfil_conductor'):
@@ -573,6 +841,8 @@ class ConductorDetailView(APIView):
                 perfil.telefono = request.data['telefono'].strip()
             if 'licencia_conducir' in request.data:
                 perfil.licencia_conducir = request.data['licencia_conducir'].strip()
+            if conductor.colegio_id:
+                perfil.colegio_id = conductor.colegio_id
             perfil.save()
 
         return Response({
@@ -581,8 +851,12 @@ class ConductorDetailView(APIView):
         }, status=status.HTTP_200_OK)
 
     def delete(self, request, conductor_id):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            conductor = Usuario.objects.get(id=conductor_id, rol='conductor')
+            qs = Usuario.objects.filter(id=conductor_id, rol='conductor')
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            conductor = qs.get()
         except Usuario.DoesNotExist:
             raise Http404
 
@@ -610,26 +884,93 @@ class LoginView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AdminLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            usuario = serializer.validated_data['user']
+
+            # RESTRICCIÓN EXCLUSIVA A ROLES ADMINISTRATIVOS
+            if usuario.rol not in ['admin_plataforma', 'admin_colegio'] and not usuario.is_superuser and not usuario.is_staff:
+                return Response({
+                    'message': 'Acceso denegado. Este portal es exclusivo para usuarios administrativos.'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Para admin_colegio, verificar asignación a colegio
+            if usuario.rol == 'admin_colegio' and not usuario.colegio_id:
+                return Response({
+                    'message': 'El usuario administrador no tiene un colegio asignado.'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            token, _ = Token.objects.get_or_create(user=usuario)
+            user_data = UsuarioResponseSerializer(usuario).data
+            return Response({
+                'message': 'Inicio de sesión administrativo exitoso.',
+                'token': token.key,
+                'usuario': user_data
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            'message': 'Credenciales incorrectas.',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
 class EstudianteListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({
-                'message': 'El usuario autenticado no tiene un perfil de apoderado asignado.'
-            }, status=status.HTTP_403_FORBIDDEN)
+        if request.user.rol in ['admin_plataforma', 'admin_colegio'] or request.user.is_superuser or request.user.is_staff:
+            colegio_id = get_colegio_id_for_request(request)
+            estudiantes = Estudiante.objects.all()
+            if colegio_id:
+                estudiantes = estudiantes.filter(colegio_id=colegio_id)
+            estudiantes = estudiantes.order_by('-id')
+        elif hasattr(request.user, 'perfil_apoderado'):
+            estudiantes = Estudiante.objects.filter(apoderado=request.user.perfil_apoderado).order_by('-id')
+        else:
+            return Response({'message': 'No tiene permisos para consultar estudiantes.'}, status=status.HTTP_403_FORBIDDEN)
 
-        estudiantes = Estudiante.objects.filter(apoderado=request.user.perfil_apoderado)
         serializer = EstudianteSerializer(estudiantes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        if request.user.rol in ['admin_plataforma', 'admin_colegio'] or request.user.is_superuser or request.user.is_staff:
+            target_colegio_id = get_colegio_id_for_request(request) or request.data.get('colegio_id')
+            data = request.data.copy()
+            if target_colegio_id:
+                data['colegio'] = target_colegio_id
+            serializer = EstudianteSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'message': 'Estudiante registrado exitosamente.',
+                    'estudiante': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'message': 'Error al registrar el estudiante.',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not hasattr(request.user, 'perfil_apoderado'):
             return Response({
                 'message': 'El usuario autenticado no tiene un perfil de apoderado asignado.'
             }, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = EstudianteSerializer(data=request.data)
+        data = request.data.copy()
+        selected_colegio = data.get('colegio') or data.get('colegio_id')
+        if selected_colegio:
+            data['colegio'] = selected_colegio
+        elif request.user.perfil_apoderado.colegio_id:
+            data['colegio'] = request.user.perfil_apoderado.colegio_id
+
+        selected_sede = data.get('sede') or data.get('sede_id')
+        if selected_sede:
+            data['sede'] = selected_sede
+
+        serializer = EstudianteSerializer(data=data)
         if serializer.is_valid():
             serializer.save(apoderado=request.user.perfil_apoderado)
             return Response({
@@ -643,43 +984,42 @@ class EstudianteListCreateView(APIView):
 
 
 class EstudianteDetailView(APIView):
-    """Devuelve un estudiante únicamente a su apoderado propietario."""
+    """Permite consultar, modificar y eliminar un estudiante respetando las reglas de rol y colegio."""
     permission_classes = [IsAuthenticated]
 
+    def get_object(self, request, estudiante_id):
+        if request.user.rol in ['admin_plataforma', 'admin_colegio'] or request.user.is_superuser or request.user.is_staff:
+            colegio_id = get_colegio_id_for_request(request)
+            qs = Estudiante.objects.filter(id=estudiante_id)
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            try:
+                return qs.get()
+            except Estudiante.DoesNotExist:
+                raise Http404
+        elif hasattr(request.user, 'perfil_apoderado'):
+            try:
+                return Estudiante.objects.get(id=estudiante_id, apoderado=request.user.perfil_apoderado)
+            except Estudiante.DoesNotExist:
+                raise Http404
+        raise Http404
+
     def get(self, request, estudiante_id):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({
-                'message': 'El usuario autenticado no tiene un perfil de apoderado asignado.'
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        try:
-            estudiante = Estudiante.objects.get(
-                id=estudiante_id,
-                apoderado=request.user.perfil_apoderado
-            )
-        except Estudiante.DoesNotExist:
-            # No revela la existencia de estudiantes de otros apoderados.
-            raise Http404
-
+        estudiante = self.get_object(request, estudiante_id)
         return Response(EstudianteSerializer(estudiante).data, status=status.HTTP_200_OK)
 
     def patch(self, request, estudiante_id):
-        if not hasattr(request.user, 'perfil_apoderado'):
-            return Response({
-                'message': 'El usuario autenticado no tiene un perfil de apoderado asignado.'
-            }, status=status.HTTP_403_FORBIDDEN)
+        estudiante = self.get_object(request, estudiante_id)
+        is_admin = request.user.rol in ['admin_plataforma', 'admin_colegio'] or request.user.is_superuser or request.user.is_staff
 
-        try:
-            estudiante = Estudiante.objects.get(
-                id=estudiante_id,
-                apoderado=request.user.perfil_apoderado
-            )
-        except Estudiante.DoesNotExist:
-            raise Http404
+        data = request.data.copy()
+        if request.user.rol == 'admin_colegio':
+            data['colegio'] = request.user.colegio_id
 
-        serializer = EstudianteUpdateSerializer(
+        serializer_class = EstudianteSerializer if is_admin else EstudianteUpdateSerializer
+        serializer = serializer_class(
             estudiante,
-            data=request.data,
+            data=data,
             partial=True
         )
         if not serializer.is_valid():
@@ -693,6 +1033,14 @@ class EstudianteDetailView(APIView):
             'message': 'Información del estudiante actualizada.',
             'estudiante': EstudianteSerializer(estudiante).data
         }, status=status.HTTP_200_OK)
+
+    def put(self, request, estudiante_id):
+        return self.patch(request, estudiante_id)
+
+    def delete(self, request, estudiante_id):
+        estudiante = self.get_object(request, estudiante_id)
+        estudiante.delete()
+        return Response({'message': 'Estudiante eliminado correctamente.'}, status=status.HTTP_200_OK)
 
 
 class EstudianteFotoView(APIView):
@@ -1352,12 +1700,21 @@ class FurgonListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        furgones = Furgon.objects.all().order_by('-id')
+        colegio_id = get_colegio_id_for_request(request)
+        furgones = Furgon.objects.all()
+        if colegio_id:
+            furgones = furgones.filter(colegio_id=colegio_id)
+        furgones = furgones.order_by('-id')
         serializer = FurgonSerializer(furgones, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = FurgonSerializer(data=request.data)
+        data = request.data.copy()
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio') or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio'] = target_colegio_id
+
+        serializer = FurgonSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1367,27 +1724,36 @@ class FurgonListCreateView(APIView):
 class FurgonDetailView(APIView):
     permission_classes = [AllowAny]
 
-    def get_object(self, pk):
+    def get_object(self, request, pk):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            return Furgon.objects.get(pk=pk)
+            qs = Furgon.objects.filter(pk=pk)
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            return qs.get()
         except Furgon.DoesNotExist:
             raise Http404
 
     def get(self, request, pk):
-        furgon = self.get_object(pk)
+        furgon = self.get_object(request, pk)
         serializer = FurgonSerializer(furgon)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        furgon = self.get_object(pk)
-        serializer = FurgonSerializer(furgon, data=request.data, partial=True)
+        furgon = self.get_object(request, pk)
+        data = request.data.copy()
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio') or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio'] = target_colegio_id
+
+        serializer = FurgonSerializer(furgon, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        furgon = self.get_object(pk)
+        furgon = self.get_object(request, pk)
         furgon.delete()
         return Response({'message': 'Furgón eliminado.'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -1396,13 +1762,20 @@ class RutaListCreateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        rutas = Ruta.objects.all().order_by('-id')
+        colegio_id = get_colegio_id_for_request(request)
+        rutas = Ruta.objects.all()
+        if colegio_id:
+            rutas = rutas.filter(colegio_id=colegio_id)
+        rutas = rutas.order_by('-id')
         serializer = RutaSerializer(rutas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data.copy()
-        data['colegio'] = 'Escuela Bosques del Viento'
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio') or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio'] = target_colegio_id
+
         serializer = RutaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -1413,21 +1786,28 @@ class RutaListCreateView(APIView):
 class RutaDetailView(APIView):
     permission_classes = [AllowAny]
 
-    def get_object(self, pk):
+    def get_object(self, request, pk):
+        colegio_id = get_colegio_id_for_request(request)
         try:
-            return Ruta.objects.get(pk=pk)
+            qs = Ruta.objects.filter(pk=pk)
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            return qs.get()
         except Ruta.DoesNotExist:
             raise Http404
 
     def get(self, request, pk):
-        ruta = self.get_object(pk)
+        ruta = self.get_object(request, pk)
         serializer = RutaSerializer(ruta)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        ruta = self.get_object(pk)
+        ruta = self.get_object(request, pk)
         data = request.data.copy()
-        data['colegio'] = 'Escuela Bosques del Viento'
+        target_colegio_id = get_colegio_id_for_request(request) or data.get('colegio') or data.get('colegio_id')
+        if target_colegio_id:
+            data['colegio'] = target_colegio_id
+
         serializer = RutaSerializer(ruta, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -1435,7 +1815,7 @@ class RutaDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        ruta = self.get_object(pk)
+        ruta = self.get_object(request, pk)
         ruta.delete()
         return Response({'message': 'Ruta eliminada.'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -1695,6 +2075,95 @@ class RutaConfirmarEntregaMultipleView(APIView):
             'estudiantes_entregados': entregados_cnt,
             'notificaciones': notificaciones_creadas
         }, status=status.HTTP_200_OK)
+
+
+class SeguimientoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        colegio_id = get_colegio_id_for_request(request)
+
+        # 1. Encontrar el estudiante asociado
+        estudiante = None
+        if hasattr(user, 'perfil_apoderado'):
+            qs = Estudiante.objects.filter(apoderado=user.perfil_apoderado)
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            estudiante = qs.first()
+        elif hasattr(user, 'perfil_conductor'):
+            qs = Estudiante.objects.filter(conductor=user.perfil_conductor)
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            estudiante = qs.first()
+        elif hasattr(user, 'perfil_delegado'):
+            del_rut = user.perfil_delegado.rut or ''
+            del_clean = del_rut.replace('.', '').replace('-', '').upper().strip()
+            qs = Estudiante.objects.all()
+            if colegio_id:
+                qs = qs.filter(colegio_id=colegio_id)
+            for e in qs:
+                aut_rut = (e.rut_persona_autorizada or '').replace('.', '').replace('-', '').upper().strip()
+                if del_clean and del_clean in aut_rut:
+                    estudiante = e
+                    break
+            if not estudiante:
+                estudiante = qs.first()
+
+        if not estudiante:
+            estudiante = Estudiante.objects.filter(colegio_id=colegio_id).first() if colegio_id else Estudiante.objects.first()
+
+        if not estudiante:
+            return Response({'message': 'No se encontraron estudiantes asociados para seguimiento.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # 2. Conductor asignado
+        conductor_info = {
+            'id': 0,
+            'nombre': 'Conductor no asignado',
+            'telefono': None
+        }
+        if estudiante.conductor and estudiante.conductor.usuario:
+            c_user = estudiante.conductor.usuario
+            c_perfil = estudiante.conductor
+            conductor_info = {
+                'id': c_user.id,
+                'nombre': c_user.get_full_name() or c_user.email,
+                'telefono': c_perfil.telefono or '+56912345678'
+            }
+
+        # 3. Ruta activa del colegio/conductor
+        ruta_obj = None
+        if estudiante.colegio:
+            ruta_obj = Ruta.objects.filter(colegio=estudiante.colegio, estado='activa').first() or Ruta.objects.filter(colegio=estudiante.colegio).first()
+        if not ruta_obj:
+            ruta_obj = Ruta.objects.first()
+
+        ruta_info = {
+            'id': ruta_obj.id if ruta_obj else 1,
+            'nombre': ruta_obj.nombre if ruta_obj else 'Ruta 01 - Bosques del Viento',
+            'estado': 'en_camino' if (ruta_obj and ruta_obj.estado == 'activa') else 'en_camino'
+        }
+
+        # 4. Ubicación de seguimiento (Coordenadas de la ruta activa / Bosques del Viento)
+        ubicacion_info = {
+            'latitud': -33.3602,
+            'longitud': -70.7300,
+            'ultima_actualizacion': 'Hace 2 min'
+        }
+
+        data = {
+            'estudiante': {
+                'id': estudiante.id,
+                'nombre': f"{estudiante.nombre} {estudiante.apellido}".strip()
+            },
+            'conductor': conductor_info,
+            'ruta': ruta_info,
+            'ubicacion': ubicacion_info,
+            'llegada_estimada': '15:45 hrs'
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
 
 
 

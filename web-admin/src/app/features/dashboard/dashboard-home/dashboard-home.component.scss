@@ -112,6 +112,10 @@
 
   padding: 25px;
 
+  &.clickable {
+    cursor: pointer;
+  }
+
   /* IMPORTANTE:
      pisa el glass-panel del proyecto anterior */
   background: #ffffff !important;

@@ -1,0 +1,117 @@
+<div class="modal-backdrop" (click)="cerrar()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-info">
+        <h2>Ficha de Estudiante — {{ estudiante.nombre }} {{ estudiante.apellido }}</h2>
+        <span class="rut-badge">RUT: {{ estudiante.rut }}</span>
+      </div>
+      <button class="close-btn" (click)="cerrar()" title="Cerrar">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <div class="detail-grid">
+        <!-- Tarjeta Información Personal -->
+        <div class="detail-section">
+          <h3>🎓 Datos Académicos y Personales</h3>
+          <div class="info-group">
+            <label>Nombre Completo:</label>
+            <span>{{ estudiante.nombre }} {{ estudiante.apellido }}</span>
+          </div>
+          <div class="info-group">
+            <label>RUT:</label>
+            <span>{{ estudiante.rut }}</span>
+          </div>
+          <div class="info-group">
+            <label>Colegio:</label>
+            <span>🏫 {{ estudiante.colegio_nombre || 'No asignado' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Sede:</label>
+            <span>🏢 {{ estudiante.sede_nombre || 'Sede Principal / Sin especificar' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Curso:</label>
+            <span>{{ estudiante.curso || 'No especificado' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Fecha de Nacimiento:</label>
+            <span>{{ estudiante.fecha_nacimiento || 'No registrada' }}</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Ubicación y Contacto -->
+        <div class="detail-section">
+          <h3>📍 Direcciones y Retiro</h3>
+          <div class="info-group">
+            <label>Dirección Principal:</label>
+            <span>{{ estudiante.direccion_principal || 'No registrada' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Dirección Alternativa:</label>
+            <span>{{ estudiante.direccion_alternativa || 'No registrada' }}</span>
+          </div>
+          <div class="info-group">
+            <label>Persona Autorizada Retiro:</label>
+            <span>{{ estudiante.persona_autorizada || 'No registrada' }}</span>
+          </div>
+          <div class="info-group">
+            <label>RUT Persona Autorizada:</label>
+            <span>{{ estudiante.rut_persona_autorizada || 'No registrado' }}</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Tutor / Apoderado -->
+        <div class="detail-section">
+          <h3>👨‍👩‍👧 Apoderado Tutor</h3>
+          @if (estudiante.apoderado_nombre) {
+            <div class="info-group">
+              <label>Nombre Apoderado:</label>
+              <span class="highlight">{{ estudiante.apoderado_nombre }}</span>
+            </div>
+            @if (estudiante.apoderado_telefono) {
+              <div class="info-group">
+                <label>Teléfono Contacto:</label>
+                <span>📞 {{ estudiante.apoderado_telefono }}</span>
+              </div>
+            }
+          } @else {
+            <p class="muted-text">Sin apoderado tutor vinculado.</p>
+          }
+        </div>
+
+        <!-- Tarjeta Conductor / Transporte -->
+        <div class="detail-section">
+          <h3>🚌 Transporte Asignado</h3>
+          @if (estudiante.conductor_nombre) {
+            <div class="info-group">
+              <label>Conductor Encargado:</label>
+              <span class="highlight">🚌 {{ estudiante.conductor_nombre }}</span>
+            </div>
+          } @else {
+            <p class="muted-text">Sin furgón/conductor asignado actualmente.</p>
+          }
+        </div>
+
+        <!-- Biometría y Fotografía -->
+        <div class="detail-section full-width">
+          <h3>📸 Registro Biométrico / Fotografía Facial</h3>
+          <div class="biometria-box">
+            @if (estudiante.tiene_foto) {
+              <div class="status-pill active">
+                <span>✓ Biometría Facial Registrada</span>
+              </div>
+              <p class="biometria-desc">Este estudiante cuenta con una fotografía facial habilitada para escaneo inteligente en furgón.</p>
+            } @else {
+              <div class="status-pill pending">
+                <span>⚠️ Biometría Pendiente</span>
+              </div>
+              <p class="biometria-desc">Aún no se ha registrado la fotografía facial del estudiante para verificación biométrica.</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
